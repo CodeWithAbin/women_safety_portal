@@ -1,0 +1,511 @@
+{
+  "info": {
+    "_postman_id": "women-safety-portal-v1",
+    "name": "Women Safety Portal API Collection",
+    "description": "Comprehensive Postman collection for all 16 REST endpoints of the Women Safety Portal.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "userToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "User Registration",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ananya Sharma\",\n  \"email\": \"ananya@example.com\",\n  \"password\": \"Password123!\",\n  \"state\": \"Kerala\",\n  \"district\": \"Ernakulam\",\n  \"phone\": \"9876543210\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "User Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('userToken', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ananya@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('adminToken', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Session Profile (Me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. User APIs",
+      "item": [
+        {
+          "name": "Browse Accepted Places (State + District)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/places?state=Kerala&district=Ernakulam",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "places"],
+              "query": [
+                {
+                  "key": "state",
+                  "value": "Kerala"
+                },
+                {
+                  "key": "district",
+                  "value": "Ernakulam"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Report a Hazardous Place",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Dark Alley near Metro Station",
+                  "type": "text"
+                },
+                {
+                  "key": "address",
+                  "value": "MG Road, Pillar 104",
+                  "type": "text"
+                },
+                {
+                  "key": "state",
+                  "value": "Kerala",
+                  "type": "text"
+                },
+                {
+                  "key": "district",
+                  "value": "Ernakulam",
+                  "type": "text"
+                },
+                {
+                  "key": "rating",
+                  "value": "4",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Broken street lights and no security presence after 8 PM.",
+                  "type": "text"
+                },
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/places/report",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "places", "report"]
+            }
+          }
+        },
+        {
+          "name": "Get User Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/1/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "1", "read"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Admin APIs",
+      "item": [
+        {
+          "name": "Admin: View Reports (Pending)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reports?status=pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "reports"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin: Accept or Reject Report",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"accepted\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reports/1/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "reports", "1", "status"]
+            }
+          }
+        },
+        {
+          "name": "Admin: View Hazardous Places",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/places?state=Kerala&district=Ernakulam",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "places"],
+              "query": [
+                {
+                  "key": "state",
+                  "value": "Kerala"
+                },
+                {
+                  "key": "district",
+                  "value": "Ernakulam"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin: Directly Add Place",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Underpass at NH Bypass",
+                  "type": "text"
+                },
+                {
+                  "key": "address",
+                  "value": "NH 66 Bypass Pillar 210",
+                  "type": "text"
+                },
+                {
+                  "key": "state",
+                  "value": "Kerala",
+                  "type": "text"
+                },
+                {
+                  "key": "district",
+                  "value": "Ernakulam",
+                  "type": "text"
+                },
+                {
+                  "key": "rating",
+                  "value": "3",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Admin verified hazard area.",
+                  "type": "text"
+                },
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/places",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "places"]
+            }
+          }
+        },
+        {
+          "name": "Admin: Update Hazardous Place",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Underpass at NH Bypass (Updated)\",\n  \"address\": \"NH 66 Bypass Pillar 210\",\n  \"state\": \"Kerala\",\n  \"district\": \"Ernakulam\",\n  \"rating\": 2,\n  \"description\": \"Patrolling increased.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/places/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "places", "1"]
+            }
+          }
+        },
+        {
+          "name": "Admin: Delete Hazardous Place",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/places/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "places", "1"]
+            }
+          }
+        },
+        {
+          "name": "Admin: View Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users?state=Kerala&district=Ernakulam",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users"],
+              "query": [
+                {
+                  "key": "state",
+                  "value": "Kerala"
+                },
+                {
+                  "key": "district",
+                  "value": "Ernakulam"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin: Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ananya S. Menon\",\n  \"email\": \"ananya.menon@example.com\",\n  \"state\": \"Kerala\",\n  \"district\": \"Ernakulam\",\n  \"phone\": \"9876543210\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/2",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users", "2"]
+            }
+          }
+        },
+        {
+          "name": "Admin: Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/2",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users", "2"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
