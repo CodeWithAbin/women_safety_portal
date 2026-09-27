@@ -28,6 +28,13 @@ yarn-debug.log*
 yarn-error.log*
 *.log
 
+# Java build target
+backend-java/target/
+target/
+
+# Scratch & temporary test scripts
+scratch/
+
 # OS & IDE Files
 .DS_Store
 Thumbs.db
