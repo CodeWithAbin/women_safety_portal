@@ -25,7 +25,22 @@ public class PlaceService {
     }
 
     public ApiResponse<List<Place>> getPlaces(String state, String district) {
-        List<Place> places = placeRepository.findAllAccepted(state, district);
+        return getPlaces(state, district, null, null, null);
+    }
+
+    public ApiResponse<List<Place>> getPlaces(String state, String district, String search, Integer minRating, String sort) {
+        if (minRating != null && (minRating < 1 || minRating > 5)) {
+            throw new BadRequestException("minRating must be an integer between 1 and 5.");
+        }
+
+        if (sort != null && !sort.trim().isEmpty()) {
+            String normalizedSort = sort.trim().toLowerCase();
+            if (!normalizedSort.equals("rating_desc") && !normalizedSort.equals("rating_asc") && !normalizedSort.equals("newest")) {
+                throw new BadRequestException("Invalid sort parameter. Supported values: rating_desc, rating_asc, newest");
+            }
+        }
+
+        List<Place> places = placeRepository.findAllAccepted(state, district, search, minRating, sort);
         ApiResponse<List<Place>> response = ApiResponse.success("Places retrieved successfully", places);
         response.setCount(places.size());
         return response;

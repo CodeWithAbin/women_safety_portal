@@ -24,6 +24,10 @@ public class PlaceRepository {
     }
 
     public List<Place> findAllAccepted(String state, String district) {
+        return findAllAccepted(state, district, null, null, null);
+    }
+
+    public List<Place> findAllAccepted(String state, String district, String search, Integer minRating, String sort) {
         StringBuilder sql = new StringBuilder("SELECT id, name, address, state, district, photo, rating, description, status, created_at FROM places WHERE status = 'accepted'");
         List<Object> args = new ArrayList<>();
 
@@ -36,7 +40,27 @@ public class PlaceRepository {
             args.add(state.trim());
         }
 
-        sql.append(" ORDER BY created_at DESC");
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append(" AND (LOWER(name) LIKE ? OR LOWER(address) LIKE ?)");
+            String searchPattern = "%" + search.trim().toLowerCase() + "%";
+            args.add(searchPattern);
+            args.add(searchPattern);
+        }
+
+        if (minRating != null) {
+            sql.append(" AND rating >= ?");
+            args.add(minRating);
+        }
+
+        if ("rating_desc".equalsIgnoreCase(sort)) {
+            sql.append(" ORDER BY rating DESC, created_at DESC, id DESC");
+        } else if ("rating_asc".equalsIgnoreCase(sort)) {
+            sql.append(" ORDER BY rating ASC, created_at DESC, id DESC");
+        } else if ("newest".equalsIgnoreCase(sort)) {
+            sql.append(" ORDER BY created_at DESC, id DESC");
+        } else {
+            sql.append(" ORDER BY created_at DESC");
+        }
 
         return tursoClient.query(sql.toString(), args).stream()
                 .map(this::mapRowToPlace)
