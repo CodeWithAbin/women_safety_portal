@@ -11,15 +11,33 @@ const BrowsePlacesPage = () => {
   const { user } = useAuth();
   const [state, setState] = useState(user?.state || 'Kerala');
   const [district, setDistrict] = useState(user?.district || 'Ernakulam');
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [minRating, setMinRating] = useState('');
+  const [sort, setSort] = useState('');
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchPlaces = async (selectedState, selectedDistrict) => {
+  // Debounce search input to avoid unnecessary requests while typing
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  const fetchPlaces = async (selectedState, selectedDistrict, searchQuery, ratingFilter, sortOption) => {
     setLoading(true);
     setError('');
     try {
-      const res = await placeService.getAcceptedPlaces(selectedState, selectedDistrict);
+      const res = await placeService.getAcceptedPlaces(
+        selectedState,
+        selectedDistrict,
+        searchQuery,
+        ratingFilter,
+        sortOption
+      );
       if (res.success) {
         setPlaces(res.data);
       }
@@ -32,8 +50,8 @@ const BrowsePlacesPage = () => {
   };
 
   useEffect(() => {
-    fetchPlaces(state, district);
-  }, [state, district]);
+    fetchPlaces(state, district, debouncedSearch, minRating, sort);
+  }, [state, district, debouncedSearch, minRating, sort]);
 
   return (
     <div>
@@ -57,6 +75,58 @@ const BrowsePlacesPage = () => {
           stateLabel="Filter by State"
           districtLabel="Filter by District"
         />
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem' }}>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" htmlFor="search-input">
+              Search Places
+            </label>
+            <input
+              id="search-input"
+              type="text"
+              className="form-control"
+              placeholder="Search by name or address..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" htmlFor="min-rating-select">
+              Minimum Rating
+            </label>
+            <select
+              id="min-rating-select"
+              className="form-control"
+              value={minRating}
+              onChange={(e) => setMinRating(e.target.value)}
+            >
+              <option value="">All Ratings</option>
+              <option value="1">1+ Stars</option>
+              <option value="2">2+ Stars</option>
+              <option value="3">3+ Stars</option>
+              <option value="4">4+ Stars</option>
+              <option value="5">5 Stars</option>
+            </select>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" htmlFor="sort-select">
+              Sort By
+            </label>
+            <select
+              id="sort-select"
+              className="form-control"
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+            >
+              <option value="">Default</option>
+              <option value="rating_desc">Highest Safety Rating</option>
+              <option value="rating_asc">Lowest Safety Rating</option>
+              <option value="newest">Newest First</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {error && <AlertBanner type="error" message={error} />}
