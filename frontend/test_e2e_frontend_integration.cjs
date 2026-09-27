@@ -105,7 +105,7 @@ async function runEndToEndVerification() {
     assert(feRes.status === 200 && typeof feRes.body === 'string' && feRes.body.includes('Women Safety Portal'), 'Frontend (Vite) responds HTTP 200 with HTML title');
 
     const beRes = await request(`${BACKEND_URL}/api/health`);
-    assert(beRes.status === 200 && beRes.body.success === true, 'Backend (Express) responds HTTP 200 on /api/health');
+    assert(beRes.status === 200 && beRes.body.success === true, 'Backend responds HTTP 200 on /api/health');
 
     // -------------------------------------------------------------
     // 2. USER REGISTRATION WORKFLOW & VALIDATION
