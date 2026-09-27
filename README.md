@@ -1,6 +1,6 @@
 # Women Safety Portal
 
-A modern, production-style full-stack web application designed to empower citizens and local communities by crowdsourcing, verifying, and mapping hazardous, unlit, or unsafe public places.
+A modern, production-grade full-stack web application designed to empower citizens and local communities by crowdsourcing, verifying, and mapping hazardous, unlit, or unsafe public places.
 
 ---
 
@@ -23,12 +23,12 @@ A modern, production-style full-stack web application designed to empower citize
 
 ## 🛠️ Technology Stack
 
-* **Frontend**: React (via Vite), React Router, Axios, Pure CSS / Light Theme Design System
-* **Backend**: Node.js, Express.js
-* **Database**: Turso Cloud (libSQL via `@libsql/client` with parameterized queries and foreign-key enforcement)
-* **Authentication**: JWT (JSON Web Tokens) with server-side Role-Based Access Control (RBAC)
-* **Password Hashing**: `bcryptjs` (10 salt rounds)
-* **File Storage**: Local disk storage via `multer` in `/uploads`
+* **Frontend**: React (via Vite), React Router, Axios, Pure CSS / Light Theme Design System (Deployed on **Vercel**)
+* **Backend**: Spring Boot 3.3.4, Java 17, Spring Security 6, JJWT (Deployed on **Railway**)
+* **Database**: Turso Cloud (libSQL via HTTP Pipeline API v2 with parameterized queries, transactions, and foreign keys)
+* **Authentication**: Stateless JWT (JSON Web Tokens) with server-side Role-Based Access Control (RBAC)
+* **Password Hashing**: BCrypt (10 salt rounds)
+* **File Storage**: Local disk storage & Railway Persistent Volume mounted at `/app/uploads`
 
 ---
 
@@ -37,19 +37,21 @@ A modern, production-style full-stack web application designed to empower citize
 ```
 ┌────────────────────────────────────────────────────────────┐
 │              React SPA Frontend (Light Theme)              │
-│   Unified Login | User Dashboard | Admin Dashboard        │
+│       Deployed on Vercel (Production Cloud Edge)           │
+│   Unified Login | User Dashboard | Admin Dashboard         │
 └────────────────────────────┬───────────────────────────────┘
-                             │  HTTP / JSON & Multipart
+                             │  HTTPS / REST API & Multipart
                              ▼
 ┌────────────────────────────────────────────────────────────┐
-│                 Node.js + Express Server                   │
-│  Auth Middleware (JWT) │ RBAC Guard │ Multer Uploads      │
+│              Spring Boot 3 (Java 17) Backend               │
+│               Deployed on Railway (Docker)                 │
+│  Security Filter Chain (JWT) │ RBAC Guard │ Static Uploads │
 └──────────────┬───────────────────────────┬─────────────────┘
                │                           │
                ▼                           ▼
 ┌───────────────────────────────┐ ┌──────────────────────────┐
-│     Turso (libSQL) Database   │ │  Local Static Storage    │
-│ (users, places, notifications)│ │        (/uploads)        │
+│     Turso (libSQL) Cloud      │ │ Railway Persistent Volume│
+│ (users, places, notifications)│ │      (/app/uploads)      │
 └───────────────────────────────┘ └──────────────────────────┘
 ```
 
@@ -58,32 +60,20 @@ A modern, production-style full-stack web application designed to empower citize
 ## 📁 Folder Structure
 
 ```
-├── backend/
-│   ├── config/
-│   │   └── db.js                 # SQLite connection, schema & indices
-│   ├── controllers/
-│   │   ├── authController.js     # Register, Login, Session me
-│   │   ├── placeController.js    # Place browsing & user reporting
-│   │   ├── notificationController.js # User notifications & mark-read
-│   │   └── adminController.js    # Report review, place CRUD, user CRUD
-│   ├── middleware/
-│   │   ├── authMiddleware.js     # JWT & role authorization (requireAdmin)
-│   │   └── uploadMiddleware.js   # Multer image validation & size limit
-│   ├── routes/
-│   │   ├── authRoutes.js         # /api/auth
-│   │   ├── placeRoutes.js        # /api/places
-│   │   ├── notificationRoutes.js # /api/notifications
-│   │   └── adminRoutes.js        # /api/admin
-│   ├── test/
-│   │   ├── test_all_endpoints.js # Integration test suite (39 assertions)
-│   │   └── verify_deep.js        # Deep edge-case verification suite
-│   ├── uploads/                  # Uploaded photo files (.gitkeep)
-│   ├── utils/
-│   │   ├── seedAdmin.js          # Startup routine ensuring admin account from .env
-│   │   └── validation.js         # Input validation helpers
+├── backend-java/
+│   ├── src/main/java/com/womensafety/
+│   │   ├── config/               # SecurityConfig, TursoConfig, DatabaseInitializer, AdminSeeder
+│   │   ├── controller/           # AuthController, PlaceController, NotificationController, AdminController
+│   │   ├── model/                # Entity & DTO models (ApiResponse, RegisterRequest, etc.)
+│   │   ├── repository/           # Turso-backed repositories (UserRepository, PlaceRepository, etc.)
+│   │   ├── security/             # JwtTokenProvider, JwtAuthenticationFilter, UserPrincipal
+│   │   └── service/              # AuthService, PlaceService, NotificationService, AdminService, FileStorageService
+│   ├── src/main/resources/       # application.properties
+│   ├── src/test/java/            # Integration & unit test suites
+│   ├── Dockerfile                # Production multi-stage Docker build for Railway
+│   ├── .dockerignore
 │   ├── .env.example
-│   ├── package.json
-│   ├── server.js
+│   ├── pom.xml                   # Maven dependencies & build configuration
 │   └── Women_Safety_Portal.postman_collection.json
 ├── frontend/
 │   ├── src/
@@ -95,6 +85,7 @@ A modern, production-style full-stack web application designed to empower citize
 │   │   └── utils/                # Indian States & Districts reference data
 │   ├── .env.example
 │   ├── package.json
+│   ├── vercel.json               # SPA routing rewrite rules for Vercel
 │   └── vite.config.js
 └── README.md
 ```
@@ -104,23 +95,24 @@ A modern, production-style full-stack web application designed to empower citize
 ## 🚀 Setup & Installation
 
 ### Prerequisites
-* **Node.js**: v18+ or v20+
+* **Java**: JDK 17+
+* **Maven**: 3.9+
+* **Node.js**: v18+ or v20+ (for React frontend)
 * **npm**: v9+
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/women-safety-portal.git
-cd women-safety-portal
+git clone https://github.com/CodeWithAbin/women_safety_portal.git
+cd women_safety_portal
 ```
 
-### 2. Backend Setup
+### 2. Spring Boot Backend Setup
 ```bash
-cd backend
-npm install
+cd backend-java
 cp .env.example .env
 ```
 
-Edit `backend/.env` with your secure values:
+Edit `backend-java/.env` with your secure values:
 ```env
 PORT=5000
 CLIENT_ORIGIN=http://localhost:5173
@@ -129,13 +121,14 @@ TURSO_AUTH_TOKEN=your_turso_auth_token
 JWT_SECRET=your_secure_random_jwt_secret
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=your_secure_admin_password
+UPLOAD_DIR=./uploads
 ```
 
-Start the backend server:
+Build and run the backend:
 ```bash
-npm start
+mvn clean spring-boot:run
 ```
-*The database and single administrator account will be initialized automatically on startup.*
+*The database schema and initial administrator account will be validated and initialized automatically on startup.*
 
 ### 3. Frontend Setup
 In a new terminal:
@@ -186,20 +179,13 @@ Open **[http://localhost:5173](http://localhost:5173)** in your browser.
 
 ## 🧪 Testing
 
-### Backend Integration Tests
+### Backend Unit & Integration Tests
 ```bash
-cd backend
-npm test
-```
-*Executes all 39 automated assertions covering authentication, authorization, reports lifecycle, place browsing, and user deletion cascading.*
-
-### Frontend Full-Stack Integration Test
-```bash
-cd frontend
-npm run test:e2e
+cd backend-java
+mvn clean test
 ```
 
-### Production Build Verification
+### Frontend Production Build Verification
 ```bash
 cd frontend
 npm run build
@@ -207,10 +193,10 @@ npm run build
 
 ---
 
-## 🔒 Security & GitHub Best Practices
+## 🔒 Security & Best Practices
 
-* **No Hardcoded Secrets**: Sensitive credentials (`ADMIN_EMAIL`, `ADMIN_PASSWORD`, `JWT_SECRET`) are read exclusively from environment variables (`.env`).
-* **Git Hygiene**: `.env` and SQLite database files are excluded in `.gitignore`. `.env.example` contains only safe placeholder templates.
-* **Server-Side Authorization**: Backend RBAC middleware independently verifies token and role on every protected request.
-* **Parameterized Queries**: 100% of database interactions use parameterized placeholders (`?`) to prevent SQL injection.
-* **Upload Hardening**: File types are validated for JPEG/PNG/WebP with a strict 5MB size limit.
+* **No Hardcoded Secrets**: Sensitive credentials (`ADMIN_EMAIL`, `ADMIN_PASSWORD`, `JWT_SECRET`, `TURSO_AUTH_TOKEN`) are read exclusively from environment variables.
+* **Git Hygiene**: `.env` and local database/upload directories are excluded in `.gitignore`. `.env.example` contains only safe placeholder templates.
+* **Server-Side Authorization**: Spring Security stateless filter chain independently validates JWT tokens and roles on every protected request.
+* **Parameterized Queries**: 100% of Turso libSQL interactions use parameterized SQL statements to prevent injection.
+* **Upload Hardening**: File uploads are strictly validated and served from dedicated upload directories (`/app/uploads`).

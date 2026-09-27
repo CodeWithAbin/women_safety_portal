@@ -17,8 +17,8 @@ node_modules/
 *.db-shm
 
 # Uploaded media (preserve .gitkeep)
-backend/uploads/*
-!backend/uploads/.gitkeep
+backend-java/uploads/*
+!backend-java/uploads/.gitkeep
 uploads/*
 !uploads/.gitkeep
 

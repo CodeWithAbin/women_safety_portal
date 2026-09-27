@@ -30,6 +30,7 @@ target/
 ### Environment & Database ###
 .env
 .env.*
+!.env.example
 *.db
 uploads/*
 !uploads/.gitkeep

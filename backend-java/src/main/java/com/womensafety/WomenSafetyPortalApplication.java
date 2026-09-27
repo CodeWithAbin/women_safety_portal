@@ -21,8 +21,8 @@ public class WomenSafetyPortalApplication {
         String[] candidatePaths = {
             ".env",
             "../.env",
-            "../backend/.env",
-            "backend/.env"
+            "backend-java/.env",
+            "../backend-java/.env"
         };
 
         for (String candidate : candidatePaths) {
