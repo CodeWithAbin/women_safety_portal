@@ -124,10 +124,22 @@ export const adminService = {
     const response = await apiClient.patch(`/api/admin/reports/${id}/status`, { status });
     return response.data;
   },
-  getPlaces: async (state, district) => {
+  getPlaces: async (state, district, search, minRating, sort) => {
     const params = {};
-    if (state && state.trim()) params.state = state.trim();
-    if (district && district.trim()) params.district = district.trim();
+    if (state && typeof state === 'object') {
+      const opts = state;
+      if (opts.state && typeof opts.state === 'string' && opts.state.trim()) params.state = opts.state.trim();
+      if (opts.district && typeof opts.district === 'string' && opts.district.trim()) params.district = opts.district.trim();
+      if (opts.search && typeof opts.search === 'string' && opts.search.trim()) params.search = opts.search.trim();
+      if (opts.minRating !== undefined && opts.minRating !== null && opts.minRating !== '') params.minRating = opts.minRating;
+      if (opts.sort && typeof opts.sort === 'string' && opts.sort.trim()) params.sort = opts.sort.trim();
+    } else {
+      if (state && typeof state === 'string' && state.trim()) params.state = state.trim();
+      if (district && typeof district === 'string' && district.trim()) params.district = district.trim();
+      if (search && typeof search === 'string' && search.trim()) params.search = search.trim();
+      if (minRating !== undefined && minRating !== null && minRating !== '') params.minRating = minRating;
+      if (sort && typeof sort === 'string' && sort.trim()) params.sort = sort.trim();
+    }
     const response = await apiClient.get('/api/admin/places', { params });
     return response.data;
   },

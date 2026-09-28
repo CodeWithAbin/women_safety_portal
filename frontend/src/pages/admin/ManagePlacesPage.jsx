@@ -11,6 +11,10 @@ const ManagePlacesPage = () => {
   const [places, setPlaces] = useState([]);
   const [filterState, setFilterState] = useState('');
   const [filterDistrict, setFilterDistrict] = useState('');
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [minRating, setMinRating] = useState('');
+  const [sort, setSort] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -20,6 +24,14 @@ const ManagePlacesPage = () => {
   const [editPlace, setEditPlace] = useState(null);
   const [deleteTargetPlace, setDeleteTargetPlace] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
+
+  // Debounce search input to avoid unnecessary requests while typing
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
 
   // Form states for Add / Edit
   const [placeForm, setPlaceForm] = useState({
@@ -35,7 +47,7 @@ const ManagePlacesPage = () => {
   const fetchPlaces = async () => {
     setLoading(true);
     try {
-      const res = await adminService.getPlaces(filterState, filterDistrict);
+      const res = await adminService.getPlaces(filterState, filterDistrict, debouncedSearch, minRating, sort);
       if (res.success) {
         setPlaces(res.data);
       }
@@ -48,7 +60,7 @@ const ManagePlacesPage = () => {
 
   useEffect(() => {
     fetchPlaces();
-  }, [filterState, filterDistrict]);
+  }, [filterState, filterDistrict, debouncedSearch, minRating, sort]);
 
   const resetForm = () => {
     setPlaceForm({
@@ -197,6 +209,58 @@ const ManagePlacesPage = () => {
           stateLabel="Filter Places by State"
           districtLabel="Filter Places by District"
         />
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem' }}>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" htmlFor="admin-search-input">
+              Search Places
+            </label>
+            <input
+              id="admin-search-input"
+              type="text"
+              className="form-control"
+              placeholder="Search by name or address..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" htmlFor="admin-min-rating-select">
+              Minimum Rating
+            </label>
+            <select
+              id="admin-min-rating-select"
+              className="form-control"
+              value={minRating}
+              onChange={(e) => setMinRating(e.target.value)}
+            >
+              <option value="">All Ratings</option>
+              <option value="1">1+ Stars</option>
+              <option value="2">2+ Stars</option>
+              <option value="3">3+ Stars</option>
+              <option value="4">4+ Stars</option>
+              <option value="5">5 Stars</option>
+            </select>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" htmlFor="admin-sort-select">
+              Sort By
+            </label>
+            <select
+              id="admin-sort-select"
+              className="form-control"
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+            >
+              <option value="">Default</option>
+              <option value="rating_desc">Highest Safety Rating</option>
+              <option value="rating_asc">Lowest Safety Rating</option>
+              <option value="newest">Newest First</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {loading ? (

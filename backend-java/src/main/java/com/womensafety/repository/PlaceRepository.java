@@ -91,6 +91,10 @@ public class PlaceRepository {
     }
 
     public List<Place> findAdminPlaces(String state, String district) {
+        return findAdminPlaces(state, district, null, null, null);
+    }
+
+    public List<Place> findAdminPlaces(String state, String district, String search, Integer minRating, String sort) {
         StringBuilder sql = new StringBuilder("""
             SELECT 
                 p.id, p.name, p.address, p.state, p.district, p.photo, p.rating, p.description, 
@@ -111,7 +115,27 @@ public class PlaceRepository {
             args.add(state.trim());
         }
 
-        sql.append(" ORDER BY p.created_at DESC");
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append(" AND (LOWER(p.name) LIKE ? OR LOWER(p.address) LIKE ?)");
+            String searchPattern = "%" + search.trim().toLowerCase() + "%";
+            args.add(searchPattern);
+            args.add(searchPattern);
+        }
+
+        if (minRating != null) {
+            sql.append(" AND p.rating >= ?");
+            args.add(minRating);
+        }
+
+        if ("rating_desc".equalsIgnoreCase(sort)) {
+            sql.append(" ORDER BY p.rating DESC, p.created_at DESC, p.id DESC");
+        } else if ("rating_asc".equalsIgnoreCase(sort)) {
+            sql.append(" ORDER BY p.rating ASC, p.created_at DESC, p.id DESC");
+        } else if ("newest".equalsIgnoreCase(sort)) {
+            sql.append(" ORDER BY p.created_at DESC, p.id DESC");
+        } else {
+            sql.append(" ORDER BY p.created_at DESC");
+        }
 
         return tursoClient.query(sql.toString(), args).stream()
                 .map(this::mapRowToPlace)

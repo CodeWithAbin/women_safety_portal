@@ -41,12 +41,15 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
-    // 10. View all hazardous places (with State & District filter)
+    // 10. View all hazardous places (with State, District, Search, MinRating & Sort filter)
     @GetMapping("/places")
     public ResponseEntity<ApiResponse<List<Place>>> getPlaces(
             @RequestParam(required = false) String state,
-            @RequestParam(required = false) String district) {
-        ApiResponse<List<Place>> response = adminService.getPlaces(state, district);
+            @RequestParam(required = false) String district,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer minRating,
+            @RequestParam(required = false) String sort) {
+        ApiResponse<List<Place>> response = adminService.getPlaces(state, district, search, minRating, sort);
         return ResponseEntity.ok(response);
     }
 
