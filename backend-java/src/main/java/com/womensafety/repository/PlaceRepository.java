@@ -19,34 +19,41 @@ public class PlaceRepository {
     }
 
     public Optional<Place> findById(Long id) {
-        String sql = "SELECT id, name, address, state, district, photo, rating, description, status, submitted_by, created_at, updated_at FROM places WHERE id = ?";
+        String sql = """
+            SELECT 
+                p.id, p.name, p.address, p.state, p.district, p.photo, p.rating, p.description, 
+                p.status, p.submitted_by, p.created_at, p.updated_at,
+                (SELECT COUNT(*) FROM report_supports rs WHERE rs.report_id = p.id) AS support_count
+            FROM places p 
+            WHERE p.id = ?
+        """;
         return tursoClient.queryOne(sql, List.of(id)).map(this::mapRowToPlace);
     }
 
-    public List<Place> findAllAccepted(String state, String district) {
-        return findAllAccepted(state, district, null, null, null);
-    }
-
-    public List<Place> findAllAccepted(String state, String district, String search, Integer minRating, String sort) {
+    public List<Place> findAllAccepted(String state, String district, String search, Integer minRating, String sort, Long currentUserId) {
         StringBuilder sql = new StringBuilder("""
             SELECT 
-                MIN(p.id) AS id,
+                p.id,
                 p.name,
                 p.address,
                 p.state,
                 p.district,
-                MAX(p.photo) AS photo,
-                ROUND(AVG(p.rating), 1) AS community_rating,
-                COUNT(p.rating) AS rating_count,
-                ROUND(AVG(p.rating)) AS rating,
-                MAX(p.description) AS description,
+                p.photo,
+                p.rating,
+                p.rating AS community_rating,
+                1 AS rating_count,
+                p.description,
                 p.status,
-                MAX(p.created_at) AS created_at,
-                MAX(p.updated_at) AS updated_at
+                p.submitted_by,
+                p.created_at,
+                p.updated_at,
+                (SELECT COUNT(*) FROM report_supports rs WHERE rs.report_id = p.id) AS support_count,
+                (SELECT COUNT(*) FROM report_supports rs WHERE rs.report_id = p.id AND rs.user_id = ?) AS user_supported
             FROM places p
             WHERE p.status = 'accepted'
         """);
         List<Object> args = new ArrayList<>();
+        args.add(currentUserId != null ? currentUserId : -1L);
 
         if (state != null && !state.trim().isEmpty() && district != null && !district.trim().isEmpty()) {
             sql.append(" AND LOWER(TRIM(p.state)) = LOWER(TRIM(?)) AND LOWER(TRIM(p.district)) = LOWER(TRIM(?))");
@@ -64,21 +71,19 @@ public class PlaceRepository {
             args.add(searchPattern);
         }
 
-        sql.append(" GROUP BY LOWER(TRIM(p.name)), LOWER(TRIM(p.address)), LOWER(TRIM(p.state)), LOWER(TRIM(p.district))");
-
         if (minRating != null) {
-            sql.append(" HAVING AVG(p.rating) >= ?");
+            sql.append(" AND p.rating >= ?");
             args.add(minRating);
         }
 
         if ("rating_desc".equalsIgnoreCase(sort)) {
-            sql.append(" ORDER BY AVG(p.rating) DESC, MAX(p.created_at) DESC, MIN(p.id) DESC");
+            sql.append(" ORDER BY p.rating DESC, p.created_at DESC, p.id DESC");
         } else if ("rating_asc".equalsIgnoreCase(sort)) {
-            sql.append(" ORDER BY AVG(p.rating) ASC, MAX(p.created_at) DESC, MIN(p.id) DESC");
+            sql.append(" ORDER BY p.rating ASC, p.created_at DESC, p.id DESC");
         } else if ("newest".equalsIgnoreCase(sort)) {
-            sql.append(" ORDER BY MAX(p.created_at) DESC, MIN(p.id) DESC");
+            sql.append(" ORDER BY p.created_at DESC, p.id DESC");
         } else {
-            sql.append(" ORDER BY MAX(p.created_at) DESC");
+            sql.append(" ORDER BY p.created_at DESC, p.id DESC");
         }
 
         return tursoClient.query(sql.toString(), args).stream()
@@ -91,7 +96,8 @@ public class PlaceRepository {
             SELECT 
                 p.id, p.name, p.address, p.state, p.district, p.photo, p.rating, p.description, 
                 p.status, p.submitted_by, p.created_at, p.updated_at,
-                u.name AS reporter_name, u.email AS reporter_email, u.phone AS reporter_phone
+                u.name AS reporter_name, u.email AS reporter_email, u.phone AS reporter_phone,
+                (SELECT COUNT(*) FROM report_supports rs WHERE rs.report_id = p.id) AS support_count
             FROM places p
             LEFT JOIN users u ON p.submitted_by = u.id
         """);
@@ -109,29 +115,26 @@ public class PlaceRepository {
                 .toList();
     }
 
-    public List<Place> findAdminPlaces(String state, String district) {
-        return findAdminPlaces(state, district, null, null, null);
-    }
-
     public List<Place> findAdminPlaces(String state, String district, String search, Integer minRating, String sort) {
         StringBuilder sql = new StringBuilder("""
             SELECT 
-                MIN(p.id) AS id,
+                p.id,
                 p.name,
                 p.address,
                 p.state,
                 p.district,
-                MAX(p.photo) AS photo,
-                ROUND(AVG(p.rating), 1) AS community_rating,
-                COUNT(p.rating) AS rating_count,
-                ROUND(AVG(p.rating)) AS rating,
-                MAX(p.description) AS description,
+                p.photo,
+                p.rating,
+                p.rating AS community_rating,
+                1 AS rating_count,
+                p.description,
                 p.status,
-                MAX(p.submitted_by) AS submitted_by,
-                MAX(p.created_at) AS created_at,
-                MAX(p.updated_at) AS updated_at,
-                MAX(u.name) AS reporter_name,
-                MAX(u.email) AS reporter_email
+                p.submitted_by,
+                p.created_at,
+                p.updated_at,
+                u.name AS reporter_name,
+                u.email AS reporter_email,
+                (SELECT COUNT(*) FROM report_supports rs WHERE rs.report_id = p.id) AS support_count
             FROM places p
             LEFT JOIN users u ON p.submitted_by = u.id
             WHERE p.status = 'accepted'
@@ -154,21 +157,19 @@ public class PlaceRepository {
             args.add(searchPattern);
         }
 
-        sql.append(" GROUP BY LOWER(TRIM(p.name)), LOWER(TRIM(p.address)), LOWER(TRIM(p.state)), LOWER(TRIM(p.district))");
-
         if (minRating != null) {
-            sql.append(" HAVING AVG(p.rating) >= ?");
+            sql.append(" AND p.rating >= ?");
             args.add(minRating);
         }
 
         if ("rating_desc".equalsIgnoreCase(sort)) {
-            sql.append(" ORDER BY AVG(p.rating) DESC, MAX(p.created_at) DESC, MIN(p.id) DESC");
+            sql.append(" ORDER BY p.rating DESC, p.created_at DESC, p.id DESC");
         } else if ("rating_asc".equalsIgnoreCase(sort)) {
-            sql.append(" ORDER BY AVG(p.rating) ASC, MAX(p.created_at) DESC, MIN(p.id) DESC");
+            sql.append(" ORDER BY p.rating ASC, p.created_at DESC, p.id DESC");
         } else if ("newest".equalsIgnoreCase(sort)) {
-            sql.append(" ORDER BY MAX(p.created_at) DESC, MIN(p.id) DESC");
+            sql.append(" ORDER BY p.created_at DESC, p.id DESC");
         } else {
-            sql.append(" ORDER BY MAX(p.created_at) DESC");
+            sql.append(" ORDER BY p.created_at DESC, p.id DESC");
         }
 
         return tursoClient.query(sql.toString(), args).stream()
@@ -176,23 +177,60 @@ public class PlaceRepository {
                 .toList();
     }
 
-    public Optional<Place> findUserSubmissionForPlace(Long userId, String name, String address, String state, String district) {
-        String sql = """
-            SELECT id, name, address, state, district, photo, rating, description, status, submitted_by, created_at, updated_at 
-            FROM places 
-            WHERE submitted_by = ? 
-              AND LOWER(TRIM(name)) = LOWER(TRIM(?)) 
-              AND LOWER(TRIM(address)) = LOWER(TRIM(?)) 
-              AND LOWER(TRIM(state)) = LOWER(TRIM(?)) 
-              AND LOWER(TRIM(district)) = LOWER(TRIM(?))
-        """;
-        return tursoClient.queryOne(sql, List.of(userId, name.trim(), address.trim(), state.trim(), district.trim()))
-                .map(this::mapRowToPlace);
+    public void addSupport(Long reportId, Long userId) {
+        String sql = "INSERT OR IGNORE INTO report_supports (report_id, user_id) VALUES (?, ?)";
+        tursoClient.update(sql, List.of(reportId, userId));
     }
 
-    public void updateUserReport(Long id, String photo, int rating, String description) {
-        String sql = "UPDATE places SET photo = ?, rating = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
-        tursoClient.update(sql, List.of(photo, rating, description.trim(), id));
+    public int getSupportCount(Long reportId) {
+        String sql = "SELECT COUNT(*) AS cnt FROM report_supports WHERE report_id = ?";
+        return tursoClient.queryOne(sql, List.of(reportId))
+                .map(r -> ((Number) r.get("cnt")).intValue())
+                .orElse(0);
+    }
+
+    public boolean hasUserSupported(Long reportId, Long userId) {
+        if (userId == null) return false;
+        String sql = "SELECT COUNT(*) AS cnt FROM report_supports WHERE report_id = ? AND user_id = ?";
+        return tursoClient.queryOne(sql, List.of(reportId, userId))
+                .map(r -> ((Number) r.get("cnt")).intValue() > 0)
+                .orElse(false);
+    }
+
+    public Optional<Place> findSimilarAcceptedReport(String state, String district, String address, String name) {
+        if (state == null || district == null || address == null || name == null) {
+            return Optional.empty();
+        }
+        String normalizedAddress = normalizeText(address);
+        String normalizedName = normalizeText(name);
+
+        String sql = """
+            SELECT id, name, address, state, district, photo, rating, description, status, submitted_by, created_at, updated_at,
+                   (SELECT COUNT(*) FROM report_supports rs WHERE rs.report_id = places.id) AS support_count
+            FROM places
+            WHERE status = 'accepted'
+              AND LOWER(TRIM(state)) = LOWER(TRIM(?))
+              AND LOWER(TRIM(district)) = LOWER(TRIM(?))
+        """;
+
+        List<Place> candidates = tursoClient.query(sql, List.of(state.trim(), district.trim())).stream()
+                .map(this::mapRowToPlace)
+                .toList();
+
+        for (Place cand : candidates) {
+            String candAddress = normalizeText(cand.getAddress());
+            String candName = normalizeText(cand.getName());
+
+            if (candAddress.equals(normalizedAddress) && candName.equals(normalizedName)) {
+                return Optional.of(cand);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private String normalizeText(String input) {
+        if (input == null) return "";
+        return input.trim().toLowerCase().replaceAll("\\s+", " ");
     }
 
     public Long insertReport(String name, String address, String state, String district, String photo, int rating, String description, Long submittedBy) {
@@ -297,6 +335,18 @@ public class PlaceRepository {
             place.setRatingCount(((Number) row.get("rating_count")).intValue());
         } else {
             place.setRatingCount(1);
+        }
+
+        if (row.get("support_count") != null) {
+            place.setSupportCount(((Number) row.get("support_count")).intValue());
+        } else {
+            place.setSupportCount(0);
+        }
+
+        if (row.get("user_supported") != null) {
+            place.setHasSupported(((Number) row.get("user_supported")).intValue() > 0);
+        } else {
+            place.setHasSupported(false);
         }
 
         if (row.containsKey("reporter_name")) place.setReporterName((String) row.get("reporter_name"));

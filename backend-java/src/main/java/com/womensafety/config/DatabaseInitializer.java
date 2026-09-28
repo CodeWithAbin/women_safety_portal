@@ -72,10 +72,24 @@ public class DatabaseInitializer {
                 );
             """);
 
-            // 4. Indexes
+            // 4. Report Supports Table
+            tursoClient.update("""
+                CREATE TABLE IF NOT EXISTS report_supports (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    report_id INTEGER NOT NULL,
+                    user_id INTEGER NOT NULL,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (report_id) REFERENCES places(id) ON DELETE CASCADE,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                    UNIQUE(report_id, user_id)
+                );
+            """);
+
+            // 5. Indexes
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_places_state_district_status ON places (state, district, status);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications (user_id, is_read);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);");
+            tursoClient.update("CREATE INDEX IF NOT EXISTS idx_report_supports_report_user ON report_supports (report_id, user_id);");
 
             log.info("Database schema initialized successfully.");
         } catch (Exception e) {

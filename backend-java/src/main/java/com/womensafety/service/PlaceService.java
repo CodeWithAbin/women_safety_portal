@@ -1,6 +1,7 @@
 package com.womensafety.service;
 
 import com.womensafety.exception.BadRequestException;
+import com.womensafety.exception.ResourceNotFoundException;
 import com.womensafety.model.Place;
 import com.womensafety.model.dto.ApiResponse;
 import com.womensafety.model.dto.PlaceReportRequest;
@@ -12,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class PlaceService {
@@ -24,11 +26,7 @@ public class PlaceService {
         this.fileStorageService = fileStorageService;
     }
 
-    public ApiResponse<List<Place>> getPlaces(String state, String district) {
-        return getPlaces(state, district, null, null, null);
-    }
-
-    public ApiResponse<List<Place>> getPlaces(String state, String district, String search, Integer minRating, String sort) {
+    public ApiResponse<List<Place>> getPlaces(String state, String district, String search, Integer minRating, String sort, UserPrincipal principal) {
         if (minRating != null && (minRating < 1 || minRating > 5)) {
             throw new BadRequestException("minRating must be an integer between 1 and 5.");
         }
@@ -40,10 +38,52 @@ public class PlaceService {
             }
         }
 
-        List<Place> places = placeRepository.findAllAccepted(state, district, search, minRating, sort);
+        Long userId = principal != null ? principal.getId() : null;
+        List<Place> places = placeRepository.findAllAccepted(state, district, search, minRating, sort, userId);
         ApiResponse<List<Place>> response = ApiResponse.success("Places retrieved successfully", places);
         response.setCount(places.size());
         return response;
+    }
+
+    public ApiResponse<Map<String, Object>> supportPlace(Long placeId, UserPrincipal principal) {
+        if (placeId == null) {
+            throw new BadRequestException("Place ID is required.");
+        }
+        if (principal == null) {
+            throw new BadRequestException("Authentication is required to support a report.");
+        }
+
+        Place place = placeRepository.findById(placeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Report not found with id " + placeId));
+
+        placeRepository.addSupport(place.getId(), principal.getId());
+        int newCount = placeRepository.getSupportCount(place.getId());
+
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("report_id", place.getId());
+        data.put("support_count", newCount);
+        data.put("has_supported", true);
+
+        return ApiResponse.success("You supported this community report.", data);
+    }
+
+    public ApiResponse<Map<String, Object>> checkSimilar(String state, String district, String address, String name, UserPrincipal principal) {
+        Optional<Place> similarOpt = placeRepository.findSimilarAcceptedReport(state, district, address, name);
+
+        Map<String, Object> data = new LinkedHashMap<>();
+        if (similarOpt.isPresent()) {
+            Place similar = similarOpt.get();
+            if (principal != null) {
+                similar.setHasSupported(placeRepository.hasUserSupported(similar.getId(), principal.getId()));
+            }
+            data.put("similar_found", true);
+            data.put("existing_report", similar);
+            return ApiResponse.success("Similar report found at this location", data);
+        } else {
+            data.put("similar_found", false);
+            data.put("existing_report", null);
+            return ApiResponse.success("No similar report found", data);
+        }
     }
 
     public ApiResponse<Map<String, Object>> reportPlace(PlaceReportRequest req, MultipartFile photo, UserPrincipal principal) {
@@ -70,30 +110,6 @@ public class PlaceService {
             throw new BadRequestException("Rating must be an integer between 1 and 5.");
         }
 
-        // Anti-manipulation: Check if user already submitted for this physical place
-        java.util.Optional<Place> existingSubmission = placeRepository.findUserSubmissionForPlace(
-                principal.getId(),
-                req.getName(),
-                req.getAddress(),
-                req.getState(),
-                req.getDistrict()
-        );
-
-        if (existingSubmission.isPresent()) {
-            Place prev = existingSubmission.get();
-            String photoUrl = (photo != null && !photo.isEmpty()) ? fileStorageService.store(photo) : prev.getPhoto();
-            placeRepository.updateUserReport(prev.getId(), photoUrl, ratingVal, req.getDescription().trim());
-
-            Map<String, Object> data = new LinkedHashMap<>();
-            data.put("id", prev.getId());
-            data.put("status", prev.getStatus());
-            return ApiResponse.success("Your rating and report for this place have been updated successfully.", data);
-        }
-
-        if (photo == null || photo.isEmpty()) {
-            throw new BadRequestException("A photo of the hazardous place is required.");
-        }
-
         String photoUrl = fileStorageService.store(photo);
 
         Long placeId = placeRepository.insertReport(
@@ -104,13 +120,17 @@ public class PlaceService {
                 photoUrl,
                 ratingVal,
                 req.getDescription().trim(),
-                principal.getId()
+                principal != null ? principal.getId() : null
         );
+
+        if (principal != null && placeId != null) {
+            placeRepository.addSupport(placeId, principal.getId());
+        }
 
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("id", placeId);
         data.put("status", "pending");
 
-        return ApiResponse.success("Hazardous place reported successfully. It is pending admin review.", data);
+        return ApiResponse.success("Your report has been submitted and is waiting for admin review.", data);
     }
 }

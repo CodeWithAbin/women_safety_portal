@@ -3,6 +3,7 @@ import { getPhotoUrl } from '../services/api';
 
 const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
   const isProcessing = processingId === report.id;
+  const supportCount = report.support_count != null ? report.support_count : 0;
 
   const formattedDate = report.created_at
     ? new Date(report.created_at).toLocaleString(undefined, {
@@ -37,13 +38,29 @@ const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-navy)' }}>{report.name}</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-navy)' }}>🚨 {report.name}</h3>
             <span className="badge badge-warning">Pending Review</span>
           </div>
 
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
             📍 <strong>Location:</strong> {report.address}, {report.district}, {report.state}
           </p>
+
+          <div style={{
+            padding: '0.4rem 0.6rem',
+            backgroundColor: 'var(--bg-subtle, #f8fafc)',
+            borderRadius: 'var(--radius-sm, 4px)',
+            border: '1px solid var(--border-light, #e2e8f0)',
+            fontSize: '0.85rem',
+            color: 'var(--primary-navy, #0f172a)',
+            fontWeight: 600,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            width: 'fit-content'
+          }}>
+            <span>👍 Community Supporters:</span> <strong>{supportCount}</strong>
+          </div>
 
           <p style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>
             <strong>Hazard Severity:</strong> {report.rating}/5 &bull; <strong>Description:</strong> {report.description}

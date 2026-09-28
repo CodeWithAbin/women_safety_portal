@@ -94,6 +94,15 @@ export const placeService = {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     return response.data;
+  },
+  supportPlace: async (id) => {
+    const response = await apiClient.post(`/api/places/${id}/support`);
+    return response.data;
+  },
+  checkSimilar: async ({ state, district, address, name }) => {
+    const params = { state, district, address, name };
+    const response = await apiClient.get('/api/places/check-similar', { params });
+    return response.data;
   }
 };
 

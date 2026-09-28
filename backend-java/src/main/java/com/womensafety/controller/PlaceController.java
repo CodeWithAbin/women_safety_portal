@@ -25,19 +25,41 @@ public class PlaceController {
         this.placeService = placeService;
     }
 
-    // 4. Browse accepted hazardous places filtered by State, District, Search, MinRating & Sort (Authenticated)
+    // Browse accepted hazardous places filtered by State, District, Search, MinRating & Sort (Authenticated/Public)
     @GetMapping
     public ResponseEntity<ApiResponse<List<Place>>> getPlaces(
             @RequestParam(required = false) String state,
             @RequestParam(required = false) String district,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Integer minRating,
-            @RequestParam(required = false) String sort) {
-        ApiResponse<List<Place>> response = placeService.getPlaces(state, district, search, minRating, sort);
+            @RequestParam(required = false) String sort,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        ApiResponse<List<Place>> response = placeService.getPlaces(state, district, search, minRating, sort, principal);
         return ResponseEntity.ok(response);
     }
 
-    // 5. Submit a place report for review with photo upload (Authenticated)
+    // Check if similar accepted report already exists for a location + problem statement
+    @GetMapping("/check-similar")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> checkSimilar(
+            @RequestParam(required = false) String state,
+            @RequestParam(required = false) String district,
+            @RequestParam(required = false) String address,
+            @RequestParam(required = false) String name,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        ApiResponse<Map<String, Object>> response = placeService.checkSimilar(state, district, address, name, principal);
+        return ResponseEntity.ok(response);
+    }
+
+    // Community support for a report ("I Support This Report")
+    @PostMapping("/{id}/support")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> supportPlace(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        ApiResponse<Map<String, Object>> response = placeService.supportPlace(id, principal);
+        return ResponseEntity.ok(response);
+    }
+
+    // Submit a place report for review with photo upload (Authenticated)
     @PostMapping(value = "/report", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_OCTET_STREAM_VALUE})
     public ResponseEntity<ApiResponse<Map<String, Object>>> reportPlace(
             @ModelAttribute PlaceReportRequest req,

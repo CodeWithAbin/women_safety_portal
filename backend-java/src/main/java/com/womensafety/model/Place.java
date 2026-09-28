@@ -30,6 +30,12 @@ public class Place {
     @JsonProperty("rating_count")
     private Integer ratingCount;
 
+    @JsonProperty("support_count")
+    private Integer supportCount;
+
+    @JsonProperty("has_supported")
+    private Boolean hasSupported;
+
     // Joined fields for admin views
     @JsonProperty("reporter_name")
     private String reporterName;
@@ -92,4 +98,10 @@ public class Place {
 
     public Integer getRatingCount() { return ratingCount; }
     public void setRatingCount(Integer ratingCount) { this.ratingCount = ratingCount; }
+
+    public Integer getSupportCount() { return supportCount != null ? supportCount : 0; }
+    public void setSupportCount(Integer supportCount) { this.supportCount = supportCount; }
+
+    public Boolean getHasSupported() { return hasSupported != null ? hasSupported : false; }
+    public void setHasSupported(Boolean hasSupported) { this.hasSupported = hasSupported; }
 }

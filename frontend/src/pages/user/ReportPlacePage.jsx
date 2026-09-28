@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { placeService } from '../../services/api';
+import { placeService, getPhotoUrl } from '../../services/api';
 import StateDistrictSelector from '../../components/StateDistrictSelector';
 import AlertBanner from '../../components/AlertBanner';
 
@@ -19,6 +19,10 @@ const ReportPlacePage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  // Similar report state for community prompt
+  const [similarReport, setSimilarReport] = useState(null);
+  const [supportingExisting, setSupportingExisting] = useState(false);
 
   const handleFieldChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -43,6 +47,48 @@ const ReportPlacePage = () => {
     setPhotoPreview(URL.createObjectURL(file));
   };
 
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      address: '',
+      state: user?.state || 'Kerala',
+      district: user?.district || 'Ernakulam',
+      rating: 4,
+      description: ''
+    });
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    setSimilarReport(null);
+  };
+
+  const publishReportDirectly = async () => {
+    setLoading(true);
+    setError('');
+    setSuccessMsg('');
+    setSimilarReport(null);
+
+    try {
+      const data = new FormData();
+      data.append('name', formData.name);
+      data.append('address', formData.address);
+      data.append('state', formData.state);
+      data.append('district', formData.district);
+      data.append('rating', formData.rating);
+      data.append('description', formData.description);
+      data.append('photo', photoFile);
+
+      const res = await placeService.reportPlace(data);
+      if (res.success) {
+        setSuccessMsg('Your report has been submitted and is waiting for admin review.');
+        resetForm();
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Failed to submit report.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -61,34 +107,42 @@ const ReportPlacePage = () => {
     setLoading(true);
 
     try {
-      const data = new FormData();
-      data.append('name', formData.name);
-      data.append('address', formData.address);
-      data.append('state', formData.state);
-      data.append('district', formData.district);
-      data.append('rating', formData.rating);
-      data.append('description', formData.description);
-      data.append('photo', photoFile);
+      // Safe matching check for similar accepted report
+      const similarCheck = await placeService.checkSimilar({
+        state: formData.state,
+        district: formData.district,
+        address: formData.address,
+        name: formData.name
+      });
 
-      const res = await placeService.reportPlace(data);
+      if (similarCheck.success && similarCheck.data?.similar_found && similarCheck.data?.existing_report) {
+        setSimilarReport(similarCheck.data.existing_report);
+        setLoading(false);
+        return;
+      }
+
+      // No similar report, publish immediately
+      await publishReportDirectly();
+    } catch (err) {
+      console.warn('Similar report check error, proceeding to publish directly:', err);
+      await publishReportDirectly();
+    }
+  };
+
+  const handleSupportExisting = async () => {
+    if (!similarReport) return;
+    setSupportingExisting(true);
+    setError('');
+    try {
+      const res = await placeService.supportPlace(similarReport.id);
       if (res.success) {
-        setSuccessMsg('Your report has been submitted and is waiting for admin review.');
-        // Reset form
-        setFormData({
-          name: '',
-          address: '',
-          state: user?.state || 'Kerala',
-          district: user?.district || 'Ernakulam',
-          rating: 4,
-          description: ''
-        });
-        setPhotoFile(null);
-        setPhotoPreview(null);
+        setSuccessMsg(`Thank you! You have supported the existing report for "${similarReport.name}".`);
+        resetForm();
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to submit report.');
+      setError(err.response?.data?.message || err.message || 'Failed to support existing report.');
     } finally {
-      setLoading(false);
+      setSupportingExisting(false);
     }
   };
 
@@ -105,16 +159,101 @@ const ReportPlacePage = () => {
         {error && <AlertBanner type="error" message={error} onDismiss={() => setError('')} />}
         {successMsg && <AlertBanner type="success" message={successMsg} onDismiss={() => setSuccessMsg('')} />}
 
+        {/* Similar Report Prompt Modal / Alert */}
+        {similarReport && (
+          <div style={{
+            marginBottom: '1.75rem',
+            padding: '1.25rem',
+            backgroundColor: '#eff6ff',
+            borderRadius: 'var(--radius-md, 8px)',
+            border: '1.5px solid #3b82f6',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+              <span style={{ fontSize: '1.4rem' }}>💡</span>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e40af', margin: 0 }}>
+                Similar Report Found at This Location
+              </h3>
+            </div>
+
+            <p style={{ fontSize: '0.9rem', color: '#1e3a8a', marginBottom: '1rem', lineHeight: '1.5' }}>
+              A similar report already exists at this location. You can support the existing report to help raise priority, or continue publishing your own report.
+            </p>
+
+            <div style={{
+              backgroundColor: '#ffffff',
+              padding: '1rem',
+              borderRadius: '6px',
+              border: '1px solid #bfdbfe',
+              marginBottom: '1.25rem'
+            }}>
+              <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--primary-navy, #0f172a)', marginBottom: '0.35rem' }}>
+                🚨 {similarReport.name}
+              </div>
+              <div style={{ fontSize: '0.85rem', color: '#475569', marginBottom: '0.35rem' }}>
+                📍 {similarReport.address}, {similarReport.district}, {similarReport.state}
+              </div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#16a34a' }}>
+                👍 {similarReport.support_count || 0} {(similarReport.support_count === 1) ? 'person supports' : 'people support'} this report
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleSupportExisting}
+                disabled={supportingExisting}
+                style={{
+                  backgroundColor: '#2563eb',
+                  borderColor: '#2563eb',
+                  fontWeight: 600,
+                  padding: '0.6rem 1rem'
+                }}
+              >
+                {supportingExisting ? 'Supporting...' : '👍 I Support This Report'}
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={publishReportDirectly}
+                disabled={loading}
+                style={{
+                  fontWeight: 600,
+                  padding: '0.6rem 1rem'
+                }}
+              >
+                {loading ? 'Publishing...' : 'Continue Publishing My Report'}
+              </button>
+
+              <button
+                type="button"
+                className="btn"
+                onClick={() => setSimilarReport(null)}
+                style={{
+                  backgroundColor: 'transparent',
+                  color: '#64748b',
+                  fontSize: '0.85rem',
+                  padding: '0.6rem 0.75rem'
+                }}
+              >
+                Modify Report
+              </button>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label" htmlFor="placeName">
-              Place Name / Title <span className="required">*</span>
+              Problem Statement / Place Title <span className="required">*</span>
             </label>
             <input
               id="placeName"
               type="text"
               className="form-control"
-              placeholder="e.g. Unlit Underpass near Metro Gate 2"
+              placeholder="e.g. Spotted attackers on the street / Broken street lights"
               value={formData.name}
               onChange={(e) => handleFieldChange('name', e.target.value)}
               required
@@ -129,7 +268,7 @@ const ReportPlacePage = () => {
               id="address"
               type="text"
               className="form-control"
-              placeholder="e.g. MG Road, Pillar 104, Behind Bus Stop"
+              placeholder="e.g. Thrissur Swaraj Road, Near Bus Stand"
               value={formData.address}
               onChange={(e) => handleFieldChange('address', e.target.value)}
               required
@@ -169,7 +308,7 @@ const ReportPlacePage = () => {
             <textarea
               id="description"
               className="form-control"
-              placeholder="Describe the hazard (e.g. completely unlit after 7 PM, lack of security, frequent anti-social gatherings)..."
+              placeholder="Describe the problem (e.g. attackers spotted hiding behind trees after 8 PM, lack of streetlights)..."
               value={formData.description}
               onChange={(e) => handleFieldChange('description', e.target.value)}
               required
@@ -202,10 +341,10 @@ const ReportPlacePage = () => {
           <button
             type="submit"
             className="btn btn-primary btn-block"
-            disabled={loading}
+            disabled={loading || Boolean(similarReport)}
             style={{ marginTop: '1.25rem', padding: '0.85rem' }}
           >
-            {loading ? 'Submitting Report...' : 'Submit Report for Review'}
+            {loading ? 'Checking & Submitting...' : 'Submit Report for Review'}
           </button>
         </form>
       </div>
