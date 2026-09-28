@@ -21,7 +21,24 @@ public class PlaceRepository {
     public Optional<Place> findById(Long id) {
         String sql = """
             SELECT 
-                p.id, p.name, p.address, p.state, p.district, p.photo, p.rating, p.description, 
+                p.id, p.name, p.address, p.state, p.district, p.photo, p.rating,
+                (
+                    SELECT ROUND(AVG(loc.rating), 1) 
+                    FROM places loc 
+                    WHERE LOWER(TRIM(loc.address)) = LOWER(TRIM(p.address)) 
+                      AND LOWER(TRIM(loc.state)) = LOWER(TRIM(p.state)) 
+                      AND LOWER(TRIM(loc.district)) = LOWER(TRIM(p.district))
+                      AND loc.status = 'accepted'
+                ) AS community_rating,
+                (
+                    SELECT COUNT(loc.rating) 
+                    FROM places loc 
+                    WHERE LOWER(TRIM(loc.address)) = LOWER(TRIM(p.address)) 
+                      AND LOWER(TRIM(loc.state)) = LOWER(TRIM(p.state)) 
+                      AND LOWER(TRIM(loc.district)) = LOWER(TRIM(p.district))
+                      AND loc.status = 'accepted'
+                ) AS rating_count,
+                p.description, 
                 p.status, p.submitted_by, p.created_at, p.updated_at,
                 (SELECT COUNT(*) FROM report_supports rs WHERE rs.report_id = p.id) AS support_count
             FROM places p 
@@ -40,8 +57,22 @@ public class PlaceRepository {
                 p.district,
                 p.photo,
                 p.rating,
-                p.rating AS community_rating,
-                1 AS rating_count,
+                (
+                    SELECT ROUND(AVG(loc.rating), 1) 
+                    FROM places loc 
+                    WHERE LOWER(TRIM(loc.address)) = LOWER(TRIM(p.address)) 
+                      AND LOWER(TRIM(loc.state)) = LOWER(TRIM(p.state)) 
+                      AND LOWER(TRIM(loc.district)) = LOWER(TRIM(p.district))
+                      AND loc.status = 'accepted'
+                ) AS community_rating,
+                (
+                    SELECT COUNT(loc.rating) 
+                    FROM places loc 
+                    WHERE LOWER(TRIM(loc.address)) = LOWER(TRIM(p.address)) 
+                      AND LOWER(TRIM(loc.state)) = LOWER(TRIM(p.state)) 
+                      AND LOWER(TRIM(loc.district)) = LOWER(TRIM(p.district))
+                      AND loc.status = 'accepted'
+                ) AS rating_count,
                 p.description,
                 p.status,
                 p.submitted_by,
@@ -72,14 +103,41 @@ public class PlaceRepository {
         }
 
         if (minRating != null) {
-            sql.append(" AND p.rating >= ?");
+            sql.append("""
+                 AND (
+                     SELECT AVG(loc.rating) 
+                     FROM places loc 
+                     WHERE LOWER(TRIM(loc.address)) = LOWER(TRIM(p.address)) 
+                       AND LOWER(TRIM(loc.state)) = LOWER(TRIM(p.state)) 
+                       AND LOWER(TRIM(loc.district)) = LOWER(TRIM(p.district))
+                       AND loc.status = 'accepted'
+                 ) >= ?
+            """);
             args.add(minRating);
         }
 
         if ("rating_desc".equalsIgnoreCase(sort)) {
-            sql.append(" ORDER BY p.rating DESC, p.created_at DESC, p.id DESC");
+            sql.append("""
+                 ORDER BY (
+                     SELECT AVG(loc.rating) 
+                     FROM places loc 
+                     WHERE LOWER(TRIM(loc.address)) = LOWER(TRIM(p.address)) 
+                       AND LOWER(TRIM(loc.state)) = LOWER(TRIM(p.state)) 
+                       AND LOWER(TRIM(loc.district)) = LOWER(TRIM(p.district))
+                       AND loc.status = 'accepted'
+                 ) DESC, p.created_at DESC, p.id DESC
+            """);
         } else if ("rating_asc".equalsIgnoreCase(sort)) {
-            sql.append(" ORDER BY p.rating ASC, p.created_at DESC, p.id DESC");
+            sql.append("""
+                 ORDER BY (
+                     SELECT AVG(loc.rating) 
+                     FROM places loc 
+                     WHERE LOWER(TRIM(loc.address)) = LOWER(TRIM(p.address)) 
+                       AND LOWER(TRIM(loc.state)) = LOWER(TRIM(p.state)) 
+                       AND LOWER(TRIM(loc.district)) = LOWER(TRIM(p.district))
+                       AND loc.status = 'accepted'
+                 ) ASC, p.created_at DESC, p.id DESC
+            """);
         } else if ("newest".equalsIgnoreCase(sort)) {
             sql.append(" ORDER BY p.created_at DESC, p.id DESC");
         } else {
@@ -94,7 +152,24 @@ public class PlaceRepository {
     public List<Place> findReports(String status) {
         StringBuilder sql = new StringBuilder("""
             SELECT 
-                p.id, p.name, p.address, p.state, p.district, p.photo, p.rating, p.description, 
+                p.id, p.name, p.address, p.state, p.district, p.photo, p.rating,
+                (
+                    SELECT ROUND(AVG(loc.rating), 1) 
+                    FROM places loc 
+                    WHERE LOWER(TRIM(loc.address)) = LOWER(TRIM(p.address)) 
+                      AND LOWER(TRIM(loc.state)) = LOWER(TRIM(p.state)) 
+                      AND LOWER(TRIM(loc.district)) = LOWER(TRIM(p.district))
+                      AND loc.status = 'accepted'
+                ) AS community_rating,
+                (
+                    SELECT COUNT(loc.rating) 
+                    FROM places loc 
+                    WHERE LOWER(TRIM(loc.address)) = LOWER(TRIM(p.address)) 
+                      AND LOWER(TRIM(loc.state)) = LOWER(TRIM(p.state)) 
+                      AND LOWER(TRIM(loc.district)) = LOWER(TRIM(p.district))
+                      AND loc.status = 'accepted'
+                ) AS rating_count,
+                p.description, 
                 p.status, p.submitted_by, p.created_at, p.updated_at,
                 u.name AS reporter_name, u.email AS reporter_email, u.phone AS reporter_phone,
                 (SELECT COUNT(*) FROM report_supports rs WHERE rs.report_id = p.id) AS support_count
@@ -125,8 +200,22 @@ public class PlaceRepository {
                 p.district,
                 p.photo,
                 p.rating,
-                p.rating AS community_rating,
-                1 AS rating_count,
+                (
+                    SELECT ROUND(AVG(loc.rating), 1) 
+                    FROM places loc 
+                    WHERE LOWER(TRIM(loc.address)) = LOWER(TRIM(p.address)) 
+                      AND LOWER(TRIM(loc.state)) = LOWER(TRIM(p.state)) 
+                      AND LOWER(TRIM(loc.district)) = LOWER(TRIM(p.district))
+                      AND loc.status = 'accepted'
+                ) AS community_rating,
+                (
+                    SELECT COUNT(loc.rating) 
+                    FROM places loc 
+                    WHERE LOWER(TRIM(loc.address)) = LOWER(TRIM(p.address)) 
+                      AND LOWER(TRIM(loc.state)) = LOWER(TRIM(p.state)) 
+                      AND LOWER(TRIM(loc.district)) = LOWER(TRIM(p.district))
+                      AND loc.status = 'accepted'
+                ) AS rating_count,
                 p.description,
                 p.status,
                 p.submitted_by,
@@ -158,14 +247,41 @@ public class PlaceRepository {
         }
 
         if (minRating != null) {
-            sql.append(" AND p.rating >= ?");
+            sql.append("""
+                 AND (
+                     SELECT AVG(loc.rating) 
+                     FROM places loc 
+                     WHERE LOWER(TRIM(loc.address)) = LOWER(TRIM(p.address)) 
+                       AND LOWER(TRIM(loc.state)) = LOWER(TRIM(p.state)) 
+                       AND LOWER(TRIM(loc.district)) = LOWER(TRIM(p.district))
+                       AND loc.status = 'accepted'
+                 ) >= ?
+            """);
             args.add(minRating);
         }
 
         if ("rating_desc".equalsIgnoreCase(sort)) {
-            sql.append(" ORDER BY p.rating DESC, p.created_at DESC, p.id DESC");
+            sql.append("""
+                 ORDER BY (
+                     SELECT AVG(loc.rating) 
+                     FROM places loc 
+                     WHERE LOWER(TRIM(loc.address)) = LOWER(TRIM(p.address)) 
+                       AND LOWER(TRIM(loc.state)) = LOWER(TRIM(p.state)) 
+                       AND LOWER(TRIM(loc.district)) = LOWER(TRIM(p.district))
+                       AND loc.status = 'accepted'
+                 ) DESC, p.created_at DESC, p.id DESC
+            """);
         } else if ("rating_asc".equalsIgnoreCase(sort)) {
-            sql.append(" ORDER BY p.rating ASC, p.created_at DESC, p.id DESC");
+            sql.append("""
+                 ORDER BY (
+                     SELECT AVG(loc.rating) 
+                     FROM places loc 
+                     WHERE LOWER(TRIM(loc.address)) = LOWER(TRIM(p.address)) 
+                       AND LOWER(TRIM(loc.state)) = LOWER(TRIM(p.state)) 
+                       AND LOWER(TRIM(loc.district)) = LOWER(TRIM(p.district))
+                       AND loc.status = 'accepted'
+                 ) ASC, p.created_at DESC, p.id DESC
+            """);
         } else if ("newest".equalsIgnoreCase(sort)) {
             sql.append(" ORDER BY p.created_at DESC, p.id DESC");
         } else {
@@ -205,7 +321,24 @@ public class PlaceRepository {
         String normalizedName = normalizeText(name);
 
         String sql = """
-            SELECT id, name, address, state, district, photo, rating, description, status, submitted_by, created_at, updated_at,
+            SELECT id, name, address, state, district, photo, rating,
+                   (
+                       SELECT ROUND(AVG(loc.rating), 1) 
+                       FROM places loc 
+                       WHERE LOWER(TRIM(loc.address)) = LOWER(TRIM(places.address)) 
+                         AND LOWER(TRIM(loc.state)) = LOWER(TRIM(places.state)) 
+                         AND LOWER(TRIM(loc.district)) = LOWER(TRIM(places.district))
+                         AND loc.status = 'accepted'
+                   ) AS community_rating,
+                   (
+                       SELECT COUNT(loc.rating) 
+                       FROM places loc 
+                       WHERE LOWER(TRIM(loc.address)) = LOWER(TRIM(places.address)) 
+                         AND LOWER(TRIM(loc.state)) = LOWER(TRIM(places.state)) 
+                         AND LOWER(TRIM(loc.district)) = LOWER(TRIM(places.district))
+                         AND loc.status = 'accepted'
+                   ) AS rating_count,
+                   description, status, submitted_by, created_at, updated_at,
                    (SELECT COUNT(*) FROM report_supports rs WHERE rs.report_id = places.id) AS support_count
             FROM places
             WHERE status = 'accepted'

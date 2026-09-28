@@ -12,6 +12,7 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onSupportSuccess 
       ? Number(place.rating).toFixed(1)
       : 'N/A';
 
+  const ratingCount = place.rating_count || 1;
   const numRating = Number(communityRating);
 
   const getRatingBadge = (score) => {
@@ -74,20 +75,39 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onSupportSuccess 
           <span>📍</span> {place.address}, {place.district}, {place.state}
         </p>
 
-        {/* Community Report Support Bar */}
+        {/* Feature 1 — Community Safety Rating for physical location */}
         <div style={{
-          margin: '0.5rem 0',
-          padding: '0.6rem 0.75rem',
+          margin: '0.4rem 0',
+          padding: '0.5rem 0.75rem',
           backgroundColor: 'var(--bg-subtle, #f8fafc)',
           borderRadius: 'var(--radius-sm, 6px)',
           border: '1px solid var(--border-light, #e2e8f0)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.2rem'
+        }}>
+          <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--primary-navy, #0f172a)' }}>
+            ⭐ Community Safety Rating: <strong>{communityRating} / 5</strong>
+          </div>
+          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted, #64748b)' }}>
+            Based on {ratingCount} community rating{ratingCount > 1 ? 's' : ''}
+          </div>
+        </div>
+
+        {/* Feature 2 — Community Problem Report Support */}
+        <div style={{
+          margin: '0.4rem 0 0.6rem 0',
+          padding: '0.55rem 0.75rem',
+          backgroundColor: '#fdf2f8',
+          borderRadius: 'var(--radius-sm, 6px)',
+          border: '1px solid #fbcfe8',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
           gap: '0.5rem'
         }}>
-          <div style={{ fontSize: '0.86rem', fontWeight: 600, color: 'var(--primary-navy, #0f172a)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#9d174d', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
             <span>👍</span>
             <span>{supportCount} {supportCount === 1 ? 'person supports' : 'people support'} this report</span>
           </div>
