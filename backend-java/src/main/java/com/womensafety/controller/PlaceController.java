@@ -2,6 +2,7 @@ package com.womensafety.controller;
 
 import com.womensafety.model.Place;
 import com.womensafety.model.dto.ApiResponse;
+import com.womensafety.model.dto.PlaceRateRequest;
 import com.womensafety.model.dto.PlaceReportRequest;
 import com.womensafety.security.UserPrincipal;
 import com.womensafety.service.PlaceService;
@@ -50,12 +51,17 @@ public class PlaceController {
         return ResponseEntity.ok(response);
     }
 
-    // Community support for a report ("I Support This Report")
-    @PostMapping("/{id}/support")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> supportPlace(
+    // Rate a place (Community Safety Rating: 1-5 stars)
+    @PostMapping("/{id}/rate")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> ratePlace(
             @PathVariable Long id,
+            @RequestBody PlaceRateRequest req,
             @AuthenticationPrincipal UserPrincipal principal) {
-        ApiResponse<Map<String, Object>> response = placeService.supportPlace(id, principal);
+        ApiResponse<Map<String, Object>> response = placeService.ratePlace(
+                id,
+                req != null ? req.getRating() : null,
+                principal
+        );
         return ResponseEntity.ok(response);
     }
 

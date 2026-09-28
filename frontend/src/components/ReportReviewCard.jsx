@@ -3,7 +3,6 @@ import { getPhotoUrl } from '../services/api';
 
 const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
   const isProcessing = processingId === report.id;
-  const supportCount = report.support_count != null ? report.support_count : 0;
 
   const formattedDate = report.created_at
     ? new Date(report.created_at).toLocaleString(undefined, {
@@ -46,24 +45,8 @@ const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
             📍 <strong>Location:</strong> {report.address}, {report.district}, {report.state}
           </p>
 
-          <div style={{
-            padding: '0.4rem 0.6rem',
-            backgroundColor: 'var(--bg-subtle, #f8fafc)',
-            borderRadius: 'var(--radius-sm, 4px)',
-            border: '1px solid var(--border-light, #e2e8f0)',
-            fontSize: '0.85rem',
-            color: 'var(--primary-navy, #0f172a)',
-            fontWeight: 600,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.35rem',
-            width: 'fit-content'
-          }}>
-            <span>👍 Community Supporters:</span> <strong>{supportCount}</strong>
-          </div>
-
           <p style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>
-            <strong>Hazard Severity:</strong> {report.rating}/5 &bull; <strong>Description:</strong> {report.description}
+            <strong>Hazard Severity Rating:</strong> {report.rating}/5 &bull; <strong>Description:</strong> {report.description}
           </p>
 
           <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', marginTop: 'auto' }}>

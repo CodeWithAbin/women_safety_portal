@@ -95,8 +95,8 @@ export const placeService = {
     });
     return response.data;
   },
-  supportPlace: async (id) => {
-    const response = await apiClient.post(`/api/places/${id}/support`);
+  ratePlace: async (id, rating) => {
+    const response = await apiClient.post(`/api/places/${id}/rate`, { rating });
     return response.data;
   },
   checkSimilar: async ({ state, district, address, name }) => {

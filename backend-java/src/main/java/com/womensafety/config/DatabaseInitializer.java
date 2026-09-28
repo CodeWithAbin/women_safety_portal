@@ -72,16 +72,18 @@ public class DatabaseInitializer {
                 );
             """);
 
-            // 4. Report Supports Table
+            // 4. Place Ratings Table
             tursoClient.update("""
-                CREATE TABLE IF NOT EXISTS report_supports (
+                CREATE TABLE IF NOT EXISTS place_ratings (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    report_id INTEGER NOT NULL,
+                    place_id INTEGER NOT NULL,
                     user_id INTEGER NOT NULL,
+                    rating INTEGER NOT NULL,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (report_id) REFERENCES places(id) ON DELETE CASCADE,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE CASCADE,
                     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-                    UNIQUE(report_id, user_id)
+                    UNIQUE(place_id, user_id)
                 );
             """);
 
@@ -89,7 +91,10 @@ public class DatabaseInitializer {
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_places_state_district_status ON places (state, district, status);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications (user_id, is_read);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);");
-            tursoClient.update("CREATE INDEX IF NOT EXISTS idx_report_supports_report_user ON report_supports (report_id, user_id);");
+            tursoClient.update("CREATE INDEX IF NOT EXISTS idx_place_ratings_place_user ON place_ratings (place_id, user_id);");
+
+            // Populate initial ratings from existing places if not already seeded
+            tursoClient.update("INSERT OR IGNORE INTO place_ratings (place_id, user_id, rating) SELECT id, submitted_by, rating FROM places WHERE submitted_by IS NOT NULL;");
 
             log.info("Database schema initialized successfully.");
         } catch (Exception e) {

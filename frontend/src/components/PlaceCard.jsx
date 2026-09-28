@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
 import { getPhotoUrl, placeService } from '../services/api';
 
-const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onSupportSuccess }) => {
-  const [supportCount, setSupportCount] = useState(place.support_count != null ? place.support_count : 0);
-  const [hasSupported, setHasSupported] = useState(place.has_supported === true);
-  const [supporting, setSupporting] = useState(false);
+const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onRatingSuccess }) => {
+  const [communityRating, setCommunityRating] = useState(
+    place.community_rating != null ? Number(place.community_rating).toFixed(1) : place.rating != null ? Number(place.rating).toFixed(1) : 'N/A'
+  );
+  const [ratingCount, setRatingCount] = useState(place.rating_count != null ? place.rating_count : 1);
+  const [userRating, setUserRating] = useState(place.user_rating != null ? place.user_rating : null);
+  const [hasRated, setHasRated] = useState(place.has_rated === true || place.user_rating != null);
 
-  const communityRating = place.community_rating != null
-    ? Number(place.community_rating).toFixed(1)
-    : place.rating != null
-      ? Number(place.rating).toFixed(1)
-      : 'N/A';
+  const [showRatingSelector, setShowRatingSelector] = useState(false);
+  const [selectedRating, setSelectedRating] = useState(place.user_rating || 4);
+  const [submittingRating, setSubmittingRating] = useState(false);
+  const [ratingFeedback, setRatingFeedback] = useState('');
 
-  const ratingCount = place.rating_count || 1;
   const numRating = Number(communityRating);
 
   const getRatingBadge = (score) => {
@@ -30,26 +31,33 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onSupportSuccess 
       })
     : null;
 
-  const handleSupportClick = async () => {
-    if (hasSupported || supporting || isAdmin) return;
-    setSupporting(true);
+  const handleRatingSubmit = async (e) => {
+    if (e) e.preventDefault();
+    if (submittingRating || isAdmin) return;
+    setSubmittingRating(true);
+    setRatingFeedback('');
     try {
-      const res = await placeService.supportPlace(place.id);
+      const res = await placeService.ratePlace(place.id, selectedRating);
       if (res.success) {
-        setHasSupported(true);
-        if (res.data?.support_count != null) {
-          setSupportCount(res.data.support_count);
-        } else {
-          setSupportCount((prev) => prev + 1);
+        if (res.data?.community_rating != null) {
+          setCommunityRating(Number(res.data.community_rating).toFixed(1));
         }
-        if (onSupportSuccess) {
-          onSupportSuccess(place.id);
+        if (res.data?.rating_count != null) {
+          setRatingCount(res.data.rating_count);
+        }
+        setUserRating(selectedRating);
+        setHasRated(true);
+        setShowRatingSelector(false);
+        setRatingFeedback('Rating saved!');
+        setTimeout(() => setRatingFeedback(''), 3000);
+        if (onRatingSuccess) {
+          onRatingSuccess(place.id, res.data);
         }
       }
     } catch (err) {
-      console.error('Failed to support report:', err);
+      setRatingFeedback(err.response?.data?.message || 'Failed to submit rating.');
     } finally {
-      setSupporting(false);
+      setSubmittingRating(false);
     }
   };
 
@@ -75,64 +83,97 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onSupportSuccess 
           <span>📍</span> {place.address}, {place.district}, {place.state}
         </p>
 
-        {/* Feature 1 — Community Safety Rating for physical location */}
+        {/* Community Safety Rating Display */}
         <div style={{
-          margin: '0.4rem 0',
-          padding: '0.5rem 0.75rem',
+          margin: '0.5rem 0',
+          padding: '0.6rem 0.75rem',
           backgroundColor: 'var(--bg-subtle, #f8fafc)',
           borderRadius: 'var(--radius-sm, 6px)',
           border: '1px solid var(--border-light, #e2e8f0)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '0.2rem'
+          gap: '0.35rem'
         }}>
-          <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--primary-navy, #0f172a)' }}>
-            ⭐ Community Safety Rating: <strong>{communityRating} / 5</strong>
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted, #64748b)' }}>
-            Based on {ratingCount} community rating{ratingCount > 1 ? 's' : ''}
-          </div>
-        </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.4rem' }}>
+            <div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--primary-navy, #0f172a)' }}>
+                ⭐ Community Safety Rating: <strong>{communityRating} / 5</strong>
+              </div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted, #64748b)' }}>
+                Based on {ratingCount} community rating{ratingCount === 1 ? '' : 's'}
+              </div>
+            </div>
 
-        {/* Feature 2 — Community Problem Report Support */}
-        <div style={{
-          margin: '0.4rem 0 0.6rem 0',
-          padding: '0.55rem 0.75rem',
-          backgroundColor: '#fdf2f8',
-          borderRadius: 'var(--radius-sm, 6px)',
-          border: '1px solid #fbcfe8',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '0.5rem'
-        }}>
-          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#9d174d', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <span>👍</span>
-            <span>{supportCount} {supportCount === 1 ? 'person supports' : 'people support'} this report</span>
+            {!isAdmin && (
+              <button
+                type="button"
+                className="btn btn-sm"
+                onClick={() => setShowRatingSelector((prev) => !prev)}
+                style={{
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  padding: '0.35rem 0.65rem',
+                  borderRadius: '4px',
+                  backgroundColor: hasRated ? '#f0fdf4' : '#fff1f2',
+                  color: hasRated ? '#166534' : 'var(--primary-pink, #ec4899)',
+                  border: hasRated ? '1px solid #86efac' : '1px solid #fecdd3'
+                }}
+              >
+                {hasRated ? `⭐ Your Rating: ${userRating}★ (Edit)` : '⭐ Rate This Place'}
+              </button>
+            )}
           </div>
 
-          {!isAdmin && (
-            <button
-              type="button"
-              className="btn btn-sm"
-              onClick={handleSupportClick}
-              disabled={supporting || hasSupported}
-              style={{
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                padding: '0.3rem 0.65rem',
-                borderRadius: '4px',
-                cursor: hasSupported ? 'default' : 'pointer',
-                transition: 'all 0.2s ease',
-                backgroundColor: hasSupported ? '#dcfce7' : 'var(--primary-pink, #ec4899)',
-                color: hasSupported ? '#15803d' : '#ffffff',
-                border: hasSupported ? '1px solid #86efac' : 'none',
-                boxShadow: hasSupported ? 'none' : '0 1px 2px rgba(0,0,0,0.05)'
-              }}
-            >
-              {supporting ? 'Supporting...' : hasSupported ? '✓ Supported' : '👍 I Support This Report'}
-            </button>
+          {/* Interactive Rating Selector */}
+          {!isAdmin && showRatingSelector && (
+            <div style={{
+              marginTop: '0.5rem',
+              paddingTop: '0.5rem',
+              borderTop: '1px dashed var(--border-light, #e2e8f0)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.4rem'
+            }}>
+              <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-navy, #0f172a)' }}>
+                Select Safety Rating (1 = Low, 5 = Severe Hazard):
+              </div>
+              <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setSelectedRating(star)}
+                    style={{
+                      padding: '0.3rem 0.55rem',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      border: selectedRating === star ? '1.5px solid var(--primary-pink, #ec4899)' : '1px solid #cbd5e1',
+                      backgroundColor: selectedRating === star ? '#fdf2f8' : '#ffffff',
+                      color: selectedRating === star ? 'var(--primary-pink, #ec4899)' : '#334155'
+                    }}
+                  >
+                    {star} ★
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={handleRatingSubmit}
+                  disabled={submittingRating}
+                  style={{ marginLeft: 'auto', padding: '0.3rem 0.65rem', fontSize: '0.8rem' }}
+                >
+                  {submittingRating ? 'Saving...' : 'Submit Rating'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {ratingFeedback && (
+            <div style={{ fontSize: '0.78rem', color: '#16a34a', fontWeight: 600, marginTop: '0.2rem' }}>
+              {ratingFeedback}
+            </div>
           )}
         </div>
 

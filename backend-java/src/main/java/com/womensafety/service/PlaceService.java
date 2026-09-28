@@ -45,26 +45,33 @@ public class PlaceService {
         return response;
     }
 
-    public ApiResponse<Map<String, Object>> supportPlace(Long placeId, UserPrincipal principal) {
+    public ApiResponse<Map<String, Object>> ratePlace(Long placeId, Integer rating, UserPrincipal principal) {
         if (placeId == null) {
             throw new BadRequestException("Place ID is required.");
         }
         if (principal == null) {
-            throw new BadRequestException("Authentication is required to support a report.");
+            throw new BadRequestException("Authentication is required to rate a place.");
+        }
+        if (rating == null || rating < 1 || rating > 5) {
+            throw new BadRequestException("Rating must be an integer between 1 and 5.");
         }
 
-        Place place = placeRepository.findById(placeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Report not found with id " + placeId));
+        Place place = placeRepository.findById(placeId, principal.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Place not found with id " + placeId));
 
-        placeRepository.addSupport(place.getId(), principal.getId());
-        int newCount = placeRepository.getSupportCount(place.getId());
+        placeRepository.upsertRating(place.getId(), principal.getId(), rating);
+
+        double updatedCommunityRating = placeRepository.getCommunityRating(place.getId());
+        int updatedRatingCount = placeRepository.getRatingCount(place.getId());
 
         Map<String, Object> data = new LinkedHashMap<>();
-        data.put("report_id", place.getId());
-        data.put("support_count", newCount);
-        data.put("has_supported", true);
+        data.put("place_id", place.getId());
+        data.put("community_rating", updatedCommunityRating);
+        data.put("rating_count", updatedRatingCount);
+        data.put("user_rating", rating);
+        data.put("has_rated", true);
 
-        return ApiResponse.success("You supported this community report.", data);
+        return ApiResponse.success("Your rating has been saved successfully.", data);
     }
 
     public ApiResponse<Map<String, Object>> checkSimilar(String state, String district, String address, String name, UserPrincipal principal) {
@@ -74,7 +81,11 @@ public class PlaceService {
         if (similarOpt.isPresent()) {
             Place similar = similarOpt.get();
             if (principal != null) {
-                similar.setHasSupported(placeRepository.hasUserSupported(similar.getId(), principal.getId()));
+                placeRepository.getUserRating(similar.getId(), principal.getId())
+                        .ifPresent(r -> {
+                            similar.setUserRating(r);
+                            similar.setHasRated(true);
+                        });
             }
             data.put("similar_found", true);
             data.put("existing_report", similar);
@@ -122,10 +133,6 @@ public class PlaceService {
                 req.getDescription().trim(),
                 principal != null ? principal.getId() : null
         );
-
-        if (principal != null && placeId != null) {
-            placeRepository.addSupport(placeId, principal.getId());
-        }
 
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("id", placeId);

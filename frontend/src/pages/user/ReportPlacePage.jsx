@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { placeService, getPhotoUrl } from '../../services/api';
+import { placeService } from '../../services/api';
 import StateDistrictSelector from '../../components/StateDistrictSelector';
 import AlertBanner from '../../components/AlertBanner';
 
@@ -22,7 +22,7 @@ const ReportPlacePage = () => {
 
   // Similar report state for community prompt
   const [similarReport, setSimilarReport] = useState(null);
-  const [supportingExisting, setSupportingExisting] = useState(false);
+  const [ratingExisting, setRatingExisting] = useState(false);
 
   const handleFieldChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -129,22 +129,28 @@ const ReportPlacePage = () => {
     }
   };
 
-  const handleSupportExisting = async () => {
+  const handleRateExisting = async () => {
     if (!similarReport) return;
-    setSupportingExisting(true);
+    setRatingExisting(true);
     setError('');
     try {
-      const res = await placeService.supportPlace(similarReport.id);
+      const res = await placeService.ratePlace(similarReport.id, formData.rating);
       if (res.success) {
-        setSuccessMsg(`Thank you! You have supported the existing report for "${similarReport.name}".`);
+        setSuccessMsg(`Thank you! Your safety rating for "${similarReport.name}" has been recorded.`);
         resetForm();
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to support existing report.');
+      setError(err.response?.data?.message || err.message || 'Failed to submit rating for existing report.');
     } finally {
-      setSupportingExisting(false);
+      setRatingExisting(false);
     }
   };
+
+  const existingCommunityRating = similarReport?.community_rating != null
+    ? Number(similarReport.community_rating).toFixed(1)
+    : similarReport?.rating != null
+      ? Number(similarReport.rating).toFixed(1)
+      : 'N/A';
 
   return (
     <div style={{ maxWidth: '680px', margin: '0 auto' }}>
@@ -177,7 +183,7 @@ const ReportPlacePage = () => {
             </div>
 
             <p style={{ fontSize: '0.9rem', color: '#1e3a8a', marginBottom: '1rem', lineHeight: '1.5' }}>
-              A similar report already exists at this location. You can support the existing report to help raise priority, or continue publishing your own report.
+              A similar report already exists at this location. You can rate the existing place with your rating ({formData.rating}★) or continue publishing your own report.
             </p>
 
             <div style={{
@@ -193,8 +199,8 @@ const ReportPlacePage = () => {
               <div style={{ fontSize: '0.85rem', color: '#475569', marginBottom: '0.35rem' }}>
                 📍 {similarReport.address}, {similarReport.district}, {similarReport.state}
               </div>
-              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#16a34a' }}>
-                👍 {similarReport.support_count || 0} {(similarReport.support_count === 1) ? 'person supports' : 'people support'} this report
+              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2563eb' }}>
+                ⭐ Community Safety Rating: {existingCommunityRating} / 5 ({similarReport.rating_count || 1} community rating{similarReport.rating_count === 1 ? '' : 's'})
               </div>
             </div>
 
@@ -202,8 +208,8 @@ const ReportPlacePage = () => {
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={handleSupportExisting}
-                disabled={supportingExisting}
+                onClick={handleRateExisting}
+                disabled={ratingExisting}
                 style={{
                   backgroundColor: '#2563eb',
                   borderColor: '#2563eb',
@@ -211,7 +217,7 @@ const ReportPlacePage = () => {
                   padding: '0.6rem 1rem'
                 }}
               >
-                {supportingExisting ? 'Supporting...' : '👍 I Support This Report'}
+                {ratingExisting ? 'Rating...' : `⭐ Rate Existing Place (${formData.rating}★)`}
               </button>
 
               <button

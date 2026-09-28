@@ -30,11 +30,11 @@ public class Place {
     @JsonProperty("rating_count")
     private Integer ratingCount;
 
-    @JsonProperty("support_count")
-    private Integer supportCount;
+    @JsonProperty("user_rating")
+    private Integer userRating;
 
-    @JsonProperty("has_supported")
-    private Boolean hasSupported;
+    @JsonProperty("has_rated")
+    private Boolean hasRated;
 
     // Joined fields for admin views
     @JsonProperty("reporter_name")
@@ -96,12 +96,12 @@ public class Place {
     public Double getCommunityRating() { return communityRating; }
     public void setCommunityRating(Double communityRating) { this.communityRating = communityRating; }
 
-    public Integer getRatingCount() { return ratingCount; }
+    public Integer getRatingCount() { return ratingCount != null ? ratingCount : 0; }
     public void setRatingCount(Integer ratingCount) { this.ratingCount = ratingCount; }
 
-    public Integer getSupportCount() { return supportCount != null ? supportCount : 0; }
-    public void setSupportCount(Integer supportCount) { this.supportCount = supportCount; }
+    public Integer getUserRating() { return userRating; }
+    public void setUserRating(Integer userRating) { this.userRating = userRating; }
 
-    public Boolean getHasSupported() { return hasSupported != null ? hasSupported : false; }
-    public void setHasSupported(Boolean hasSupported) { this.hasSupported = hasSupported; }
+    public Boolean getHasRated() { return hasRated != null ? hasRated : false; }
+    public void setHasRated(Boolean hasRated) { this.hasRated = hasRated; }
 }
