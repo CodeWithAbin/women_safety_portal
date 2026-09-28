@@ -28,38 +28,57 @@ public class PlaceRepository {
     }
 
     public List<Place> findAllAccepted(String state, String district, String search, Integer minRating, String sort) {
-        StringBuilder sql = new StringBuilder("SELECT id, name, address, state, district, photo, rating, description, status, created_at FROM places WHERE status = 'accepted'");
+        StringBuilder sql = new StringBuilder("""
+            SELECT 
+                MIN(p.id) AS id,
+                p.name,
+                p.address,
+                p.state,
+                p.district,
+                MAX(p.photo) AS photo,
+                ROUND(AVG(p.rating), 1) AS community_rating,
+                COUNT(p.rating) AS rating_count,
+                ROUND(AVG(p.rating)) AS rating,
+                MAX(p.description) AS description,
+                p.status,
+                MAX(p.created_at) AS created_at,
+                MAX(p.updated_at) AS updated_at
+            FROM places p
+            WHERE p.status = 'accepted'
+        """);
         List<Object> args = new ArrayList<>();
 
         if (state != null && !state.trim().isEmpty() && district != null && !district.trim().isEmpty()) {
-            sql.append(" AND LOWER(state) = LOWER(?) AND LOWER(district) = LOWER(?)");
+            sql.append(" AND LOWER(TRIM(p.state)) = LOWER(TRIM(?)) AND LOWER(TRIM(p.district)) = LOWER(TRIM(?))");
             args.add(state.trim());
             args.add(district.trim());
         } else if (state != null && !state.trim().isEmpty()) {
-            sql.append(" AND LOWER(state) = LOWER(?)");
+            sql.append(" AND LOWER(TRIM(p.state)) = LOWER(TRIM(?))");
             args.add(state.trim());
         }
 
         if (search != null && !search.trim().isEmpty()) {
-            sql.append(" AND (LOWER(name) LIKE ? OR LOWER(address) LIKE ?)");
+            sql.append(" AND (LOWER(p.name) LIKE ? OR LOWER(p.address) LIKE ?)");
             String searchPattern = "%" + search.trim().toLowerCase() + "%";
             args.add(searchPattern);
             args.add(searchPattern);
         }
 
+        sql.append(" GROUP BY LOWER(TRIM(p.name)), LOWER(TRIM(p.address)), LOWER(TRIM(p.state)), LOWER(TRIM(p.district))");
+
         if (minRating != null) {
-            sql.append(" AND rating >= ?");
+            sql.append(" HAVING AVG(p.rating) >= ?");
             args.add(minRating);
         }
 
         if ("rating_desc".equalsIgnoreCase(sort)) {
-            sql.append(" ORDER BY rating DESC, created_at DESC, id DESC");
+            sql.append(" ORDER BY AVG(p.rating) DESC, MAX(p.created_at) DESC, MIN(p.id) DESC");
         } else if ("rating_asc".equalsIgnoreCase(sort)) {
-            sql.append(" ORDER BY rating ASC, created_at DESC, id DESC");
+            sql.append(" ORDER BY AVG(p.rating) ASC, MAX(p.created_at) DESC, MIN(p.id) DESC");
         } else if ("newest".equalsIgnoreCase(sort)) {
-            sql.append(" ORDER BY created_at DESC, id DESC");
+            sql.append(" ORDER BY MAX(p.created_at) DESC, MIN(p.id) DESC");
         } else {
-            sql.append(" ORDER BY created_at DESC");
+            sql.append(" ORDER BY MAX(p.created_at) DESC");
         }
 
         return tursoClient.query(sql.toString(), args).stream()
@@ -97,9 +116,22 @@ public class PlaceRepository {
     public List<Place> findAdminPlaces(String state, String district, String search, Integer minRating, String sort) {
         StringBuilder sql = new StringBuilder("""
             SELECT 
-                p.id, p.name, p.address, p.state, p.district, p.photo, p.rating, p.description, 
-                p.status, p.submitted_by, p.created_at, p.updated_at,
-                u.name AS reporter_name, u.email AS reporter_email
+                MIN(p.id) AS id,
+                p.name,
+                p.address,
+                p.state,
+                p.district,
+                MAX(p.photo) AS photo,
+                ROUND(AVG(p.rating), 1) AS community_rating,
+                COUNT(p.rating) AS rating_count,
+                ROUND(AVG(p.rating)) AS rating,
+                MAX(p.description) AS description,
+                p.status,
+                MAX(p.submitted_by) AS submitted_by,
+                MAX(p.created_at) AS created_at,
+                MAX(p.updated_at) AS updated_at,
+                MAX(u.name) AS reporter_name,
+                MAX(u.email) AS reporter_email
             FROM places p
             LEFT JOIN users u ON p.submitted_by = u.id
             WHERE p.status = 'accepted'
@@ -107,11 +139,11 @@ public class PlaceRepository {
         List<Object> args = new ArrayList<>();
 
         if (state != null && !state.trim().isEmpty() && district != null && !district.trim().isEmpty()) {
-            sql.append(" AND LOWER(p.state) = LOWER(?) AND LOWER(p.district) = LOWER(?)");
+            sql.append(" AND LOWER(TRIM(p.state)) = LOWER(TRIM(?)) AND LOWER(TRIM(p.district)) = LOWER(TRIM(?))");
             args.add(state.trim());
             args.add(district.trim());
         } else if (state != null && !state.trim().isEmpty()) {
-            sql.append(" AND LOWER(p.state) = LOWER(?)");
+            sql.append(" AND LOWER(TRIM(p.state)) = LOWER(TRIM(?))");
             args.add(state.trim());
         }
 
@@ -122,24 +154,45 @@ public class PlaceRepository {
             args.add(searchPattern);
         }
 
+        sql.append(" GROUP BY LOWER(TRIM(p.name)), LOWER(TRIM(p.address)), LOWER(TRIM(p.state)), LOWER(TRIM(p.district))");
+
         if (minRating != null) {
-            sql.append(" AND p.rating >= ?");
+            sql.append(" HAVING AVG(p.rating) >= ?");
             args.add(minRating);
         }
 
         if ("rating_desc".equalsIgnoreCase(sort)) {
-            sql.append(" ORDER BY p.rating DESC, p.created_at DESC, p.id DESC");
+            sql.append(" ORDER BY AVG(p.rating) DESC, MAX(p.created_at) DESC, MIN(p.id) DESC");
         } else if ("rating_asc".equalsIgnoreCase(sort)) {
-            sql.append(" ORDER BY p.rating ASC, p.created_at DESC, p.id DESC");
+            sql.append(" ORDER BY AVG(p.rating) ASC, MAX(p.created_at) DESC, MIN(p.id) DESC");
         } else if ("newest".equalsIgnoreCase(sort)) {
-            sql.append(" ORDER BY p.created_at DESC, p.id DESC");
+            sql.append(" ORDER BY MAX(p.created_at) DESC, MIN(p.id) DESC");
         } else {
-            sql.append(" ORDER BY p.created_at DESC");
+            sql.append(" ORDER BY MAX(p.created_at) DESC");
         }
 
         return tursoClient.query(sql.toString(), args).stream()
                 .map(this::mapRowToPlace)
                 .toList();
+    }
+
+    public Optional<Place> findUserSubmissionForPlace(Long userId, String name, String address, String state, String district) {
+        String sql = """
+            SELECT id, name, address, state, district, photo, rating, description, status, submitted_by, created_at, updated_at 
+            FROM places 
+            WHERE submitted_by = ? 
+              AND LOWER(TRIM(name)) = LOWER(TRIM(?)) 
+              AND LOWER(TRIM(address)) = LOWER(TRIM(?)) 
+              AND LOWER(TRIM(state)) = LOWER(TRIM(?)) 
+              AND LOWER(TRIM(district)) = LOWER(TRIM(?))
+        """;
+        return tursoClient.queryOne(sql, List.of(userId, name.trim(), address.trim(), state.trim(), district.trim()))
+                .map(this::mapRowToPlace);
+    }
+
+    public void updateUserReport(Long id, String photo, int rating, String description) {
+        String sql = "UPDATE places SET photo = ?, rating = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+        tursoClient.update(sql, List.of(photo, rating, description.trim(), id));
     }
 
     public Long insertReport(String name, String address, String state, String district, String photo, int rating, String description, Long submittedBy) {
@@ -233,6 +286,18 @@ public class PlaceRepository {
         if (row.get("submitted_by") != null) place.setSubmittedBy(((Number) row.get("submitted_by")).longValue());
         place.setCreatedAt(row.get("created_at") != null ? row.get("created_at").toString() : null);
         place.setUpdatedAt(row.get("updated_at") != null ? row.get("updated_at").toString() : null);
+
+        if (row.get("community_rating") != null) {
+            place.setCommunityRating(((Number) row.get("community_rating")).doubleValue());
+        } else if (row.get("rating") != null) {
+            place.setCommunityRating(((Number) row.get("rating")).doubleValue());
+        }
+
+        if (row.get("rating_count") != null) {
+            place.setRatingCount(((Number) row.get("rating_count")).intValue());
+        } else {
+            place.setRatingCount(1);
+        }
 
         if (row.containsKey("reporter_name")) place.setReporterName((String) row.get("reporter_name"));
         if (row.containsKey("reporter_email")) place.setReporterEmail((String) row.get("reporter_email"));

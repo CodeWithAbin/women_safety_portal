@@ -70,6 +70,30 @@ public class PlaceService {
             throw new BadRequestException("Rating must be an integer between 1 and 5.");
         }
 
+        // Anti-manipulation: Check if user already submitted for this physical place
+        java.util.Optional<Place> existingSubmission = placeRepository.findUserSubmissionForPlace(
+                principal.getId(),
+                req.getName(),
+                req.getAddress(),
+                req.getState(),
+                req.getDistrict()
+        );
+
+        if (existingSubmission.isPresent()) {
+            Place prev = existingSubmission.get();
+            String photoUrl = (photo != null && !photo.isEmpty()) ? fileStorageService.store(photo) : prev.getPhoto();
+            placeRepository.updateUserReport(prev.getId(), photoUrl, ratingVal, req.getDescription().trim());
+
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("id", prev.getId());
+            data.put("status", prev.getStatus());
+            return ApiResponse.success("Your rating and report for this place have been updated successfully.", data);
+        }
+
+        if (photo == null || photo.isEmpty()) {
+            throw new BadRequestException("A photo of the hazardous place is required.");
+        }
+
         String photoUrl = fileStorageService.store(photo);
 
         Long placeId = placeRepository.insertReport(

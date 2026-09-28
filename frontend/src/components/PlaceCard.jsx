@@ -2,10 +2,20 @@ import React from 'react';
 import { getPhotoUrl } from '../services/api';
 
 const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false }) => {
-  const getRatingBadge = (rating) => {
-    if (rating >= 4) return <span className="badge badge-danger">Hazard Level: High ({rating}/5)</span>;
-    if (rating === 3) return <span className="badge badge-warning">Hazard Level: Medium ({rating}/5)</span>;
-    return <span className="badge badge-info">Hazard Level: Low ({rating}/5)</span>;
+  const communityRating = place.community_rating != null
+    ? Number(place.community_rating).toFixed(1)
+    : place.rating != null
+      ? Number(place.rating).toFixed(1)
+      : 'N/A';
+
+  const ratingCount = place.rating_count || 1;
+  const numRating = Number(communityRating);
+
+  const getRatingBadge = (score) => {
+    if (isNaN(score)) return null;
+    if (score >= 4) return <span className="badge badge-danger">Hazard Level: High ({score}/5)</span>;
+    if (score >= 2.5) return <span className="badge badge-warning">Hazard Level: Medium ({score}/5)</span>;
+    return <span className="badge badge-info">Hazard Level: Low ({score}/5)</span>;
   };
 
   const formattedDate = place.created_at
@@ -31,12 +41,22 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false }) => {
       <div className="place-card-content">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
           <h3 className="place-card-title">{place.name}</h3>
-          {getRatingBadge(place.rating)}
+          {getRatingBadge(numRating)}
         </div>
 
         <p className="place-card-address">
           <span>📍</span> {place.address}, {place.district}, {place.state}
         </p>
+
+        {/* Community Safety Rating Display */}
+        <div style={{ margin: '0.5rem 0', padding: '0.5rem 0.75rem', backgroundColor: 'var(--bg-subtle, #f8fafc)', borderRadius: 'var(--radius-sm, 4px)', border: '1px solid var(--border-light, #e2e8f0)', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+          <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--primary-navy, #0f172a)' }}>
+            ⭐ Community Safety Rating: <strong>{communityRating} / 5</strong>
+          </div>
+          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted, #64748b)' }}>
+            Based on {ratingCount} community rating{ratingCount > 1 ? 's' : ''}
+          </div>
+        </div>
 
         <p className="place-card-desc">{place.description}</p>
 

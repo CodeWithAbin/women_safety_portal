@@ -24,6 +24,12 @@ public class Place {
     @JsonProperty("updated_at")
     private String updatedAt;
 
+    @JsonProperty("community_rating")
+    private Double communityRating;
+
+    @JsonProperty("rating_count")
+    private Integer ratingCount;
+
     // Joined fields for admin views
     @JsonProperty("reporter_name")
     private String reporterName;
@@ -80,4 +86,10 @@ public class Place {
 
     public String getReporterPhone() { return reporterPhone; }
     public void setReporterPhone(String reporterPhone) { this.reporterPhone = reporterPhone; }
+
+    public Double getCommunityRating() { return communityRating; }
+    public void setCommunityRating(Double communityRating) { this.communityRating = communityRating; }
+
+    public Integer getRatingCount() { return ratingCount; }
+    public void setRatingCount(Integer ratingCount) { this.ratingCount = ratingCount; }
 }
