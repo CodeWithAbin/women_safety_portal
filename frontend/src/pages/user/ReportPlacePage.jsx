@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { placeService } from '../../services/api';
 import StateDistrictSelector from '../../components/StateDistrictSelector';
+import LocationPickerMap from '../../components/LocationPickerMap';
 import AlertBanner from '../../components/AlertBanner';
 
 const ReportPlacePage = () => {
@@ -19,6 +20,7 @@ const ReportPlacePage = () => {
     rating: 4,
     description: ''
   });
+  const [locationMethod, setLocationMethod] = useState('none'); // 'none' | 'current' | 'manual'
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -41,6 +43,7 @@ const ReportPlacePage = () => {
       setLocationStatusMsg('Geolocation is not supported by your browser.');
       return;
     }
+    setLocationMethod('current');
     setLocating(true);
     setLocationStatusMsg('');
     navigator.geolocation.getCurrentPosition(
@@ -49,23 +52,40 @@ const ReportPlacePage = () => {
         const lat = parseFloat(position.coords.latitude.toFixed(6));
         const lon = parseFloat(position.coords.longitude.toFixed(6));
         setFormData((prev) => ({ ...prev, latitude: lat, longitude: lon }));
-        setLocationStatusMsg('Location coordinates captured successfully!');
-        setTimeout(() => setLocationStatusMsg(''), 4000);
+        setLocationStatusMsg('Location coordinates captured from browser GPS.');
       },
       (err) => {
         setLocating(false);
         if (err.code === 1) {
-          setLocationStatusMsg('Location permission denied. You can still submit the report without coordinates.');
+          setLocationStatusMsg('Location access was not granted. You can still choose location manually or submit without coordinates.');
         } else {
-          setLocationStatusMsg('Could not detect location. You can proceed without coordinates.');
+          setLocationStatusMsg('Could not detect location. You can choose location manually or submit without coordinates.');
         }
       },
       { timeout: 10000, enableHighAccuracy: true }
     );
   };
 
+  const handleManualMapSelect = ({ latitude, longitude }) => {
+    setLocationMethod('manual');
+    setFormData((prev) => ({ ...prev, latitude, longitude }));
+    setLocationStatusMsg('Location selected on map.');
+  };
+
+  const handleSelectMethod = (method) => {
+    if (method === 'current') {
+      handleGetCurrentLocation();
+    } else if (method === 'manual') {
+      setLocationMethod('manual');
+      if (formData.latitude == null) {
+        setLocationStatusMsg('Click on the map below to drop a pin.');
+      }
+    }
+  };
+
   const handleClearLocation = () => {
     setFormData((prev) => ({ ...prev, latitude: null, longitude: null }));
+    setLocationMethod('none');
     setLocationStatusMsg('');
   };
 
@@ -124,6 +144,7 @@ const ReportPlacePage = () => {
       rating: 4,
       description: ''
     });
+    setLocationMethod('none');
     setPhotoFile(null);
     setPhotoPreview(null);
     setSimilarReport(null);
@@ -417,51 +438,104 @@ const ReportPlacePage = () => {
             </div>
           </div>
 
-          {/* Optional Map Coordinates / Geolocation */}
-          <div className="form-group" style={{ marginBottom: 0, padding: '1rem', backgroundColor: '#f8fafc', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.5rem' }}>
+          {/* Optional Map Coordinates / Geolocation Section */}
+          <div className="form-group" style={{ marginBottom: 0, padding: '1.25rem', backgroundColor: '#f8fafc', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.85rem' }}>
               <div>
-                <span style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--primary-navy)' }}>
-                  🧭 Map Coordinates (Optional)
+                <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--primary-navy)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <span>🗺️</span> Report Location (Optional)
                 </span>
-                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '0.15rem 0 0 0' }}>
-                  Coordinates help pinpoint this hazard on the community safety map.
+                <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
+                  How would you like to add geographic coordinates to this report?
                 </p>
               </div>
 
-              {!formData.latitude ? (
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={handleGetCurrentLocation}
-                  disabled={locating}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
-                >
-                  <span>📍</span> {locating ? 'Detecting Location...' : 'Use My Current Location'}
-                </button>
-              ) : (
+              {(formData.latitude != null && formData.longitude != null) && (
                 <button
                   type="button"
                   className="btn btn-secondary btn-sm"
                   onClick={handleClearLocation}
-                  style={{ fontSize: '0.8rem', color: 'var(--hazard-high)' }}
+                  style={{ fontSize: '0.8rem', color: '#dc2626', borderColor: '#fca5a5' }}
                 >
-                  ✕ Remove Coordinates
+                  ✕ Clear Location
                 </button>
               )}
             </div>
 
-            {formData.latitude != null && (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.8rem', backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 'var(--radius-sm)', fontSize: '0.86rem', color: '#065f46', fontWeight: 600 }}>
-                <span>✓</span> Captured Coordinates: {formData.latitude}, {formData.longitude}
+            {/* Location Method Selection Buttons */}
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+              <button
+                type="button"
+                className={`btn ${locationMethod === 'current' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+                onClick={() => handleSelectMethod('current')}
+                disabled={locating}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontWeight: 600, padding: '0.45rem 0.9rem' }}
+              >
+                <span>📍</span> {locating ? 'Detecting Location...' : 'Use My Current Location'}
+              </button>
+
+              <button
+                type="button"
+                className={`btn ${locationMethod === 'manual' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+                onClick={() => handleSelectMethod('manual')}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontWeight: 600, padding: '0.45rem 0.9rem' }}
+              >
+                <span>🗺️</span> Choose Location Manually
+              </button>
+            </div>
+
+            {/* Method 1: Current Location Display */}
+            {locationMethod === 'current' && (
+              <div style={{ fontSize: '0.86rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+                {formData.latitude != null ? (
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem 0.85rem', backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 'var(--radius-sm)', color: '#065f46', fontWeight: 600 }}>
+                    <span>✓</span> Current Coordinates: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
+                  </div>
+                ) : (
+                  <p style={{ margin: 0, fontSize: '0.84rem' }}>
+                    Click "Use My Current Location" above to capture coordinates using your device GPS.
+                  </p>
+                )}
               </div>
             )}
 
+            {/* Method 2: Manual Location Selection Map */}
+            {locationMethod === 'manual' && (
+              <div style={{ marginBottom: '0.75rem' }}>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-body)', fontWeight: 600, marginBottom: '0.5rem' }}>
+                  Choose a point on the map (click or tap to place pin):
+                </div>
+
+                <LocationPickerMap
+                  latitude={formData.latitude}
+                  longitude={formData.longitude}
+                  onChange={handleManualMapSelect}
+                  height="300px"
+                />
+
+                {formData.latitude != null ? (
+                  <div style={{ marginTop: '0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.8rem', backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 'var(--radius-sm)', fontSize: '0.86rem', color: '#065f46', fontWeight: 600 }}>
+                    <span>📍</span> Selected Location: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
+                  </div>
+                ) : (
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                    Tip: Click anywhere on the map to place or reposition the marker pin.
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Location Status Message */}
             {locationStatusMsg && (
-              <div style={{ fontSize: '0.82rem', color: formData.latitude ? '#059669' : 'var(--text-muted)', marginTop: '0.35rem' }}>
+              <div style={{ fontSize: '0.84rem', color: formData.latitude ? '#059669' : '#b45309', marginTop: '0.4rem', fontWeight: 500 }}>
                 {locationStatusMsg}
               </div>
             )}
+
+            {/* Privacy Note */}
+            <div style={{ marginTop: '0.75rem', fontSize: '0.78rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-light)', paddingTop: '0.5rem' }}>
+              🔒 Privacy Note: Your current location is accessed only when you explicitly choose "Use My Current Location". Manual map selection never requests device location.
+            </div>
           </div>
         </section>
 
@@ -660,6 +734,19 @@ const ReportPlacePage = () => {
                 <span className="review-label">Photo Status</span>
                 <span className="review-value">
                   {photoFile ? `✓ Attached (${photoFile.name})` : <span style={{ color: '#e11d48' }}>⚠ Photo Required</span>}
+                </span>
+              </div>
+
+              <div className="review-item">
+                <span className="review-label">Map Coordinates</span>
+                <span className="review-value">
+                  {formData.latitude != null && formData.longitude != null ? (
+                    <span style={{ color: '#059669', fontWeight: 600 }}>
+                      ✓ {locationMethod === 'manual' ? 'Manually Picked' : 'Captured'} ({formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)})
+                    </span>
+                  ) : (
+                    <span style={{ color: 'var(--text-muted)' }}>Not attached (optional)</span>
+                  )}
                 </span>
               </div>
 
