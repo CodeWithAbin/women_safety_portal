@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { notificationService } from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
@@ -43,12 +44,31 @@ const NotificationsPage = () => {
     }
   };
 
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case 'safe_walk_overdue':
+        return '🚨';
+      case 'safe_walk_started':
+        return '🚶‍♀️';
+      case 'safe_walk_completed':
+        return '🎉';
+      case 'safe_walk_cancelled':
+        return '🛑';
+      case 'report_accepted':
+        return '✅';
+      case 'report_rejected':
+        return '❌';
+      default:
+        return 'ℹ️';
+    }
+  };
+
   return (
     <div style={{ maxWidth: '840px', margin: '0 auto' }}>
       <div className="page-header">
         <h1 className="page-title">My Notifications</h1>
         <p className="page-subtitle">
-          Real-time updates and administrative review decisions on your submitted reported places.
+          Real-time safety alerts, Safe Walk updates, and review decisions on your submitted reported places.
         </p>
       </div>
 
@@ -60,13 +80,15 @@ const NotificationsPage = () => {
         <EmptyState
           icon="🔔"
           title="No Notifications Yet"
-          message="When an administrator reviews your submitted safety reports or new updates occur, they will appear here."
+          message="When new safety alerts, Safe Walk updates, or report review decisions occur, they will appear here."
         />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {notifications.map((notif) => {
             const isUnread = notif.is_read === 0;
+            const isOverdue = notif.type === 'safe_walk_overdue';
             const isAccepted = notif.type === 'report_accepted';
+            const isSafeWalk = notif.type && notif.type.startsWith('safe_walk');
 
             const formattedDate = new Date(notif.created_at).toLocaleDateString(undefined, {
               year: 'numeric',
@@ -83,23 +105,25 @@ const NotificationsPage = () => {
                 style={{
                   padding: '1.25rem 1.5rem',
                   borderLeft: isUnread
-                    ? isAccepted
-                      ? '4px solid var(--hazard-low)'
-                      : '4px solid var(--primary-blue)'
+                    ? isOverdue
+                      ? '4px solid #ef4444'
+                      : isAccepted
+                        ? '4px solid var(--hazard-low)'
+                        : '4px solid var(--primary-blue)'
                     : '1px solid var(--border-light)',
-                  backgroundColor: isUnread ? '#f8fafc' : '#ffffff'
+                  backgroundColor: isUnread ? (isOverdue ? '#fef2f2' : '#f8fafc') : '#ffffff'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                     <span style={{ fontSize: '1.3rem' }}>
-                      {isAccepted ? '✅' : 'ℹ️'}
+                      {getNotificationIcon(notif.type)}
                     </span>
-                    <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--primary-navy)' }}>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: isOverdue ? '#991b1b' : 'var(--primary-navy)', margin: 0 }}>
                       {notif.title}
                     </h3>
                     {isUnread && (
-                      <span className="badge badge-warning" style={{ fontSize: '0.7rem' }}>
+                      <span className={`badge ${isOverdue ? 'badge-danger' : 'badge-warning'}`} style={{ fontSize: '0.7rem' }}>
                         New
                       </span>
                     )}
@@ -110,22 +134,33 @@ const NotificationsPage = () => {
                   </span>
                 </div>
 
-                <p style={{ margin: '0.75rem 0 0.5rem', fontSize: '0.92rem', color: 'var(--text-body)', lineHeight: 1.55 }}>
+                <p style={{ margin: '0.75rem 0 0.75rem', fontSize: '0.92rem', color: 'var(--text-body)', lineHeight: 1.55 }}>
                   {notif.message}
                 </p>
 
-                {isUnread && (
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem' }}>
+                  {isSafeWalk && (
+                    <Link
+                      to="/active-safe-walk"
+                      className="btn btn-primary btn-sm"
+                      style={{ fontSize: '0.82rem', padding: '0.35rem 0.85rem' }}
+                    >
+                      View Safe Walk
+                    </Link>
+                  )}
+
+                  {isUnread && (
                     <button
                       type="button"
                       className="btn btn-secondary btn-sm"
                       onClick={() => handleMarkAsRead(notif.id)}
                       disabled={actionLoadingId === notif.id}
+                      style={{ fontSize: '0.82rem', padding: '0.35rem 0.85rem' }}
                     >
                       {actionLoadingId === notif.id ? 'Updating...' : 'Mark as Read'}
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </article>
             );
           })}
@@ -136,4 +171,5 @@ const NotificationsPage = () => {
 };
 
 export default NotificationsPage;
+
 

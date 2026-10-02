@@ -35,6 +35,18 @@ public class SafeWalk {
     @JsonProperty("last_location_updated_at")
     private String lastLocationUpdatedAt;
 
+    @JsonProperty("timing_status")
+    private String timingStatus; // ACTIVE, GRACE, OVERDUE, COMPLETED, CANCELLED
+
+    @JsonProperty("grace_period_minutes")
+    private Integer gracePeriodMinutes;
+
+    @JsonProperty("grace_until")
+    private String graceUntil;
+
+    @JsonProperty("overdue_notified_at")
+    private String overdueNotifiedAt;
+
     @JsonProperty("started_at")
     private String startedAt;
 
@@ -103,6 +115,18 @@ public class SafeWalk {
 
     public String getLastLocationUpdatedAt() { return lastLocationUpdatedAt; }
     public void setLastLocationUpdatedAt(String lastLocationUpdatedAt) { this.lastLocationUpdatedAt = lastLocationUpdatedAt; }
+
+    public String getTimingStatus() { return timingStatus; }
+    public void setTimingStatus(String timingStatus) { this.timingStatus = timingStatus; }
+
+    public Integer getGracePeriodMinutes() { return gracePeriodMinutes; }
+    public void setGracePeriodMinutes(Integer gracePeriodMinutes) { this.gracePeriodMinutes = gracePeriodMinutes; }
+
+    public String getGraceUntil() { return graceUntil; }
+    public void setGraceUntil(String graceUntil) { this.graceUntil = graceUntil; }
+
+    public String getOverdueNotifiedAt() { return overdueNotifiedAt; }
+    public void setOverdueNotifiedAt(String overdueNotifiedAt) { this.overdueNotifiedAt = overdueNotifiedAt; }
 
     public String getStartedAt() { return startedAt; }
     public void setStartedAt(String startedAt) { this.startedAt = startedAt; }

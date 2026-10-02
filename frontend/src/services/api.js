@@ -259,6 +259,10 @@ export const safeWalkService = {
   updateLocation: async (id, { latitude, longitude }) => {
     const response = await apiClient.patch(`/api/safe-walks/${id}/location`, { latitude, longitude });
     return response.data;
+  },
+  extendSafeWalk: async (id, extensionMinutes) => {
+    const response = await apiClient.patch(`/api/safe-walks/${id}/extend`, { extension_minutes: extensionMinutes });
+    return response.data;
   }
 };
 

@@ -4,6 +4,7 @@ import com.womensafety.model.SafeWalk;
 import com.womensafety.model.dto.ApiResponse;
 import com.womensafety.model.dto.LocationUpdateRequest;
 import com.womensafety.model.dto.SafeWalkCreateRequest;
+import com.womensafety.model.dto.SafeWalkExtendRequest;
 import com.womensafety.security.UserPrincipal;
 import com.womensafety.service.SafeWalkService;
 import jakarta.validation.Valid;
@@ -72,6 +73,16 @@ public class SafeWalkController {
             @Valid @RequestBody LocationUpdateRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
         ApiResponse<SafeWalk> response = safeWalkService.updateLocation(id, request, principal);
+        return ResponseEntity.ok(response);
+    }
+
+    // 7. Extend active Safe Walk journey duration (walker only)
+    @PatchMapping("/{id}/extend")
+    public ResponseEntity<ApiResponse<SafeWalk>> extendSafeWalk(
+            @PathVariable Long id,
+            @Valid @RequestBody SafeWalkExtendRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        ApiResponse<SafeWalk> response = safeWalkService.extendSafeWalk(id, request, principal);
         return ResponseEntity.ok(response);
     }
 }
