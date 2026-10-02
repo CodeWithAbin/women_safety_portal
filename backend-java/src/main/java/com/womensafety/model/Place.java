@@ -15,6 +15,12 @@ public class Place {
     private String description;
     private String status;
 
+    @JsonProperty("resolved")
+    private Boolean resolved;
+
+    @JsonProperty("resolved_at")
+    private String resolvedAt;
+
     @JsonProperty("submitted_by")
     private Long submittedBy;
 
@@ -74,6 +80,12 @@ public class Place {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public Boolean getResolved() { return resolved != null ? resolved : false; }
+    public void setResolved(Boolean resolved) { this.resolved = resolved; }
+
+    public String getResolvedAt() { return resolvedAt; }
+    public void setResolvedAt(String resolvedAt) { this.resolvedAt = resolvedAt; }
 
     public Long getSubmittedBy() { return submittedBy; }
     public void setSubmittedBy(Long submittedBy) { this.submittedBy = submittedBy; }

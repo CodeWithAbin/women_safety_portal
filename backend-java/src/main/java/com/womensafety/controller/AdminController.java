@@ -87,6 +87,13 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
+    // 13B. Mark hazardous place as resolved
+    @PatchMapping("/places/{id}/resolve")
+    public ResponseEntity<ApiResponse<Place>> resolvePlace(@PathVariable Long id) {
+        ApiResponse<Place> response = adminService.resolvePlace(id);
+        return ResponseEntity.ok(response);
+    }
+
     // 14. View registered users (with State & District filter)
     @GetMapping("/users")
     public ResponseEntity<ApiResponse<List<User>>> getUsers(

@@ -49,12 +49,22 @@ public class DatabaseInitializer {
                     rating INTEGER NOT NULL,
                     description TEXT NOT NULL,
                     status TEXT NOT NULL DEFAULT 'pending',
+                    resolved INTEGER NOT NULL DEFAULT 0,
+                    resolved_at DATETIME,
                     submitted_by INTEGER,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (submitted_by) REFERENCES users(id) ON DELETE SET NULL
                 );
             """);
+
+            // Migration for existing tables
+            try {
+                tursoClient.update("ALTER TABLE places ADD COLUMN resolved INTEGER NOT NULL DEFAULT 0;");
+            } catch (Exception ignored) {}
+            try {
+                tursoClient.update("ALTER TABLE places ADD COLUMN resolved_at DATETIME;");
+            } catch (Exception ignored) {}
 
             // 3. Notifications Table
             tursoClient.update("""

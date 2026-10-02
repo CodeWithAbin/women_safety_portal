@@ -23,6 +23,7 @@ const ManagePlacesPage = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editPlace, setEditPlace] = useState(null);
   const [deleteTargetPlace, setDeleteTargetPlace] = useState(null);
+  const [resolveTargetPlace, setResolveTargetPlace] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
 
   // Form states for Add / Edit
@@ -213,6 +214,25 @@ const ManagePlacesPage = () => {
       }
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to delete place.');
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleResolvePlace = async () => {
+    if (!resolveTargetPlace) return;
+    setModalLoading(true);
+    setError('');
+
+    try {
+      const res = await adminService.resolvePlace(resolveTargetPlace.id);
+      if (res.success) {
+        setSuccessMsg(`Safety issue for "${resolveTargetPlace.name}" has been marked as resolved.`);
+        setResolveTargetPlace(null);
+        fetchPlaces();
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Failed to resolve safety issue.');
     } finally {
       setModalLoading(false);
     }
@@ -417,6 +437,7 @@ const ManagePlacesPage = () => {
               isAdmin={true}
               onEdit={handleOpenEdit}
               onDelete={(p) => setDeleteTargetPlace(p)}
+              onResolve={(p) => setResolveTargetPlace(p)}
             />
           ))}
         </div>
@@ -648,6 +669,18 @@ const ManagePlacesPage = () => {
         loading={modalLoading}
         onConfirm={handleDeletePlace}
         onCancel={() => setDeleteTargetPlace(null)}
+      />
+
+      {/* Resolve Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!resolveTargetPlace}
+        title="Mark Safety Issue as Resolved"
+        message="Mark this safety issue as resolved? It will be shown as resolved for 7 days and then removed from active listings."
+        confirmText="Mark as Resolved"
+        isDestructive={false}
+        loading={modalLoading}
+        onConfirm={handleResolvePlace}
+        onCancel={() => setResolveTargetPlace(null)}
       />
     </div>
   );

@@ -167,6 +167,10 @@ export const adminService = {
     const response = await apiClient.delete(`/api/admin/places/${id}`);
     return response.data;
   },
+  resolvePlace: async (id) => {
+    const response = await apiClient.patch(`/api/admin/places/${id}/resolve`);
+    return response.data;
+  },
   getUsers: async (state, district) => {
     const params = {};
     if (state && state.trim()) params.state = state.trim();

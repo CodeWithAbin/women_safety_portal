@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { getPhotoUrl, placeService } from '../services/api';
 
-const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onRatingSuccess }) => {
+const PlaceCard = ({ place, onEdit, onDelete, onResolve, isAdmin = false, onRatingSuccess }) => {
   const [communityRating, setCommunityRating] = useState(
     place.community_rating != null ? Number(place.community_rating).toFixed(1) : place.rating != null ? Number(place.rating).toFixed(1) : 'N/A'
   );
@@ -15,6 +15,27 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onRatingSuccess }
   const [ratingFeedback, setRatingFeedback] = useState('');
 
   const numRating = Number(communityRating);
+  const isResolved = place.resolved === true || place.resolved === 1 || place.resolved === 'true';
+
+  const getResolvedInfo = (resolvedAt) => {
+    if (!resolvedAt) return null;
+    const now = new Date();
+    const resDate = new Date(resolvedAt);
+    const diffMs = Math.max(0, now.getTime() - resDate.getTime());
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const daysLeft = Math.max(0, 7 - diffDays);
+    return {
+      formattedDate: resDate.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }),
+      daysAgo: diffDays === 0 ? 'today' : diffDays === 1 ? '1 day ago' : `${diffDays} days ago`,
+      daysLeftText: daysLeft === 1 ? '1 day left in active listings' : `${daysLeft} days left in active listings`
+    };
+  };
+
+  const resolvedInfo = isResolved ? getResolvedInfo(place.resolved_at) : null;
 
   const getHazardBadge = (score) => {
     if (isNaN(score)) return <span className="badge badge-info">Hazard: Unrated</span>;
@@ -64,7 +85,7 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onRatingSuccess }
 
   return (
     <article className="card place-card" aria-label={`Hazardous Place: ${place.name}`}>
-      {/* 1. Image with overlay hazard badge */}
+      {/* 1. Image with overlay badges */}
       <div className="place-card-image-wrap">
         <img
           src={getPhotoUrl(place.photo)}
@@ -73,10 +94,13 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onRatingSuccess }
           loading="lazy"
           onError={(e) => {
             e.target.onerror = null;
-            e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22200%22%20viewBox%3D%220%200%20400%20200%22%3E%3Crect%20fill%3D%22%23f1f5f9%22%20width%3D%22400%22%20height%3D%22200%22%2F%3E%3Ctext%20fill%3D%22%2394a3b8%22%20font-family%3D%22sans-serif%22%20font-size%3D%2215%22%20dy%3D%225%22%20font-weight%3D%22600%22%20x%3D%2250%25%22%20y%3D%2250%25%22%20text-anchor%3D%22middle%22%3EPhoto%20Unavailable%3C%2Ftext%3E%3C%2Fsvg%3E';
+            e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22200%22%20viewBox%3D%220%200%20400%20200%22%3E%3Crect%20fill%3D%22%23f1f5f9%22%20width%3D%22400%22%20height%3D%22200%22%20%2F%3E%3Ctext%20fill%3D%22%2394a3b8%22%20font-family%3D%22sans-serif%22%20font-size%3D%2215%22%20dy%3D%225%22%20font-weight%3D%22600%22%20x%3D%2250%25%22%20y%3D%2250%25%22%20text-anchor%3D%22middle%22%3EPhoto%20Unavailable%3C%2Ftext%3E%3C%2Fsvg%3E';
           }}
         />
-        <div className="place-card-badge-overlay">
+        <div className="place-card-badge-overlay" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.35rem' }}>
+          {isResolved && (
+            <span className="badge badge-resolved">🟢 RESOLVED</span>
+          )}
           {getHazardBadge(numRating)}
         </div>
       </div>
@@ -95,7 +119,25 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onRatingSuccess }
         {/* 4. Description / Problem Statement */}
         <p className="place-card-desc">{place.description}</p>
 
-        {/* 5. Community Safety Rating Box */}
+        {/* 5. Resolved Info Banner (if resolved) */}
+        {isResolved && (
+          <div className="place-resolved-banner" role="status" aria-label="Resolution Status">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 700, color: '#065f46', fontSize: '0.88rem' }}>
+              <span>🟢</span>
+              <span>RESOLVED</span>
+            </div>
+            <div style={{ fontSize: '0.84rem', color: '#047857', marginTop: '0.2rem', lineHeight: 1.4 }}>
+              Reported issue resolved{resolvedInfo?.formattedDate ? ` on ${resolvedInfo.formattedDate}` : ''}
+              {isAdmin && resolvedInfo && (
+                <div style={{ fontSize: '0.78rem', color: '#065f46', opacity: 0.9, marginTop: '0.2rem' }}>
+                  ⏳ Resolved {resolvedInfo.daysAgo} ({resolvedInfo.daysLeftText})
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 6. Community Safety Rating Box */}
         <section className="community-rating-card" aria-label="Community Safety Rating Information">
           <div className="community-rating-header">
             <div>
@@ -160,15 +202,29 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onRatingSuccess }
           )}
         </section>
 
-        {/* 6. Card Footer: Date & Admin Controls */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '0.85rem', borderTop: '1px solid var(--border-light)', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+        {/* 7. Card Footer: Date & Admin Controls */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '0.85rem', borderTop: '1px solid var(--border-light)', fontSize: '0.82rem', color: 'var(--text-muted)', flexWrap: 'wrap', gap: '0.5rem' }}>
           {formattedDate && <span>Reported: {formattedDate}</span>}
           {isAdmin && (
-            <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
-              <button className="btn btn-secondary btn-sm" onClick={() => onEdit(place)}>
+            <div style={{ display: 'flex', gap: '0.45rem', marginLeft: 'auto', alignItems: 'center', flexWrap: 'wrap' }}>
+              {!isResolved ? (
+                <button
+                  type="button"
+                  className="btn btn-success btn-sm"
+                  onClick={() => onResolve && onResolve(place)}
+                  title="Mark this safety issue as resolved"
+                >
+                  <span>✓</span> Mark as Resolved
+                </button>
+              ) : (
+                <span className="badge badge-resolved" style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem' }}>
+                  ✓ Resolved
+                </span>
+              )}
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => onEdit(place)}>
                 Edit
               </button>
-              <button className="btn btn-danger btn-sm" onClick={() => onDelete(place)}>
+              <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(place)}>
                 Delete
               </button>
             </div>

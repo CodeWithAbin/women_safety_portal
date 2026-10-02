@@ -57,6 +57,26 @@ public class AdminService {
         return ApiResponse.success("Report status successfully updated to '" + normalizedStatus + "'.");
     }
 
+    public ApiResponse<Place> resolvePlace(Long placeId) {
+        Place place = placeRepository.findById(placeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Place not found with id " + placeId));
+
+        if (!"accepted".equalsIgnoreCase(place.getStatus())) {
+            throw new BadRequestException("Only verified and accepted hazardous places can be marked as resolved.");
+        }
+
+        if (Boolean.TRUE.equals(place.getResolved())) {
+            throw new BadRequestException("This place has already been marked as resolved.");
+        }
+
+        placeRepository.markAsResolved(placeId);
+
+        Place updatedPlace = placeRepository.findById(placeId)
+                .orElseThrow(() -> new RuntimeException("Failed to retrieve resolved place."));
+
+        return ApiResponse.success("Safety report successfully marked as resolved. It will remain visible with a RESOLVED badge for 7 days.", updatedPlace);
+    }
+
     public ApiResponse<List<Place>> getPlaces(String state, String district) {
         return getPlaces(state, district, null, null, null);
     }

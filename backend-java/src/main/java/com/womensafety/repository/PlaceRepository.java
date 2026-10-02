@@ -29,7 +29,7 @@ public class PlaceRepository {
                 COALESCE((SELECT ROUND(AVG(pr.rating), 1) FROM place_ratings pr WHERE pr.place_id = p.id), p.rating) AS community_rating,
                 COALESCE((SELECT COUNT(*) FROM place_ratings pr WHERE pr.place_id = p.id), 1) AS rating_count,
                 p.description, 
-                p.status, p.submitted_by, p.created_at, p.updated_at,
+                p.status, p.resolved, p.resolved_at, p.submitted_by, p.created_at, p.updated_at,
                 (SELECT pr.rating FROM place_ratings pr WHERE pr.place_id = p.id AND pr.user_id = ?) AS user_rating
             FROM places p 
             WHERE p.id = ?
@@ -51,12 +51,15 @@ public class PlaceRepository {
                 COALESCE((SELECT COUNT(*) FROM place_ratings pr WHERE pr.place_id = p.id), 1) AS rating_count,
                 p.description,
                 p.status,
+                p.resolved,
+                p.resolved_at,
                 p.submitted_by,
                 p.created_at,
                 p.updated_at,
                 (SELECT pr.rating FROM place_ratings pr WHERE pr.place_id = p.id AND pr.user_id = ?) AS user_rating
             FROM places p
             WHERE p.status = 'accepted'
+              AND (p.resolved = 0 OR p.resolved IS NULL OR p.resolved_at IS NULL OR p.resolved_at >= datetime('now', '-7 days'))
         """);
         List<Object> args = new ArrayList<>();
         args.add(currentUserId != null ? currentUserId : -1L);
@@ -104,7 +107,7 @@ public class PlaceRepository {
                 COALESCE((SELECT ROUND(AVG(pr.rating), 1) FROM place_ratings pr WHERE pr.place_id = p.id), p.rating) AS community_rating,
                 COALESCE((SELECT COUNT(*) FROM place_ratings pr WHERE pr.place_id = p.id), 1) AS rating_count,
                 p.description, 
-                p.status, p.submitted_by, p.created_at, p.updated_at,
+                p.status, p.resolved, p.resolved_at, p.submitted_by, p.created_at, p.updated_at,
                 u.name AS reporter_name, u.email AS reporter_email, u.phone AS reporter_phone
             FROM places p
             LEFT JOIN users u ON p.submitted_by = u.id
@@ -137,6 +140,8 @@ public class PlaceRepository {
                 COALESCE((SELECT COUNT(*) FROM place_ratings pr WHERE pr.place_id = p.id), 1) AS rating_count,
                 p.description,
                 p.status,
+                p.resolved,
+                p.resolved_at,
                 p.submitted_by,
                 p.created_at,
                 p.updated_at,
@@ -145,6 +150,7 @@ public class PlaceRepository {
             FROM places p
             LEFT JOIN users u ON p.submitted_by = u.id
             WHERE p.status = 'accepted'
+              AND (p.resolved = 0 OR p.resolved IS NULL OR p.resolved_at IS NULL OR p.resolved_at >= datetime('now', '-7 days'))
         """);
         List<Object> args = new ArrayList<>();
 
@@ -226,9 +232,10 @@ public class PlaceRepository {
             SELECT id, name, address, state, district, photo, rating,
                    COALESCE((SELECT ROUND(AVG(pr.rating), 1) FROM place_ratings pr WHERE pr.place_id = places.id), places.rating) AS community_rating,
                    COALESCE((SELECT COUNT(*) FROM place_ratings pr WHERE pr.place_id = places.id), 1) AS rating_count,
-                   description, status, submitted_by, created_at, updated_at
+                   description, status, resolved, resolved_at, submitted_by, created_at, updated_at
             FROM places
             WHERE status = 'accepted'
+              AND (resolved = 0 OR resolved IS NULL OR resolved_at IS NULL OR resolved_at >= datetime('now', '-7 days'))
               AND LOWER(TRIM(state)) = LOWER(TRIM(?))
               AND LOWER(TRIM(district)) = LOWER(TRIM(?))
         """;
@@ -300,6 +307,11 @@ public class PlaceRepository {
         ));
     }
 
+    public void markAsResolved(Long placeId) {
+        String sql = "UPDATE places SET resolved = 1, resolved_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+        tursoClient.update(sql, List.of(placeId));
+    }
+
     public void updateStatusWithNotification(Long reportId, String normalizedStatus, Place place) {
         List<TursoClient.Statement> batch = new ArrayList<>();
         batch.add(new TursoClient.Statement(
@@ -345,6 +357,24 @@ public class PlaceRepository {
         if (row.get("rating") != null) place.setRating(((Number) row.get("rating")).intValue());
         place.setDescription((String) row.get("description"));
         place.setStatus((String) row.get("status"));
+        
+        if (row.get("resolved") != null) {
+            Object resVal = row.get("resolved");
+            if (resVal instanceof Boolean) {
+                place.setResolved((Boolean) resVal);
+            } else if (resVal instanceof Number) {
+                place.setResolved(((Number) resVal).intValue() == 1);
+            } else {
+                place.setResolved("1".equals(resVal.toString()) || "true".equalsIgnoreCase(resVal.toString()));
+            }
+        } else {
+            place.setResolved(false);
+        }
+
+        if (row.get("resolved_at") != null) {
+            place.setResolvedAt(row.get("resolved_at").toString());
+        }
+
         if (row.get("submitted_by") != null) place.setSubmittedBy(((Number) row.get("submitted_by")).longValue());
         place.setCreatedAt(row.get("created_at") != null ? row.get("created_at").toString() : null);
         place.setUpdatedAt(row.get("updated_at") != null ? row.get("updated_at").toString() : null);

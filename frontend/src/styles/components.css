@@ -895,6 +895,23 @@ textarea.form-control {
   border: 1px solid #ddd6fe;
 }
 
+/* Resolved Badge */
+.badge-resolved {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  font-weight: 700;
+}
+
+/* Resolved Place Info Banner */
+.place-resolved-banner {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.85rem;
+  margin-top: 0.25rem;
+}
+
 /* -------------------------------------------------------------
    10. ALERTS & NOTICES
 ------------------------------------------------------------- */
