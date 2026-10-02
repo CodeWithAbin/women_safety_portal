@@ -47,7 +47,7 @@ const NotificationsPage = () => {
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'safe_walk_overdue':
-        return '🚨';
+        return '⚠️';
       case 'safe_walk_started':
         return '🚶‍♀️';
       case 'safe_walk_completed':
@@ -106,12 +106,12 @@ const NotificationsPage = () => {
                   padding: '1.25rem 1.5rem',
                   borderLeft: isUnread
                     ? isOverdue
-                      ? '4px solid #ef4444'
+                      ? '4px solid #f59e0b'
                       : isAccepted
                         ? '4px solid var(--hazard-low)'
                         : '4px solid var(--primary-blue)'
                     : '1px solid var(--border-light)',
-                  backgroundColor: isUnread ? (isOverdue ? '#fef2f2' : '#f8fafc') : '#ffffff'
+                  backgroundColor: isUnread ? (isOverdue ? '#fffbeb' : '#f8fafc') : '#ffffff'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
@@ -119,11 +119,11 @@ const NotificationsPage = () => {
                     <span style={{ fontSize: '1.3rem' }}>
                       {getNotificationIcon(notif.type)}
                     </span>
-                    <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: isOverdue ? '#991b1b' : 'var(--primary-navy)', margin: 0 }}>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: isOverdue ? '#92400e' : 'var(--primary-navy)', margin: 0 }}>
                       {notif.title}
                     </h3>
                     {isUnread && (
-                      <span className={`badge ${isOverdue ? 'badge-danger' : 'badge-warning'}`} style={{ fontSize: '0.7rem' }}>
+                      <span className="badge badge-warning" style={{ fontSize: '0.7rem' }}>
                         New
                       </span>
                     )}

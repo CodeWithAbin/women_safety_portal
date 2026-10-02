@@ -422,7 +422,7 @@ const ActiveSafeWalkPage = () => {
   const displayLon = walkerLocation?.longitude || walk.last_longitude || walk.start_longitude || null;
 
   // Header border color based on timing state
-  const headerBorderColor = timingStatus === 'OVERDUE' ? '#ef4444' : timingStatus === 'GRACE' ? '#f59e0b' : '#10b981';
+  const headerBorderColor = timingStatus === 'OVERDUE' ? '#d97706' : timingStatus === 'GRACE' ? '#f59e0b' : '#10b981';
 
   return (
     <div className="safewalk-container">
@@ -497,12 +497,12 @@ const ActiveSafeWalkPage = () => {
       )}
 
       {timingStatus === 'OVERDUE' && isWalker && (
-        <div style={{ backgroundColor: '#fef2f2', border: '1.5px solid #fca5a5', borderRadius: 'var(--radius-md)', padding: '1rem 1.25rem', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ backgroundColor: '#fffbeb', border: '1.5px solid #fde68a', borderRadius: 'var(--radius-md)', padding: '1rem 1.25rem', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <strong style={{ display: 'block', fontSize: '1rem', color: '#991b1b', marginBottom: '0.2rem' }}>
-              🚨 Your Safe Walk is overdue
+            <strong style={{ display: 'block', fontSize: '1rem', color: '#92400e', marginBottom: '0.2rem' }}>
+              ⚠️ Your Safe Walk is overdue
             </strong>
-            <span style={{ fontSize: '0.88rem', color: '#7f1d1d' }}>
+            <span style={{ fontSize: '0.88rem', color: '#78350f' }}>
               Your expected arrival time has passed and the journey has not been completed.
             </span>
           </div>
@@ -512,7 +512,7 @@ const ActiveSafeWalkPage = () => {
               className="btn btn-secondary btn-sm"
               onClick={() => handleExtendWalk(15)}
               disabled={extendLoading}
-              style={{ backgroundColor: '#ffffff', borderColor: '#fca5a5', color: '#991b1b', fontWeight: 700 }}
+              style={{ backgroundColor: '#ffffff', borderColor: '#fde68a', color: '#92400e', fontWeight: 700 }}
             >
               {extendLoading ? 'Extending...' : '+15 min'}
             </button>
@@ -521,7 +521,7 @@ const ActiveSafeWalkPage = () => {
               className="btn btn-secondary btn-sm"
               onClick={() => handleExtendWalk(30)}
               disabled={extendLoading}
-              style={{ backgroundColor: '#ffffff', borderColor: '#fca5a5', color: '#991b1b', fontWeight: 700 }}
+              style={{ backgroundColor: '#ffffff', borderColor: '#fde68a', color: '#92400e', fontWeight: 700 }}
             >
               {extendLoading ? 'Extending...' : '+30 min'}
             </button>
@@ -539,11 +539,11 @@ const ActiveSafeWalkPage = () => {
       )}
 
       {timingStatus === 'OVERDUE' && isCompanion && (
-        <div style={{ backgroundColor: '#fef2f2', border: '1.5px solid #fca5a5', borderRadius: 'var(--radius-md)', padding: '1rem 1.25rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#991b1b' }}>
-          <span style={{ fontSize: '1.5rem' }}>🚨</span>
+        <div style={{ backgroundColor: '#fffbeb', border: '1.5px solid #fde68a', borderRadius: 'var(--radius-md)', padding: '1rem 1.25rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#92400e' }}>
+          <span style={{ fontSize: '1.5rem' }}>⚠️</span>
           <div>
             <strong style={{ display: 'block', fontSize: '0.98rem' }}>Safe Walk overdue</strong>
-            <span style={{ fontSize: '0.86rem', color: '#7f1d1d' }}>
+            <span style={{ fontSize: '0.86rem', color: '#78350f' }}>
               Expected arrival time has passed and the journey has not been marked complete.
             </span>
           </div>
@@ -579,8 +579,8 @@ const ActiveSafeWalkPage = () => {
                 </span>
               )}
               {timingStatus === 'OVERDUE' && (
-                <span style={{ backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', borderRadius: '12px', padding: '0.3rem 0.75rem', fontSize: '0.78rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-                  🚨 OVERDUE
+                <span style={{ backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', borderRadius: '12px', padding: '0.3rem 0.75rem', fontSize: '0.78rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                  ⚠️ OVERDUE
                 </span>
               )}
               <span style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>
@@ -620,13 +620,13 @@ const ActiveSafeWalkPage = () => {
 
           <div style={{
             padding: '1.15rem',
-            backgroundColor: timingStatus === 'OVERDUE' ? '#fef2f2' : timingStatus === 'GRACE' ? '#fffbeb' : '#eff6ff',
+            backgroundColor: timingStatus === 'OVERDUE' || timingStatus === 'GRACE' ? '#fffbeb' : '#eff6ff',
             borderRadius: 'var(--radius-sm)',
-            border: `1px solid ${timingStatus === 'OVERDUE' ? '#fca5a5' : timingStatus === 'GRACE' ? '#fde68a' : '#dbeafe'}`
+            border: `1px solid ${timingStatus === 'OVERDUE' || timingStatus === 'GRACE' ? '#fde68a' : '#dbeafe'}`
           }}>
             <span style={{
               fontSize: '0.82rem',
-              color: timingStatus === 'OVERDUE' ? '#991b1b' : timingStatus === 'GRACE' ? '#92400e' : '#1e40af',
+              color: timingStatus === 'OVERDUE' || timingStatus === 'GRACE' ? '#92400e' : '#1e40af',
               fontWeight: 600,
               display: 'block',
               marginBottom: '0.25rem'
@@ -635,7 +635,7 @@ const ActiveSafeWalkPage = () => {
             </span>
             <strong style={{
               fontSize: '1.05rem',
-              color: timingStatus === 'OVERDUE' ? '#7f1d1d' : timingStatus === 'GRACE' ? '#78350f' : '#1e3a8a'
+              color: timingStatus === 'OVERDUE' || timingStatus === 'GRACE' ? '#78350f' : '#1e3a8a'
             }}>
               {formattedExpectedArrival}
             </strong>
