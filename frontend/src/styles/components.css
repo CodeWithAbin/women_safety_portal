@@ -1,5 +1,6 @@
 /* ==========================================================================
    Component Styles for Women Safety Portal
+   Design Theme: Clean, Accessible, Trustworthy Light Theme
    ========================================================================== */
 
 /* -------------------------------------------------------------
@@ -49,7 +50,7 @@
   transform: translateY(1px);
 }
 
-/* Secondary Button (Neutral / Outline Surface) */
+/* Secondary Button (Neutral / Surface) */
 .btn-secondary {
   background-color: #ffffff;
   color: var(--text-main);
@@ -97,6 +98,19 @@
   box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.3);
 }
 
+/* Outline Variants */
+.btn-outline-primary {
+  background-color: transparent;
+  color: var(--primary-blue);
+  border-color: var(--primary-blue-border);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-blue-subtle);
+  border-color: var(--primary-blue);
+  text-decoration: none;
+}
+
 /* Button Sizes */
 .btn-sm {
   padding: 0.4rem 0.8rem;
@@ -130,7 +144,7 @@
   color: var(--primary-navy);
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.35rem;
 }
 
 .form-label .required {
@@ -225,7 +239,7 @@ textarea.form-control {
   box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
 }
 
-/* Image Upload Container & Preview */
+/* Image Upload Dropzone & Preview */
 .photo-upload-container {
   display: flex;
   flex-direction: column;
@@ -242,7 +256,7 @@ textarea.form-control {
 }
 
 /* -------------------------------------------------------------
-   3. CARDS & SURFACES
+   3. CARDS, SURFACES & HEROES
 ------------------------------------------------------------- */
 .card {
   background-color: var(--bg-surface);
@@ -279,7 +293,258 @@ textarea.form-control {
   gap: 0.75rem;
 }
 
-/* Place Card Specific Component */
+/* Welcome Hero Box */
+.hero-welcome-card {
+  padding: 2rem 2.25rem;
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+  border: 1px solid #bae6fd;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+/* -------------------------------------------------------------
+   4. STAT CARDS (Dashboard Location Overview)
+------------------------------------------------------------- */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background-color: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.stat-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.stat-icon-blue {
+  background-color: var(--primary-blue-subtle);
+  color: var(--primary-blue);
+  border: 1px solid var(--primary-blue-border);
+}
+
+.stat-icon-amber {
+  background-color: var(--hazard-medium-bg);
+  color: var(--hazard-medium);
+  border: 1px solid var(--hazard-medium-border);
+}
+
+.stat-icon-emerald {
+  background-color: var(--hazard-low-bg);
+  color: var(--hazard-low);
+  border: 1px solid var(--hazard-low-border);
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-num {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--primary-navy);
+  line-height: 1.15;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* -------------------------------------------------------------
+   5. ACTION CARDS (Quick Action Grid)
+------------------------------------------------------------- */
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.action-card {
+  background-color: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.action-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary-blue-border);
+}
+
+.action-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.action-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  background-color: var(--primary-blue-subtle);
+  border: 1px solid var(--primary-blue-border);
+  flex-shrink: 0;
+}
+
+.action-card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--primary-navy);
+}
+
+.action-card-desc {
+  font-size: 0.92rem;
+  color: var(--text-body);
+  line-height: 1.5;
+  flex: 1;
+}
+
+/* -------------------------------------------------------------
+   6. COMMUNITY SAFETY RATING & INFO BOX
+------------------------------------------------------------- */
+.community-rating-card {
+  background-color: #f8fafc;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  margin: 0.35rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.community-rating-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.community-rating-score {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary-navy);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.community-rating-count {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.rating-action-btn {
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.rating-action-btn.unrated {
+  background-color: var(--primary-blue-subtle);
+  color: var(--primary-blue);
+  border-color: var(--primary-blue-border);
+}
+
+.rating-action-btn.unrated:hover {
+  background-color: var(--primary-blue);
+  color: #ffffff;
+}
+
+.rating-action-btn.rated {
+  background-color: var(--hazard-low-bg);
+  color: var(--hazard-low);
+  border-color: var(--hazard-low-border);
+}
+
+.rating-action-btn.rated:hover {
+  background-color: #d1fae5;
+}
+
+.rating-selector-drawer {
+  padding-top: 0.65rem;
+  border-top: 1px dashed var(--border-medium);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+/* Community Safety Educational Banner */
+.community-safety-banner {
+  background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+  border: 1px solid var(--primary-blue-border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.community-safety-banner h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--primary-navy);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.community-safety-banner p {
+  font-size: 0.92rem;
+  color: var(--text-body);
+  line-height: 1.55;
+}
+
+/* -------------------------------------------------------------
+   7. PLACE CARD
+------------------------------------------------------------- */
 .place-card {
   transition: transform var(--transition-smooth), box-shadow var(--transition-smooth), border-color var(--transition-smooth);
 }
@@ -349,85 +614,73 @@ textarea.form-control {
   flex: 1;
 }
 
-/* Distinct Community Safety Rating Card Section */
-.community-rating-card {
-  background-color: #f8fafc;
+/* -------------------------------------------------------------
+   8. FILTER BAR & ACTIVE CHIPS (Browse Places)
+------------------------------------------------------------- */
+.filter-card {
+  background-color: #ffffff;
   border: 1px solid var(--border-light);
-  border-radius: var(--radius-sm);
-  padding: 0.85rem 1rem;
-  margin: 0.35rem 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin-bottom: 1.75rem;
+  box-shadow: var(--shadow-card);
 }
 
-.community-rating-header {
+.filter-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-light);
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-.community-rating-score {
-  font-size: 0.95rem;
+.filter-header-title {
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--primary-navy);
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-}
-
-.community-rating-count {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-
-.rating-action-btn {
-  font-size: 0.82rem;
-  font-weight: 600;
-  padding: 0.35rem 0.75rem;
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  border: 1px solid transparent;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.rating-action-btn.unrated {
-  background-color: var(--primary-blue-subtle);
-  color: var(--primary-blue);
-  border-color: var(--primary-blue-border);
-}
-
-.rating-action-btn.unrated:hover {
-  background-color: var(--primary-blue);
-  color: #ffffff;
-}
-
-.rating-action-btn.rated {
-  background-color: var(--hazard-low-bg);
-  color: var(--hazard-low);
-  border-color: var(--hazard-low-border);
-}
-
-.rating-action-btn.rated:hover {
-  background-color: #d1fae5;
-}
-
-/* Rating Selector Popup Drawer */
-.rating-selector-drawer {
-  padding-top: 0.65rem;
-  border-top: 1px dashed var(--border-medium);
-  display: flex;
-  flex-direction: column;
   gap: 0.45rem;
 }
 
+.filter-chips-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border-light);
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background-color: var(--primary-blue-subtle);
+  color: var(--primary-blue);
+  border: 1px solid var(--primary-blue-border);
+  border-radius: var(--radius-pill);
+}
+
+.filter-chip-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: inherit;
+  line-height: 1;
+  padding: 0 0.15rem;
+}
+
 /* -------------------------------------------------------------
-   4. HAZARD & STATUS BADGES
+   9. HAZARD & STATUS BADGES
 ------------------------------------------------------------- */
 .badge {
   display: inline-flex;
@@ -442,35 +695,35 @@ textarea.form-control {
   line-height: 1;
 }
 
-/* Low Hazard (Safe / Minor) */
+/* Low Hazard */
 .badge-hazard-low, .badge-success {
   background-color: var(--hazard-low-bg);
   color: var(--hazard-low);
   border: 1px solid var(--hazard-low-border);
 }
 
-/* Medium Hazard (Moderate Warning) */
+/* Medium Hazard */
 .badge-hazard-medium, .badge-warning {
   background-color: var(--hazard-medium-bg);
   color: var(--hazard-medium);
   border: 1px solid var(--hazard-medium-border);
 }
 
-/* High Hazard (High Risk) */
+/* High Hazard */
 .badge-hazard-high, .badge-danger {
   background-color: var(--hazard-high-bg);
   color: var(--hazard-high);
   border: 1px solid var(--hazard-high-border);
 }
 
-/* Severe Hazard (Critical Risk) */
+/* Severe Hazard */
 .badge-hazard-severe {
   background-color: var(--hazard-severe-bg);
   color: var(--hazard-severe);
   border: 1px solid var(--hazard-severe-border);
 }
 
-/* Info & Admin Badges */
+/* Info & Admin */
 .badge-info {
   background-color: var(--primary-blue-subtle);
   color: var(--primary-blue);
@@ -484,7 +737,7 @@ textarea.form-control {
 }
 
 /* -------------------------------------------------------------
-   5. ALERTS & NOTICES
+   10. ALERTS & NOTICES
 ------------------------------------------------------------- */
 .alert {
   padding: 0.9rem 1.25rem;
@@ -526,7 +779,7 @@ textarea.form-control {
 }
 
 /* -------------------------------------------------------------
-   6. TABLES & DATA GRIDS
+   11. TABLES & DATA GRIDS
 ------------------------------------------------------------- */
 .table-container {
   background-color: #ffffff;
@@ -571,7 +824,7 @@ textarea.form-control {
 }
 
 /* -------------------------------------------------------------
-   7. MODALS
+   12. MODALS
 ------------------------------------------------------------- */
 .modal-overlay {
   position: fixed;
@@ -658,7 +911,7 @@ textarea.form-control {
 }
 
 /* -------------------------------------------------------------
-   8. NAVBAR & HEADER
+   13. NAVBAR & HEADER
 ------------------------------------------------------------- */
 .navbar {
   background-color: #ffffff;
@@ -750,7 +1003,6 @@ textarea.form-control {
   line-height: 1;
 }
 
-/* Mobile Navigation Hamburger & Drawer */
 .mobile-nav-toggle {
   display: none;
   background: none;
@@ -793,7 +1045,7 @@ textarea.form-control {
 }
 
 /* -------------------------------------------------------------
-   9. LOADING SPINNER & EMPTY STATE
+   14. LOADING SPINNER & EMPTY STATE
 ------------------------------------------------------------- */
 .loading-box {
   display: flex;
