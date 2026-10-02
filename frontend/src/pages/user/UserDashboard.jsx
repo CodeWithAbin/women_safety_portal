@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { placeService, notificationService } from '../../services/api';
+import { placeService, notificationService, safeWalkService } from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PlaceCard from '../../components/PlaceCard';
 import SafetyMap from '../../components/SafetyMap';
@@ -13,6 +13,7 @@ const UserDashboard = () => {
   const [districtCount, setDistrictCount] = useState(null);
   const [ratedPlacesCount, setRatedPlacesCount] = useState(0);
   const [unreadNotifs, setUnreadNotifs] = useState(0);
+  const [activeWalk, setActiveWalk] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Map & Location State
@@ -26,7 +27,7 @@ const UserDashboard = () => {
   const userDistrict = user?.district || 'Ernakulam';
   const userState = user?.state || 'Kerala';
 
-  // Initial Fetch for User District & Notifications
+  // Initial Fetch for User District & Notifications & Active Safe Walk
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!user) return;
@@ -48,6 +49,12 @@ const UserDashboard = () => {
         const notifsRes = await notificationService.getNotifications();
         if (notifsRes.success) {
           setUnreadNotifs(notifsRes.unreadCount || 0);
+        }
+
+        // Fetch active safe walk status
+        const walkRes = await safeWalkService.getActiveSafeWalk();
+        if (walkRes.success && walkRes.data) {
+          setActiveWalk(walkRes.data);
         }
       } catch (err) {
         console.warn('Dashboard data fetch error:', err);
@@ -235,6 +242,44 @@ const UserDashboard = () => {
               <span className="stat-num">{unreadNotifs}</span>
               <span className="stat-label">Unread Notifications</span>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          SECTION B.2: Dedicated Safe Walk Personal Journey Card
+          ========================================================================= */}
+      <section aria-label="Safe Walk Personal Safety" className="card" style={{ padding: '1.5rem', backgroundColor: activeWalk ? '#f0fdf4' : '#ffffff', border: activeWalk ? '1.5px solid #86efac' : '1px solid var(--border-light)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.25rem' }}>
+          <div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.6rem', backgroundColor: activeWalk ? '#dcfce7' : '#eff6ff', color: activeWalk ? '#15803d' : 'var(--primary-blue)', borderRadius: 'var(--radius-pill)', fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.4rem' }}>
+              <span>🚶‍♀️</span> {activeWalk ? 'Active Journey in Progress' : 'Personal Journey Protection'}
+            </div>
+            <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
+              {activeWalk ? 'Safe Walk Active 🟢' : 'Safe Walk'}
+            </h2>
+            <p style={{ fontSize: '0.92rem', color: 'var(--text-muted)', margin: '0.35rem 0 0', maxWidth: '620px', lineHeight: 1.5 }}>
+              {activeWalk
+                ? `Walking to ${activeWalk.destination} • Companion: ${activeWalk.companion_name || activeWalk.companion_email}`
+                : 'Going somewhere? Start a Safe Walk and let a community companion know about your journey.'}
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            {activeWalk ? (
+              <Link to="/safe-walk/active" className="btn btn-success" style={{ padding: '0.65rem 1.3rem', fontWeight: 700 }}>
+                <span>🛡️</span> View Active Journey &rarr;
+              </Link>
+            ) : (
+              <>
+                <Link to="/safe-walk?tab=start" className="btn btn-primary" style={{ padding: '0.65rem 1.25rem' }}>
+                  <span>🚶‍♀️</span> Start Safe Walk
+                </Link>
+                <Link to="/safe-walk?tab=companions" className="btn btn-secondary" style={{ padding: '0.65rem 1.15rem' }}>
+                  <span>👥</span> Manage Companions
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </section>

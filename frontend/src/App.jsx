@@ -14,6 +14,8 @@ import BrowsePlacesPage from './pages/user/BrowsePlacesPage';
 import ReportedPlaceDetailsPage from './pages/user/ReportedPlaceDetailsPage';
 import ReportPlacePage from './pages/user/ReportPlacePage';
 import NotificationsPage from './pages/user/NotificationsPage';
+import SafeWalkPage from './pages/user/SafeWalkPage';
+import ActiveSafeWalkPage from './pages/user/ActiveSafeWalkPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageReportsPage from './pages/admin/ManageReportsPage';
 import ManagePlacesPage from './pages/admin/ManagePlacesPage';
@@ -47,6 +49,22 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={['user']}>
                 <UserDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/safe-walk"
+            element={
+              <ProtectedRoute allowedRoles={['user']}>
+                <SafeWalkPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/safe-walk/active"
+            element={
+              <ProtectedRoute allowedRoles={['user']}>
+                <ActiveSafeWalkPage />
               </ProtectedRoute>
             }
           />

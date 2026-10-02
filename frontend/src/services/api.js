@@ -194,4 +194,69 @@ export const adminService = {
   }
 };
 
+/**
+ * Community Companion Services (Phase 6)
+ */
+export const companionService = {
+  searchUsers: async (query) => {
+    const params = { query: query ? query.trim() : '' };
+    const response = await apiClient.get('/api/companions/search', { params });
+    return response.data;
+  },
+  sendRequest: async ({ recipientId, recipientEmail }) => {
+    const payload = {};
+    if (recipientId) payload.recipient_id = recipientId;
+    if (recipientEmail) payload.recipient_email = recipientEmail.trim();
+    const response = await apiClient.post('/api/companions/requests', payload);
+    return response.data;
+  },
+  getPendingRequests: async () => {
+    const response = await apiClient.get('/api/companions/requests');
+    return response.data;
+  },
+  acceptRequest: async (id) => {
+    const response = await apiClient.patch(`/api/companions/requests/${id}/accept`);
+    return response.data;
+  },
+  rejectRequest: async (id) => {
+    const response = await apiClient.patch(`/api/companions/requests/${id}/reject`);
+    return response.data;
+  },
+  getAcceptedCompanions: async () => {
+    const response = await apiClient.get('/api/companions');
+    return response.data;
+  },
+  removeCompanion: async (id) => {
+    const response = await apiClient.delete(`/api/companions/${id}`);
+    return response.data;
+  }
+};
+
+/**
+ * Safe Walk Journey Services (Phase 6)
+ */
+export const safeWalkService = {
+  createSafeWalk: async (data) => {
+    const response = await apiClient.post('/api/safe-walks', data);
+    return response.data;
+  },
+  getActiveSafeWalk: async () => {
+    const response = await apiClient.get('/api/safe-walks/active');
+    return response.data;
+  },
+  getSafeWalkById: async (id) => {
+    const response = await apiClient.get(`/api/safe-walks/${id}`);
+    return response.data;
+  },
+  completeSafeWalk: async (id) => {
+    const response = await apiClient.patch(`/api/safe-walks/${id}/complete`);
+    return response.data;
+  },
+  cancelSafeWalk: async (id) => {
+    const response = await apiClient.patch(`/api/safe-walks/${id}/cancel`);
+    return response.data;
+  }
+};
+
 export default apiClient;
+

@@ -103,6 +103,11 @@ const Navbar = () => {
                     </NavLink>
                   </li>
                   <li>
+                    <NavLink to="/safe-walk" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                      🚶‍♀️ Safe Walk
+                    </NavLink>
+                  </li>
+                  <li>
                     <NavLink to="/places" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                       Browse Places
                     </NavLink>
@@ -176,6 +181,9 @@ const Navbar = () => {
               <>
                 <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
                   Dashboard
+                </NavLink>
+                <NavLink to="/safe-walk" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                  🚶‍♀️ Safe Walk
                 </NavLink>
                 <NavLink to="/places" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
                   Browse Places
