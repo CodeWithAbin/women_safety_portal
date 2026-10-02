@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { placeService } from '../../services/api';
 import StateDistrictSelector from '../../components/StateDistrictSelector';
@@ -6,6 +7,8 @@ import AlertBanner from '../../components/AlertBanner';
 
 const ReportPlacePage = () => {
   const { user } = useAuth();
+  const fileInputRef = useRef(null);
+
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -19,6 +22,7 @@ const ReportPlacePage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [submittedReportName, setSubmittedReportName] = useState('');
 
   // Similar report state for community prompt
   const [similarReport, setSimilarReport] = useState(null);
@@ -28,8 +32,7 @@ const ReportPlacePage = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
+  const processFile = (file) => {
     if (!file) return;
 
     if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
@@ -47,6 +50,32 @@ const ReportPlacePage = () => {
     setPhotoPreview(URL.createObjectURL(file));
   };
 
+  const handlePhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    processFile(file);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const file = e.dataTransfer.files?.[0];
+    processFile(file);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleRemovePhoto = (e) => {
+    e.stopPropagation();
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -59,6 +88,9 @@ const ReportPlacePage = () => {
     setPhotoFile(null);
     setPhotoPreview(null);
     setSimilarReport(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const publishReportDirectly = async () => {
@@ -79,11 +111,12 @@ const ReportPlacePage = () => {
 
       const res = await placeService.reportPlace(data);
       if (res.success) {
-        setSuccessMsg('Your report has been submitted and is waiting for admin review.');
+        setSubmittedReportName(formData.name);
+        setSuccessMsg('Your safety report has been submitted successfully and is queued for verification.');
         resetForm();
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to submit report.');
+      setError(err.response?.data?.message || err.message || 'Failed to submit report. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -95,7 +128,7 @@ const ReportPlacePage = () => {
     setSuccessMsg('');
 
     if (!photoFile) {
-      setError('Please attach a photo of the hazardous place.');
+      setError('Please attach a clear photo of the hazardous area or problem.');
       return;
     }
 
@@ -107,7 +140,7 @@ const ReportPlacePage = () => {
     setLoading(true);
 
     try {
-      // Safe matching check for similar accepted report
+      // Check for existing similar report
       const similarCheck = await placeService.checkSimilar({
         state: formData.state,
         district: formData.district,
@@ -121,10 +154,10 @@ const ReportPlacePage = () => {
         return;
       }
 
-      // No similar report, publish immediately
+      // No similar report found, publish directly
       await publishReportDirectly();
     } catch (err) {
-      console.warn('Similar report check error, proceeding to publish directly:', err);
+      console.warn('Similar report check error, proceeding to direct publish:', err);
       await publishReportDirectly();
     }
   };
@@ -136,7 +169,8 @@ const ReportPlacePage = () => {
     try {
       const res = await placeService.ratePlace(similarReport.id, formData.rating);
       if (res.success) {
-        setSuccessMsg(`Thank you! Your safety rating for "${similarReport.name}" has been recorded.`);
+        setSubmittedReportName(similarReport.name);
+        setSuccessMsg(`Thank you! Your safety rating (${formData.rating}★) for "${similarReport.name}" has been recorded.`);
         resetForm();
       }
     } catch (err) {
@@ -152,95 +186,203 @@ const ReportPlacePage = () => {
       ? Number(similarReport.rating).toFixed(1)
       : 'N/A';
 
+  const getRatingLabel = (score) => {
+    switch (score) {
+      case 5: return '🔥 5★ Critical Hazard (Immediate danger / Severe risk)';
+      case 4: return '⚠️ 4★ High Hazard (Poorly lit / High concern)';
+      case 3: return '⚡ 3★ Moderate Hazard (Broken lights / Isolated alley)';
+      case 2: return '🛡️ 2★ Minor Concern (Infrequent issues / Low lighting)';
+      case 1: return '✅ 1★ Very Low Concern (Minimal hazard)';
+      default: return `${score}★ Severity`;
+    }
+  };
+
   return (
-    <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-      <div className="page-header">
-        <h1 className="page-title">Report a Hazardous Place</h1>
+    <div className="report-page-container" style={{ maxWidth: '840px', margin: '0 auto' }}>
+      
+      {/* Page Header */}
+      <div className="page-header" style={{ marginBottom: '1.75rem' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.25rem 0.65rem', backgroundColor: '#fee2e2', color: '#b91c1c', borderRadius: 'var(--radius-pill)', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+          <span>🚨</span> Community Safety Reporting
+        </div>
+        <h1 className="page-title">Report a Safety Concern</h1>
         <p className="page-subtitle">
-          Help protect women and your community by reporting unlit, unsafe, or hazardous public areas.
+          Help protect women and fellow citizens by submitting accurate reports of unlit, isolated, or hazardous public areas in your neighborhood.
         </p>
       </div>
 
-      <div className="card" style={{ padding: '2.25rem 2rem' }}>
-        {error && <AlertBanner type="error" message={error} onDismiss={() => setError('')} />}
-        {successMsg && <AlertBanner type="success" message={successMsg} onDismiss={() => setSuccessMsg('')} />}
+      {error && <AlertBanner type="error" message={error} onDismiss={() => setError('')} />}
+      
+      {/* Success Confirmation Card */}
+      {successMsg && (
+        <div className="card" style={{ padding: '2rem', marginBottom: '2rem', backgroundColor: '#f0fdf4', borderColor: '#86efac', textAlign: 'center' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>✅</div>
+          <h2 style={{ color: '#166534', fontSize: '1.35rem', fontWeight: 800, marginBottom: '0.5rem' }}>
+            Report Submitted Successfully
+          </h2>
+          <p style={{ color: '#14532d', fontSize: '0.95rem', maxWidth: '520px', margin: '0 auto 1.5rem', lineHeight: 1.55 }}>
+            {successMsg}
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/dashboard" className="btn btn-primary">
+              Return to Dashboard
+            </Link>
+            <Link to="/places" className="btn btn-secondary">
+              Browse Places Directory
+            </Link>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => { setSuccessMsg(''); setSubmittedReportName(''); }}
+            >
+              + Report Another Area
+            </button>
+          </div>
+        </div>
+      )}
 
-        {/* Similar Report Prompt Modal / Alert */}
-        {similarReport && (
-          <div style={{
-            marginBottom: '2rem',
-            padding: '1.35rem',
-            backgroundColor: 'var(--primary-blue-subtle)',
-            borderRadius: 'var(--radius-md)',
-            border: '1.5px solid var(--primary-blue-border)',
-            boxShadow: 'var(--shadow-sm)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.65rem' }}>
-              <span style={{ fontSize: '1.4rem' }}>💡</span>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--primary-navy)', margin: 0 }}>
-                Existing Report Found at This Location
+      {/* Safety & Trust Information Guide */}
+      <div className="trust-info-card">
+        <div className="trust-info-title">
+          <span>🛡️</span> Safety & Moderation Workflow
+        </div>
+        <ul className="trust-info-list">
+          <li><strong>Submitted for Review:</strong> Every reported location is verified by moderators before publishing to prevent misinformation.</li>
+          <li><strong>Community Visibility:</strong> Once verified, reports appear in the public directory to warn citizens traveling through the area.</li>
+          <li><strong>Democratic Ratings:</strong> Local community members can rate the safety level (1★ to 5★) to keep hazard information current.</li>
+        </ul>
+      </div>
+
+      {/* Similar Report Detection Drawer */}
+      {similarReport && (
+        <div style={{
+          marginBottom: '2rem',
+          padding: '1.5rem',
+          backgroundColor: '#eff6ff',
+          borderRadius: 'var(--radius-md)',
+          border: '1.5px solid #93c5fd',
+          boxShadow: 'var(--shadow-sm)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+            <span style={{ fontSize: '1.5rem' }}>💡</span>
+            <div>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
+                Existing Report Detected at This Location
               </h3>
-            </div>
-
-            <p style={{ fontSize: '0.92rem', color: 'var(--text-body)', marginBottom: '1rem', lineHeight: '1.55' }}>
-              A safety report has already been verified at or near this address. You can submit your rating ({formData.rating}★) to support the existing record, or continue publishing your distinct concern.
-            </p>
-
-            <div style={{
-              backgroundColor: '#ffffff',
-              padding: '1.15rem',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid var(--border-light)',
-              marginBottom: '1.25rem'
-            }}>
-              <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--primary-navy)', marginBottom: '0.35rem' }}>
-                🚨 {similarReport.name}
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                An active safety report may already describe a similar concern at this address.
               </div>
-              <div style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-                📍 {similarReport.address}, {similarReport.district}, {similarReport.state}
-              </div>
-              <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--primary-blue)' }}>
-                ⭐ Community Safety Rating: {existingCommunityRating} / 5 ({similarReport.rating_count || 1} rating{similarReport.rating_count === 1 ? '' : 's'})
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleRateExisting}
-                disabled={ratingExisting}
-              >
-                {ratingExisting ? 'Rating...' : `⭐ Rate Existing Place (${formData.rating}★)`}
-              </button>
-
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={publishReportDirectly}
-                disabled={loading}
-              >
-                {loading ? 'Publishing...' : 'Continue Publishing My Report'}
-              </button>
-
-              <button
-                type="button"
-                className="btn"
-                onClick={() => setSimilarReport(null)}
-                style={{
-                  backgroundColor: 'transparent',
-                  color: 'var(--text-muted)',
-                  fontSize: '0.88rem',
-                  padding: '0.6rem 0.75rem'
-                }}
-              >
-                Modify Report
-              </button>
             </div>
           </div>
-        )}
 
-        <form onSubmit={handleSubmit}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            padding: '1.2rem',
+            borderRadius: 'var(--radius-sm)',
+            border: '1px solid var(--border-medium)',
+            marginBottom: '1.25rem'
+          }}>
+            <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--primary-navy)', marginBottom: '0.35rem' }}>
+              🚨 {similarReport.name}
+            </div>
+            <div style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
+              📍 {similarReport.address}, {similarReport.district}, {similarReport.state}
+            </div>
+            <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--primary-blue)' }}>
+              ⭐ Community Safety Rating: <strong>{existingCommunityRating} / 5</strong> ({similarReport.rating_count || 1} community rating{similarReport.rating_count === 1 ? '' : 's'})
+            </div>
+          </div>
+
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-body)', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+            You can contribute your assessment to the existing record, or continue publishing your distinct safety concern.
+          </p>
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleRateExisting}
+              disabled={ratingExisting}
+            >
+              {ratingExisting ? 'Submitting Rating...' : `⭐ Rate Existing Place (${formData.rating}★)`}
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={publishReportDirectly}
+              disabled={loading}
+            >
+              {loading ? 'Submitting...' : 'Continue Publishing My Report'}
+            </button>
+
+            <button
+              type="button"
+              className="btn"
+              onClick={() => setSimilarReport(null)}
+              style={{
+                backgroundColor: 'transparent',
+                color: 'var(--text-muted)',
+                fontSize: '0.88rem',
+                padding: '0.6rem 0.75rem'
+              }}
+            >
+              Modify Details
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Guided Reporting Form */}
+      <form onSubmit={handleSubmit}>
+        
+        {/* =========================================================================
+            STEP 1 — Location Information
+            ========================================================================= */}
+        <section className="report-step-card" aria-label="Step 1 Location">
+          <div className="step-header">
+            <span className="step-badge">STEP 1</span>
+            <h2 className="step-title">📍 Location Information</h2>
+          </div>
+
+          <StateDistrictSelector
+            selectedState={formData.state}
+            selectedDistrict={formData.district}
+            onStateChange={(st) => handleFieldChange('state', st)}
+            onDistrictChange={(dt) => handleFieldChange('district', dt)}
+            stateLabel="State"
+            districtLabel="District"
+            required={true}
+          />
+
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" htmlFor="address">
+              Street Address & Notable Landmark <span className="required">*</span>
+            </label>
+            <input
+              id="address"
+              type="text"
+              className="form-control"
+              placeholder="e.g. Swaraj Round North, Near Town Hall / Aluva Metro Pillar 42"
+              value={formData.address}
+              onChange={(e) => handleFieldChange('address', e.target.value)}
+              required
+            />
+            <div className="form-hint">
+              Be as specific as possible with street names, junctions, or nearby landmark buildings.
+            </div>
+          </div>
+        </section>
+
+        {/* =========================================================================
+            STEP 2 — Safety Concern & Photo
+            ========================================================================= */}
+        <section className="report-step-card" aria-label="Step 2 Safety Concern">
+          <div className="step-header">
+            <span className="step-badge">STEP 2</span>
+            <h2 className="step-title">🚨 Safety Concern Details</h2>
+          </div>
+
           <div className="form-group">
             <label className="form-label" htmlFor="placeName">
               Problem Statement / Hazard Title <span className="required">*</span>
@@ -249,101 +391,209 @@ const ReportPlacePage = () => {
               id="placeName"
               type="text"
               className="form-control"
-              placeholder="e.g. Broken street lights / Suspicious gathering at bus stop"
+              placeholder="e.g. Broken street lights / Unlit pedestrian underpass / Suspicious spot"
               value={formData.name}
               onChange={(e) => handleFieldChange('name', e.target.value)}
               required
             />
+            <div className="form-hint">Summarize the core safety hazard in a concise title.</div>
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="address">
-              Street Address & Landmark <span className="required">*</span>
+            <label className="form-label" htmlFor="description">
+              Detailed Description & Context <span className="required">*</span>
             </label>
-            <input
-              id="address"
-              type="text"
+            <textarea
+              id="description"
               className="form-control"
-              placeholder="e.g. Swaraj Round North, Near Town Hall"
-              value={formData.address}
-              onChange={(e) => handleFieldChange('address', e.target.value)}
+              placeholder="Explain the hazard conditions (e.g. street completely dark after 7 PM, overgrown bushes obscuring visibility, broken sidewalk, no CCTV coverage)..."
+              value={formData.description}
+              onChange={(e) => handleFieldChange('description', e.target.value)}
               required
+              rows={4}
             />
+            <div className="form-hint">Provide helpful context for commuters and community safety members.</div>
           </div>
 
-          <StateDistrictSelector
-            selectedState={formData.state}
-            selectedDistrict={formData.district}
-            onStateChange={(st) => handleFieldChange('state', st)}
-            onDistrictChange={(dt) => handleFieldChange('district', dt)}
-            required={true}
-          />
-
-          <div className="form-group">
+          {/* Photo Dropzone / Upload Area */}
+          <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label">
-              Hazard Severity Rating (1 = Minor Concern, 5 = Critical Hazard) <span className="required">*</span>
+              <span>📷</span> Attach Photo of the Location <span className="required">*</span>
             </label>
-            <div className="rating-selector">
+
+            <input
+              ref={fileInputRef}
+              id="photo-input"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              style={{ display: 'none' }}
+              onChange={handlePhotoChange}
+            />
+
+            {!photoPreview ? (
+              <div
+                className="photo-dropzone"
+                onClick={() => fileInputRef.current?.click()}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click(); }}
+                aria-label="Upload photo of the hazard"
+              >
+                <div className="photo-dropzone-icon" aria-hidden="true">
+                  📸
+                </div>
+                <div style={{ fontWeight: 700, fontSize: '0.98rem', color: 'var(--primary-navy)' }}>
+                  Click to Upload or Drag & Drop Photo
+                </div>
+                <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>
+                  Supported formats: JPEG, PNG, WebP (Maximum file size: 5MB)
+                </div>
+              </div>
+            ) : (
+              <div className="photo-preview-wrap">
+                <img src={photoPreview} alt="Attached Hazard Preview" className="photo-preview-img" />
+                <div className="photo-preview-overlay">
+                  <span style={{ color: '#ffffff', fontSize: '0.85rem', fontWeight: 600 }}>
+                    ✓ Photo Attached ({photoFile?.name})
+                  </span>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      style={{ padding: '0.3rem 0.65rem', fontSize: '0.8rem' }}
+                    >
+                      Change Photo
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-danger btn-sm"
+                      onClick={handleRemovePhoto}
+                      style={{ padding: '0.3rem 0.65rem', fontSize: '0.8rem' }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* =========================================================================
+            STEP 3 — Initial Safety Rating
+            ========================================================================= */}
+        <section className="report-step-card" aria-label="Step 3 Safety Rating">
+          <div className="step-header">
+            <span className="step-badge">STEP 3</span>
+            <h2 className="step-title">⭐ Initial Hazard Severity Rating</h2>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" style={{ marginBottom: '0.5rem' }}>
+              Select Hazard Severity Score <span className="required">*</span>
+            </label>
+            <div className="rating-selector" style={{ marginBottom: '0.75rem' }}>
               {[1, 2, 3, 4, 5].map((lvl) => (
                 <button
                   type="button"
                   key={lvl}
                   className={`rating-btn ${formData.rating === lvl ? 'active' : ''}`}
                   onClick={() => handleFieldChange('rating', lvl)}
+                  aria-pressed={formData.rating === lvl}
+                  style={{ minWidth: '70px', padding: '0.65rem 0.5rem' }}
                 >
-                  {lvl} {lvl === 5 ? '🔥 Critical' : lvl === 4 ? '⚠️ High' : lvl === 1 ? '🛡️ Minor' : '★'}
+                  {lvl} {lvl === 5 ? '🔥 Critical' : lvl === 4 ? '⚠️ High' : lvl === 3 ? '⚡ Medium' : lvl === 1 ? '🛡️ Minor' : '★'}
                 </button>
               ))}
             </div>
+
+            <div style={{
+              padding: '0.75rem 1rem',
+              backgroundColor: '#f8fafc',
+              border: '1px solid var(--border-light)',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: '0.88rem',
+              color: 'var(--primary-navy)',
+              fontWeight: 600
+            }}>
+              Selected: {getRatingLabel(formData.rating)}
+            </div>
+            <div className="form-hint" style={{ marginTop: '0.35rem' }}>
+              This rating acts as the initial community evaluation and will be combined with community votes.
+            </div>
+          </div>
+        </section>
+
+        {/* =========================================================================
+            STEP 4 — Review Summary & Submit
+            ========================================================================= */}
+        <section className="report-step-card" aria-label="Step 4 Review & Submit">
+          <div className="step-header">
+            <span className="step-badge">STEP 4</span>
+            <h2 className="step-title">📋 Review & Submit Report</h2>
           </div>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="description">
-              Detailed Description <span className="required">*</span>
-            </label>
-            <textarea
-              id="description"
-              className="form-control"
-              placeholder="Provide context regarding the safety risk (e.g. dark walkway between 8 PM to 6 AM, overgrown bushes, non-functional CCTV)..."
-              value={formData.description}
-              onChange={(e) => handleFieldChange('description', e.target.value)}
-              required
-              rows={4}
-            />
-          </div>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', margin: '0 0 1rem 0' }}>
+            Please verify your report details before submitting. All reports are queued for administrative moderation.
+          </p>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="photo">
-              Attach Photo of the Hazard <span className="required">*</span>
-            </label>
-            <input
-              id="photo"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              className="form-control"
-              onChange={handlePhotoChange}
-              required={!photoPreview}
-            />
-            <div className="form-hint">Supported formats: JPG, PNG, WebP (Max file size: 5MB)</div>
+          <div className="review-summary-card">
+            <div style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--primary-navy)', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem' }}>
+              Report Summary Preview
+            </div>
 
-            {photoPreview && (
-              <div style={{ marginTop: '0.85rem' }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--primary-navy)', marginBottom: '0.35rem' }}>Attached Photo Preview:</div>
-                <img src={photoPreview} alt="Hazard Preview" className="photo-preview" />
+            <div className="review-grid">
+              <div className="review-item">
+                <span className="review-label">Problem Statement</span>
+                <span className="review-value">{formData.name || <em style={{ color: 'var(--text-muted)' }}>Not entered</em>}</span>
               </div>
-            )}
+
+              <div className="review-item">
+                <span className="review-label">Location</span>
+                <span className="review-value">
+                  {formData.address ? `${formData.address}, ` : ''}{formData.district}, {formData.state}
+                </span>
+              </div>
+
+              <div className="review-item">
+                <span className="review-label">Initial Rating</span>
+                <span className="review-value" style={{ color: 'var(--primary-blue)' }}>
+                  ⭐ {formData.rating} / 5 ({getRatingLabel(formData.rating).split(' ')[1] || 'Severity'})
+                </span>
+              </div>
+
+              <div className="review-item">
+                <span className="review-label">Photo Status</span>
+                <span className="review-value">
+                  {photoFile ? `✓ Attached (${photoFile.name})` : <span style={{ color: '#e11d48' }}>⚠ Photo Required</span>}
+                </span>
+              </div>
+
+              {formData.description && (
+                <div className="review-item" style={{ gridColumn: '1 / -1' }}>
+                  <span className="review-label">Description</span>
+                  <span className="review-value" style={{ fontSize: '0.88rem', fontWeight: 400, color: 'var(--text-body)', lineHeight: 1.45 }}>
+                    {formData.description}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           <button
             type="submit"
             className="btn btn-primary btn-block btn-lg"
             disabled={loading || Boolean(similarReport)}
-            style={{ marginTop: '1.5rem' }}
+            style={{ fontSize: '1rem', padding: '0.85rem 1.5rem', fontWeight: 700 }}
           >
-            {loading ? 'Submitting Report...' : 'Submit Report for Review'}
+            {loading ? 'Submitting Safety Report...' : '🚀 Submit Safety Report for Review'}
           </button>
-        </form>
-      </div>
+        </section>
+
+      </form>
     </div>
   );
 };
