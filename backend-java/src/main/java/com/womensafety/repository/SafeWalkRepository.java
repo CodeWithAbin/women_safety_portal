@@ -116,7 +116,7 @@ public class SafeWalkRepository {
     public int markOverdueNotified(Long id) {
         String sql = "UPDATE safe_walks SET overdue_notified_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND overdue_notified_at IS NULL";
         TursoClient.ExecuteResult res = tursoClient.update(sql, List.of(id));
-        return res.rowsAffected();
+        return res.affectedRows();
     }
 
     private SafeWalk mapRowToSafeWalk(Map<String, Object> row) {

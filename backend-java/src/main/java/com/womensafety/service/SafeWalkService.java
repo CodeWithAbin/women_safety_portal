@@ -334,7 +334,7 @@ public class SafeWalkService {
                 if (s.contains(" ") && !s.contains("T")) {
                     s = s.replace(" ", "T");
                 }
-                if (!s.endsWith("Z") && !s.contains("+") && !s.contains("-", 10)) {
+                if (!s.endsWith("Z") && !s.contains("+") && s.indexOf("-", 10) == -1) {
                     s = s + "Z";
                 }
                 return Instant.parse(s);
