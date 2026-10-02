@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -18,7 +19,7 @@ L.Icon.Default.mergeOptions({
 const createCustomPinIcon = (isResolved, rating) => {
   const bgColor = isResolved ? '#10b981' : rating >= 4.0 ? '#ef4444' : rating >= 3.0 ? '#f59e0b' : '#3b82f6';
   const strokeColor = isResolved ? '#047857' : rating >= 4.0 ? '#b91c1c' : rating >= 3.0 ? '#d97706' : '#1d4ed8';
-  const symbol = isResolved ? '✓' : '⚠️';
+  const symbol = isResolved ? '✓' : '📍';
 
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 42" width="32" height="42">
@@ -69,8 +70,10 @@ const SafetyMap = ({
   userLocation = null,
   onMarkerClick = () => {},
   radiusKm = null,
-  mapHeight = '460px'
+  mapHeight = '420px',
+  showDetailsButton = true
 }) => {
+  const navigate = useNavigate();
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersGroupRef = useRef(null);
@@ -82,7 +85,6 @@ const SafetyMap = ({
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
-    // Default center on Kerala (Ernakulam)
     const initialLat = userLocation?.latitude || 9.9816;
     const initialLon = userLocation?.longitude || 76.2999;
 
@@ -108,6 +110,28 @@ const SafetyMap = ({
     };
   }, []);
 
+  // Intercept click on popup links for smooth React Router navigation
+  useEffect(() => {
+    const container = mapContainerRef.current;
+    if (!container) return;
+
+    const handlePopupClick = (e) => {
+      const link = e.target.closest('a[data-place-link]');
+      if (link) {
+        e.preventDefault();
+        const targetPath = link.getAttribute('href');
+        if (targetPath) {
+          navigate(targetPath);
+        }
+      }
+    };
+
+    container.addEventListener('click', handlePopupClick);
+    return () => {
+      container.removeEventListener('click', handlePopupClick);
+    };
+  }, [navigate]);
+
   // Update Places Markers
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -127,13 +151,12 @@ const SafetyMap = ({
 
       const marker = L.marker([place.latitude, place.longitude], { icon });
 
-      // Build compact popup content
       const resolvedDate = place.resolved_at
         ? new Date(place.resolved_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
         : null;
 
       const popupHtml = `
-        <div style="font-family: inherit; font-size: 0.88rem; max-width: 230px; padding: 2px;">
+        <div style="font-family: inherit; font-size: 0.88rem; max-width: 240px; padding: 4px;">
           <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a; margin-bottom: 0.25rem; line-height: 1.3;">
             ${place.name}
           </div>
@@ -154,8 +177,17 @@ const SafetyMap = ({
           }
           ${
             place.distance_km != null
-              ? `<div style="font-size: 0.8rem; font-weight: 700; color: #0284c7; margin-top: 0.25rem;">
+              ? `<div style="font-size: 0.8rem; font-weight: 700; color: #0284c7; margin-bottom: 0.4rem;">
                   🧭 ${place.distance_km} km away
+                </div>`
+              : ''
+          }
+          ${
+            showDetailsButton
+              ? `<div style="margin-top: 0.5rem; padding-top: 0.45rem; border-top: 1px solid #e2e8f0;">
+                  <a href="/places/${place.id}" data-place-link="true" style="display: block; text-align: center; background-color: #0284c7; color: #ffffff; padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.82rem; font-weight: 700; text-decoration: none;">
+                    View Details &rarr;
+                  </a>
                 </div>`
               : ''
           }
@@ -173,18 +205,16 @@ const SafetyMap = ({
       bounds.push([place.latitude, place.longitude]);
     });
 
-    // Add user location to bounds if present
     if (userLocation?.latitude && userLocation?.longitude) {
       bounds.push([userLocation.latitude, userLocation.longitude]);
     }
 
-    // Auto-fit bounds if we have points
     if (bounds.length > 1) {
       map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
     } else if (bounds.length === 1) {
       map.setView(bounds[0], 13);
     }
-  }, [places, userLocation]);
+  }, [places, userLocation, showDetailsButton]);
 
   // Update User Location Marker and Radius Circle
   useEffect(() => {
@@ -205,7 +235,7 @@ const SafetyMap = ({
         icon: createUserLocationIcon(),
         zIndexOffset: 1000
       }).bindPopup(`
-        <div style="font-weight: 700; font-size: 0.88rem; color: #0284c7;">
+        <div style="font-weight: 700; font-size: 0.88rem; color: #0284c7; padding: 2px;">
           📍 Your Current Location
         </div>
       `);

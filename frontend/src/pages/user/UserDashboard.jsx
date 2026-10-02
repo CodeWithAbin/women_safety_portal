@@ -1,18 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { placeService, notificationService } from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PlaceCard from '../../components/PlaceCard';
+import SafetyMap from '../../components/SafetyMap';
 
 const UserDashboard = () => {
   const { user } = useAuth();
   const [districtPlaces, setDistrictPlaces] = useState([]);
+  const [nearbyPlaces, setNearbyPlaces] = useState([]);
   const [districtCount, setDistrictCount] = useState(null);
   const [ratedPlacesCount, setRatedPlacesCount] = useState(0);
   const [unreadNotifs, setUnreadNotifs] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  // Map & Location State
+  const [userCoords, setUserCoords] = useState(null);
+  const [radiusKm, setRadiusKm] = useState(10);
+  const [locating, setLocating] = useState(false);
+  const [locationStatusMsg, setLocationStatusMsg] = useState('');
+  const [loadingNearby, setLoadingNearby] = useState(false);
+  const [selectedPlaceId, setSelectedPlaceId] = useState(null);
+
+  const userDistrict = user?.district || 'Ernakulam';
+  const userState = user?.state || 'Kerala';
+
+  // Initial Fetch for User District & Notifications
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!user) return;
@@ -45,12 +59,76 @@ const UserDashboard = () => {
     fetchDashboardData();
   }, [user]);
 
+  // Fetch Nearby Places when user location or radius changes
+  useEffect(() => {
+    if (!userCoords) {
+      setNearbyPlaces([]);
+      return;
+    }
+
+    const fetchNearby = async () => {
+      setLoadingNearby(true);
+      try {
+        const res = await placeService.getAcceptedPlaces({
+          latitude: userCoords.latitude,
+          longitude: userCoords.longitude,
+          radiusKm
+        });
+        if (res.success && Array.isArray(res.data)) {
+          setNearbyPlaces(res.data);
+        }
+      } catch (err) {
+        console.warn('Nearby places fetch error:', err);
+      } finally {
+        setLoadingNearby(false);
+      }
+    };
+
+    fetchNearby();
+  }, [userCoords, radiusKm]);
+
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationStatusMsg('Geolocation is not supported by your browser.');
+      return;
+    }
+    setLocating(true);
+    setLocationStatusMsg('');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocating(false);
+        const lat = parseFloat(position.coords.latitude.toFixed(6));
+        const lon = parseFloat(position.coords.longitude.toFixed(6));
+        setUserCoords({ latitude: lat, longitude: lon });
+        setLocationStatusMsg('Displaying reported places near your current coordinates.');
+      },
+      (err) => {
+        setLocating(false);
+        if (err.code === 1) {
+          setLocationStatusMsg('Location access was not granted. You can still browse reported places by State and District.');
+        } else {
+          setLocationStatusMsg('Could not retrieve your location. You can browse reported places by State and District.');
+        }
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  };
+
+  const handleClearLocation = () => {
+    setUserCoords(null);
+    setLocationStatusMsg('');
+    setNearbyPlaces([]);
+  };
+
+  // Determine active display places for the dashboard map and list
+  const activePlaces = userCoords ? nearbyPlaces : districtPlaces;
+  const placesWithCoords = useMemo(() => {
+    return activePlaces.filter((p) => p.latitude != null && p.longitude != null);
+  }, [activePlaces]);
+
   if (loading) {
     return <LoadingSpinner message="Loading your safety dashboard..." />;
   }
-
-  const userDistrict = user?.district || 'Ernakulam';
-  const userState = user?.state || 'Kerala';
 
   return (
     <div className="dashboard-container" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -68,7 +146,7 @@ const UserDashboard = () => {
               Welcome back, {user?.name || 'Citizen'}! 👋
             </h1>
             <p style={{ color: 'var(--text-body)', fontSize: '0.98rem', maxWidth: '640px', lineHeight: 1.5 }}>
-              Your central hub for community safety intelligence, verified reports, and active hazard updates in your locality.
+              Your central hub for community safety intelligence, verified reports, and active safety updates in your locality.
             </p>
             <div style={{ marginTop: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
               <span>📍 Registered Home Area:</span>
@@ -126,14 +204,14 @@ const UserDashboard = () => {
         </div>
 
         <div className="stat-grid">
-          {/* Card 1: Verified Hazards in District */}
+          {/* Card 1: Verified Reported Places */}
           <div className="stat-card">
             <div className="stat-icon-wrap stat-icon-blue" aria-hidden="true">
-              ⚠️
+              📍
             </div>
             <div className="stat-info">
               <span className="stat-num">{districtCount !== null ? districtCount : 0}</span>
-              <span className="stat-label">Places Reported in District</span>
+              <span className="stat-label">Reported Places in District</span>
             </div>
           </div>
 
@@ -162,7 +240,193 @@ const UserDashboard = () => {
       </section>
 
       {/* =========================================================================
-          SECTION C: Main Action Cards
+          SECTION C: Prominent Safety Map — "Reported Places Near You"
+          ========================================================================= */}
+      <section aria-label="Reported Places Near You Map" className="card" style={{ padding: '1.5rem', backgroundColor: '#ffffff' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
+          <div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.55rem', backgroundColor: '#e0f2fe', color: '#0369a1', borderRadius: 'var(--radius-pill)', fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.35rem' }}>
+              <span>🗺️</span> Interactive Safety Discovery
+            </div>
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
+              Reported Places Near You
+            </h2>
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
+              {userCoords
+                ? `Showing reported concerns within ${radiusKm} km of your location. Click any marker to view details.`
+                : `Showing reported places in ${userDistrict}. Click "Use My Location" to discover concerns nearest to you.`}
+            </p>
+          </div>
+
+          {/* Location Controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+            {!userCoords ? (
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={handleUseMyLocation}
+                disabled={locating}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+              >
+                <span>📍</span> {locating ? 'Detecting Location...' : 'Use My Location'}
+              </button>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.3rem 0.65rem', backgroundColor: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', borderRadius: 'var(--radius-pill)', fontSize: '0.8rem', fontWeight: 700 }}>
+                  <span>✓</span> Location Active
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleClearLocation}
+                  style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }}
+                >
+                  Reset
+                </button>
+              </div>
+            )}
+
+            {/* Radius Selector */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.85rem' }}>
+              <label htmlFor="dashboard-radius" style={{ fontWeight: 600, color: 'var(--primary-navy)' }}>
+                Radius:
+              </label>
+              <select
+                id="dashboard-radius"
+                className="form-control"
+                style={{ width: 'auto', padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}
+                value={radiusKm}
+                disabled={!userCoords}
+                onChange={(e) => setRadiusKm(Number(e.target.value))}
+              >
+                <option value="1">1 km</option>
+                <option value="5">5 km</option>
+                <option value="10">10 km</option>
+                <option value="25">25 km</option>
+                <option value="50">50 km</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Location Status Message / Fallback */}
+        {locationStatusMsg && (
+          <div style={{
+            marginBottom: '1rem',
+            padding: '0.6rem 0.9rem',
+            backgroundColor: userCoords ? '#ecfdf5' : '#fffbeb',
+            border: `1px solid ${userCoords ? '#a7f3d0' : '#fde68a'}`,
+            borderRadius: 'var(--radius-sm)',
+            fontSize: '0.86rem',
+            color: userCoords ? '#065f46' : '#92400e',
+            fontWeight: 500
+          }}>
+            {locationStatusMsg}
+          </div>
+        )}
+
+        {/* The Map Component */}
+        {loadingNearby ? (
+          <LoadingSpinner message="Locating nearby reported places..." />
+        ) : (
+          <div>
+            <SafetyMap
+              places={activePlaces}
+              userLocation={userCoords}
+              radiusKm={userCoords ? radiusKm : null}
+              selectedPlaceId={selectedPlaceId}
+              mapHeight="400px"
+              showDetailsButton={true}
+              onMarkerClick={(p) => setSelectedPlaceId(p.id)}
+            />
+
+            {/* Map Legend / Caption */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.75rem', flexWrap: 'wrap', gap: '0.5rem', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#ef4444', display: 'inline-block' }}></span>
+                  Active Reported Place
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block' }}></span>
+                  Resolved Issue
+                </span>
+                {userCoords && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#0284c7', display: 'inline-block' }}></span>
+                    Your Location
+                  </span>
+                )}
+              </div>
+
+              <span>
+                {placesWithCoords.length} plotted on map
+              </span>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* =========================================================================
+          SECTION D: Nearby / Recent Reported Places
+          ========================================================================= */}
+      <section aria-label="Nearby Reported Places List">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
+              {userCoords ? `🛡️ Reported Places within ${radiusKm} km` : `🛡️ Recent Reported Places in ${userDistrict}`}
+            </h2>
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
+              {userCoords
+                ? `Discovered ${nearbyPlaces.length} safety report${nearbyPlaces.length === 1 ? '' : 's'} near your coordinates`
+                : `Latest reviewed safety reports in your registered district`}
+            </p>
+          </div>
+          {activePlaces.length > 0 && (
+            <Link to="/places" style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--primary-blue)', textDecoration: 'none' }}>
+              Browse All Places ({activePlaces.length}) &rarr;
+            </Link>
+          )}
+        </div>
+
+        {activePlaces.length === 0 ? (
+          <div className="card" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', backgroundColor: '#ffffff' }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🛡️</div>
+            <h4 style={{ color: 'var(--primary-navy)', marginBottom: '0.35rem', fontWeight: 700 }}>
+              {userCoords ? `No Reported Places within ${radiusKm} km` : `No Active Reports in ${userDistrict}`}
+            </h4>
+            <p style={{ fontSize: '0.9rem', maxWidth: '440px', margin: '0 auto 1.25rem' }}>
+              {userCoords
+                ? `No reported safety concerns were found within ${radiusKm} km of your location. You can expand the radius or report an issue.`
+                : `There are currently no reported places in your district. If you notice a safety concern, you can report it to help others.`}
+            </p>
+            <Link to="/report" className="btn btn-primary btn-sm">
+              <span>➕</span> Report a Safety Concern
+            </Link>
+          </div>
+        ) : (
+          <div className="grid-cards">
+            {activePlaces.slice(0, 3).map((place) => (
+              <PlaceCard
+                key={place.id}
+                place={place}
+                showViewDetails={true}
+                onRatingSuccess={(placeId, updatedData) => {
+                  setDistrictPlaces((prev) =>
+                    prev.map((p) => (p.id === placeId ? { ...p, ...updatedData } : p))
+                  );
+                  setNearbyPlaces((prev) =>
+                    prev.map((p) => (p.id === placeId ? { ...p, ...updatedData } : p))
+                  );
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* =========================================================================
+          SECTION E: Main Action Cards
           ========================================================================= */}
       <section aria-label="Quick Actions">
         <div style={{ marginBottom: '1rem' }}>
@@ -193,18 +457,18 @@ const UserDashboard = () => {
             </Link>
           </div>
 
-          {/* Action 2: Browse Safe Places */}
+          {/* Action 2: Browse Reported Places */}
           <div className="action-card">
             <div className="action-card-header">
               <div className="action-card-icon" style={{ backgroundColor: '#e0f2fe', borderColor: '#bae6fd', color: '#0284c7' }}>
                 🛡️
               </div>
               <div>
-                <h3 className="action-card-title">Browse Safe Places</h3>
+                <h3 className="action-card-title">Browse Reported Places</h3>
               </div>
             </div>
             <p className="action-card-desc">
-              Explore verified hazardous areas across districts, inspect severity levels, filter by keywords, and contribute safety ratings.
+              Explore verified reported areas across districts, inspect severity levels, filter by keywords, and contribute safety ratings.
             </p>
             <Link to="/places" className="btn btn-secondary" style={{ marginTop: 'auto', width: '100%', borderColor: 'var(--primary-blue-border)', color: 'var(--primary-blue)' }}>
               <span>🔍</span> Explore Places Directory
@@ -232,7 +496,7 @@ const UserDashboard = () => {
       </section>
 
       {/* =========================================================================
-          SECTION D: Community Safety Rating Section
+          SECTION F: Community Safety Rating Model Explanation
           ========================================================================= */}
       <section className="community-safety-banner" aria-label="About Community Safety Ratings">
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.25rem' }}>
@@ -241,7 +505,7 @@ const UserDashboard = () => {
               <span>⭐</span> Understanding Community Safety Ratings
             </h3>
             <p style={{ margin: 0, color: 'var(--text-body)' }}>
-              Safety ratings on our portal are democratically calculated from verified ratings submitted by real community members. Instead of relying on a single assessment, every location's safety score reflects collective feedback on a scale from <strong>1★ (Low Hazard)</strong> to <strong>5★ (Severe Hazard)</strong>.
+              Safety ratings on our portal are democratically calculated from verified ratings submitted by real community members. Instead of relying on a single assessment, every location's safety score reflects collective feedback on a scale from <strong>1★ (Minor Concern)</strong> to <strong>5★ (Severe Concern)</strong>.
             </p>
           </div>
 
@@ -271,54 +535,6 @@ const UserDashboard = () => {
             </div>
           </div>
         </div>
-      </section>
-
-      {/* =========================================================================
-          SECTION E: Recent Verified Hazards in District
-          ========================================================================= */}
-      <section aria-label="Recent Local Hazards">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
-              🛡️ Recent Verified Hazards in {userDistrict}
-            </h2>
-            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
-              Latest reviewed safety reports in your registered district
-            </p>
-          </div>
-          {districtPlaces.length > 0 && (
-            <Link to="/places" style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--primary-blue)', textDecoration: 'none' }}>
-              Browse All Places ({districtPlaces.length}) &rarr;
-            </Link>
-          )}
-        </div>
-
-        {districtPlaces.length === 0 ? (
-          <div className="card" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', backgroundColor: '#ffffff' }}>
-            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🛡️</div>
-            <h4 style={{ color: 'var(--primary-navy)', marginBottom: '0.35rem', fontWeight: 700 }}>No Active Hazards in {userDistrict}</h4>
-            <p style={{ fontSize: '0.9rem', maxWidth: '420px', margin: '0 auto 1.25rem' }}>
-              There are currently no verified hazardous places reported in your district. If you notice an unsafe location, you can be the first to report it.
-            </p>
-            <Link to="/report" className="btn btn-primary btn-sm">
-              <span>➕</span> Report a Concern in {userDistrict}
-            </Link>
-          </div>
-        ) : (
-          <div className="grid-cards">
-            {districtPlaces.slice(0, 3).map((place) => (
-              <PlaceCard
-                key={place.id}
-                place={place}
-                onRatingSuccess={(placeId, updatedData) => {
-                  setDistrictPlaces((prev) =>
-                    prev.map((p) => (p.id === placeId ? { ...p, ...updatedData } : p))
-                  );
-                }}
-              />
-            ))}
-          </div>
-        )}
       </section>
 
     </div>

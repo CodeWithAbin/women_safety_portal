@@ -360,7 +360,7 @@ const ManageUsersPage = () => {
       <ConfirmModal
         isOpen={!!deleteTargetUser}
         title="Delete User Account"
-        message={`Are you sure you want to permanently delete citizen "${deleteTargetUser?.name}" (${deleteTargetUser?.email})? Their submitted hazardous places will remain preserved.`}
+        message={`Are you sure you want to permanently delete citizen "${deleteTargetUser?.name}" (${deleteTargetUser?.email})? Their submitted reported places will remain preserved.`}
         confirmText="Delete User"
         isDestructive={true}
         loading={modalLoading}

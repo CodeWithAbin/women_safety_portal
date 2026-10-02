@@ -77,7 +77,7 @@ const Navbar = () => {
                   </li>
                   <li>
                     <NavLink to="/admin/places" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                      Hazardous Places
+                      Reported Places
                     </NavLink>
                   </li>
                   <li>
@@ -160,7 +160,7 @@ const Navbar = () => {
                   Review Reports
                 </NavLink>
                 <NavLink to="/admin/places" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
-                  Hazardous Places
+                  Reported Places
                 </NavLink>
                 <NavLink to="/admin/users" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
                   Users

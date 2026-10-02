@@ -56,7 +56,7 @@ const ManagePlacesPage = () => {
         setPlaces(res.data || []);
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to fetch hazardous places.');
+      setError(err.response?.data?.message || err.message || 'Failed to fetch reported places.');
     } finally {
       setLoading(false);
     }
@@ -141,7 +141,7 @@ const ManagePlacesPage = () => {
   const handleCreatePlace = async (e) => {
     e.preventDefault();
     if (!photoFile) {
-      setError('A photo is required when adding a hazardous place.');
+      setError('A photo is required when adding a reported place.');
       return;
     }
 
@@ -171,7 +171,7 @@ const ManagePlacesPage = () => {
 
       const res = await adminService.createPlace(data);
       if (res.success) {
-        setSuccessMsg('Hazardous place created and published successfully.');
+        setSuccessMsg('Reported place created and published successfully.');
         setShowAddModal(false);
         resetForm();
         fetchPlaces();
@@ -217,7 +217,7 @@ const ManagePlacesPage = () => {
       }
 
       if (res.success) {
-        setSuccessMsg('Hazardous place updated successfully.');
+        setSuccessMsg('Reported place updated successfully.');
         setEditPlace(null);
         resetForm();
         fetchPlaces();
@@ -237,7 +237,7 @@ const ManagePlacesPage = () => {
     try {
       const res = await adminService.deletePlace(deleteTargetPlace.id);
       if (res.success) {
-        setSuccessMsg('Hazardous place deleted successfully.');
+        setSuccessMsg('Reported place deleted successfully.');
         setDeleteTargetPlace(null);
         fetchPlaces();
       }
@@ -275,9 +275,9 @@ const ManagePlacesPage = () => {
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.25rem 0.65rem', backgroundColor: '#e0f2fe', color: '#0284c7', borderRadius: 'var(--radius-pill)', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.5rem' }}>
             <span>📍</span> Directory Management
           </div>
-          <h1 className="page-title">Manage Hazardous Places</h1>
+          <h1 className="page-title">Manage Reported Places</h1>
           <p className="page-subtitle">
-            View, add, modify, and delete published hazardous areas in the portal safety directory.
+            View, add, modify, and delete published reported places in the portal safety directory.
           </p>
         </div>
         <button type="button" className="btn btn-primary" onClick={handleOpenAdd}>
@@ -425,7 +425,7 @@ const ManagePlacesPage = () => {
           color: 'var(--text-body)'
         }}>
           <div>
-            Showing <strong>{places.length}</strong> hazardous place{places.length > 1 ? 's' : ''}{' '}
+            Showing <strong>{places.length}</strong> reported place{places.length > 1 ? 's' : ''}{' '}
             in <strong style={{ color: 'var(--primary-navy)' }}>{filterDistrict || 'All Districts'}, {filterState || 'All States'}</strong>
           </div>
           <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
@@ -435,15 +435,15 @@ const ManagePlacesPage = () => {
       )}
 
       {loading ? (
-        <LoadingSpinner message="Loading hazardous places..." />
+        <LoadingSpinner message="Loading reported places..." />
       ) : places.length === 0 ? (
         <EmptyState
           icon="📍"
           title="No Places Found"
           message={
             hasActiveFilters
-              ? 'No hazardous places match the current location and search filters.'
-              : 'No hazardous places are currently published in the portal directory.'
+              ? 'No reported places match the current location and search filters.'
+              : 'No reported places are currently published in the portal directory.'
           }
           actionButton={
             hasActiveFilters ? (
@@ -477,7 +477,7 @@ const ManagePlacesPage = () => {
         <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="add-place-modal-title">
           <div className="modal-container">
             <div className="modal-header">
-              <h3 id="add-place-modal-title" className="modal-title">Add Hazardous Place</h3>
+              <h3 id="add-place-modal-title" className="modal-title">Add Reported Place</h3>
               <button className="modal-close" onClick={() => setShowAddModal(false)} aria-label="Close modal">
                 &times;
               </button>
@@ -624,7 +624,7 @@ const ManagePlacesPage = () => {
         <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="edit-place-modal-title">
           <div className="modal-container">
             <div className="modal-header">
-              <h3 id="edit-place-modal-title" className="modal-title">Edit Hazardous Place</h3>
+              <h3 id="edit-place-modal-title" className="modal-title">Edit Reported Place</h3>
               <button className="modal-close" onClick={() => setEditPlace(null)} aria-label="Close modal">
                 &times;
               </button>
@@ -765,7 +765,7 @@ const ManagePlacesPage = () => {
       {/* Delete Confirmation Modal */}
       <ConfirmModal
         isOpen={!!deleteTargetPlace}
-        title="Delete Hazardous Place"
+        title="Delete Reported Place"
         message={`Are you sure you want to permanently delete "${deleteTargetPlace?.name}" (${deleteTargetPlace?.address})? This record will be removed from the public safety directory and cannot be undone.`}
         confirmText="Delete Place"
         isDestructive={true}

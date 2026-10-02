@@ -11,6 +11,7 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import UserDashboard from './pages/user/UserDashboard';
 import BrowsePlacesPage from './pages/user/BrowsePlacesPage';
+import ReportedPlaceDetailsPage from './pages/user/ReportedPlaceDetailsPage';
 import ReportPlacePage from './pages/user/ReportPlacePage';
 import NotificationsPage from './pages/user/NotificationsPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -54,6 +55,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={['user', 'admin']}>
                 <BrowsePlacesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/places/:id"
+            element={
+              <ProtectedRoute allowedRoles={['user', 'admin']}>
+                <ReportedPlaceDetailsPage />
               </ProtectedRoute>
             }
           />

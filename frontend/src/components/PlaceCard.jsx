@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { getPhotoUrl, placeService } from '../services/api';
 
-const PlaceCard = ({ place, onEdit, onDelete, onResolve, isAdmin = false, onRatingSuccess }) => {
+const PlaceCard = ({ place, onEdit, onDelete, onResolve, isAdmin = false, onRatingSuccess, showViewDetails = true }) => {
   const [communityRating, setCommunityRating] = useState(
     place.community_rating != null ? Number(place.community_rating).toFixed(1) : place.rating != null ? Number(place.rating).toFixed(1) : 'N/A'
   );
@@ -38,11 +39,11 @@ const PlaceCard = ({ place, onEdit, onDelete, onResolve, isAdmin = false, onRati
   const resolvedInfo = isResolved ? getResolvedInfo(place.resolved_at) : null;
 
   const getHazardBadge = (score) => {
-    if (isNaN(score)) return <span className="badge badge-info">Hazard: Unrated</span>;
-    if (score >= 4.5) return <span className="badge badge-hazard-severe">🔥 Severe Hazard ({score}/5)</span>;
-    if (score >= 3.5) return <span className="badge badge-hazard-high">⚠️ High Hazard ({score}/5)</span>;
-    if (score >= 2.0) return <span className="badge badge-hazard-medium">⚡ Moderate Hazard ({score}/5)</span>;
-    return <span className="badge badge-hazard-low">🛡️ Low Hazard ({score}/5)</span>;
+    if (isNaN(score)) return <span className="badge badge-info">Rating: Unrated</span>;
+    if (score >= 4.5) return <span className="badge badge-hazard-severe">🔥 Severe Concern ({score}/5)</span>;
+    if (score >= 3.5) return <span className="badge badge-hazard-high">⚠️ High Concern ({score}/5)</span>;
+    if (score >= 2.0) return <span className="badge badge-hazard-medium">⚡ Moderate Concern ({score}/5)</span>;
+    return <span className="badge badge-hazard-low">🛡️ Minor Concern ({score}/5)</span>;
   };
 
   const formattedDate = place.created_at
@@ -84,7 +85,7 @@ const PlaceCard = ({ place, onEdit, onDelete, onResolve, isAdmin = false, onRati
   };
 
   return (
-    <article className="card place-card" aria-label={`Hazardous Place: ${place.name}`}>
+    <article className="card place-card" aria-label={`Reported Place: ${place.name}`}>
       {/* 1. Image with overlay badges */}
       <div className="place-card-image-wrap">
         <img
@@ -183,7 +184,7 @@ const PlaceCard = ({ place, onEdit, onDelete, onResolve, isAdmin = false, onRati
           {!isAdmin && showRatingSelector && (
             <div className="rating-selector-drawer">
               <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-navy)' }}>
-                Select Hazard Severity (1 = Minor, 5 = Severe):
+                Select Safety Rating (1 = Minor Concern, 5 = Severe Concern):
               </div>
               <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -217,33 +218,47 @@ const PlaceCard = ({ place, onEdit, onDelete, onResolve, isAdmin = false, onRati
           )}
         </section>
 
-        {/* 7. Card Footer: Date & Admin Controls */}
+        {/* 7. Card Footer: Date, View Details Action, Admin Controls */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '0.85rem', borderTop: '1px solid var(--border-light)', fontSize: '0.82rem', color: 'var(--text-muted)', flexWrap: 'wrap', gap: '0.5rem' }}>
           {formattedDate && <span>Reported: {formattedDate}</span>}
-          {isAdmin && (
-            <div style={{ display: 'flex', gap: '0.45rem', marginLeft: 'auto', alignItems: 'center', flexWrap: 'wrap' }}>
-              {!isResolved ? (
-                <button
-                  type="button"
-                  className="btn btn-success btn-sm"
-                  onClick={() => onResolve && onResolve(place)}
-                  title="Mark this safety issue as resolved"
-                >
-                  <span>✓</span> Mark as Resolved
+          
+          <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto', alignItems: 'center', flexWrap: 'wrap' }}>
+            {showViewDetails && (
+              <Link
+                to={`/places/${place.id}`}
+                state={{ place }}
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: '0.82rem', padding: '0.35rem 0.75rem', fontWeight: 600 }}
+              >
+                View Details &rarr;
+              </Link>
+            )}
+
+            {isAdmin && (
+              <>
+                {!isResolved ? (
+                  <button
+                    type="button"
+                    className="btn btn-success btn-sm"
+                    onClick={() => onResolve && onResolve(place)}
+                    title="Mark this safety issue as resolved"
+                  >
+                    <span>✓</span> Mark as Resolved
+                  </button>
+                ) : (
+                  <span className="badge badge-resolved" style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem' }}>
+                    ✓ Resolved
+                  </span>
+                )}
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => onEdit(place)}>
+                  Edit
                 </button>
-              ) : (
-                <span className="badge badge-resolved" style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem' }}>
-                  ✓ Resolved
-                </span>
-              )}
-              <button type="button" className="btn btn-secondary btn-sm" onClick={() => onEdit(place)}>
-                Edit
-              </button>
-              <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(place)}>
-                Delete
-              </button>
-            </div>
-          )}
+                <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(place)}>
+                  Delete
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </article>

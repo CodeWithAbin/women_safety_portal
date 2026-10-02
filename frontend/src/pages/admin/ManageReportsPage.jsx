@@ -41,7 +41,7 @@ const ManageReportsPage = () => {
       if (res.success) {
         setFeedback(
           newStatus === 'accepted'
-            ? 'Report successfully verified and published to the public hazardous places directory.'
+            ? 'Report successfully verified and published to the public reported places directory.'
             : 'Report successfully rejected and archived.'
         );
         // Remove processed report from list

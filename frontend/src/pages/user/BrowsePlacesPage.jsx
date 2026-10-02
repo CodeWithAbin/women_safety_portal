@@ -63,7 +63,7 @@ const BrowsePlacesPage = () => {
         setPlaces(res.data || []);
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to fetch hazardous places.');
+      setError(err.response?.data?.message || err.message || 'Failed to fetch reported places.');
       setPlaces([]);
     } finally {
       setLoading(false);
@@ -409,13 +409,13 @@ const BrowsePlacesPage = () => {
       ) : places.length === 0 ? (
         <EmptyState
           icon={hasActiveFilters ? '🔍' : '🛡️'}
-          title={hasActiveFilters ? 'No Matching Safety Reports Found' : 'No Hazardous Places Reported'}
+          title={hasActiveFilters ? 'No Matching Safety Reports Found' : 'No Reported Places Found'}
           message={
             userCoords
-              ? `No verified hazardous places found within ${radiusKm} km of your location. Try expanding the nearby radius or searching by district.`
+              ? `No verified reported places found within ${radiusKm} km of your location. Try expanding the nearby radius or searching by district.`
               : hasActiveFilters
-              ? `No verified hazardous places match your current search and filter settings. Try adjusting your search query or location.`
-              : `No verified hazardous places have been reported in ${district ? `${district}, ` : ''}${state || 'the selected location'}.`
+              ? `No verified reported places match your current search and filter settings. Try adjusting your search query or location.`
+              : `No verified reported places have been recorded in ${district ? `${district}, ` : ''}${state || 'the selected location'}.`
           }
           actionButton={
             hasActiveFilters ? (

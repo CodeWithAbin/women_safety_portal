@@ -86,7 +86,7 @@ const AdminDashboard = () => {
         </div>
         <h1 className="page-title">Administrator Dashboard</h1>
         <p className="page-subtitle">
-          Review reported safety concerns, moderate community submissions, and manage verified hazardous locations.
+          Review reported safety concerns, moderate community submissions, and manage verified reported locations.
         </p>
       </div>
 
@@ -120,7 +120,7 @@ const AdminDashboard = () => {
             </div>
             <div className="stat-info" style={{ flex: 1 }}>
               <span className="stat-num" style={{ color: 'var(--primary-navy)' }}>{metrics.acceptedPlaces}</span>
-              <span className="stat-label">Published Hazards</span>
+              <span className="stat-label">Reported Places</span>
             </div>
             <Link to="/admin/places" className="btn btn-secondary btn-sm" style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem' }}>
               Manage &rarr;
@@ -252,7 +252,7 @@ const AdminDashboard = () => {
               </div>
             </div>
             <p className="action-card-desc">
-              Add new hazardous locations, modify descriptions/ratings, or remove resolved hazards.
+              Add new reported locations, modify descriptions/ratings, or remove resolved reports.
             </p>
             <Link to="/admin/places" className="btn btn-secondary" style={{ marginTop: 'auto', width: '100%' }}>
               Manage Places ({metrics.acceptedPlaces})

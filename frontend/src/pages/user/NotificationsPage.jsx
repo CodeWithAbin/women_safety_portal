@@ -48,7 +48,7 @@ const NotificationsPage = () => {
       <div className="page-header">
         <h1 className="page-title">My Notifications</h1>
         <p className="page-subtitle">
-          Real-time updates and administrative review decisions on your submitted hazardous places.
+          Real-time updates and administrative review decisions on your submitted reported places.
         </p>
       </div>
 
@@ -60,7 +60,7 @@ const NotificationsPage = () => {
         <EmptyState
           icon="🔔"
           title="No Notifications Yet"
-          message="When an administrator reviews your submitted hazardous place reports or new safety updates occur, they will appear here."
+          message="When an administrator reviews your submitted safety reports or new updates occur, they will appear here."
         />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

@@ -172,7 +172,7 @@ const ReportPlacePage = () => {
     setSuccessMsg('');
 
     if (!photoFile) {
-      setError('Please attach a clear photo of the hazardous area or problem.');
+      setError('Please attach a clear photo of the reported area or safety concern.');
       return;
     }
 
@@ -251,7 +251,7 @@ const ReportPlacePage = () => {
         </div>
         <h1 className="page-title">Report a Safety Concern</h1>
         <p className="page-subtitle">
-          Help protect women and fellow citizens by submitting accurate reports of unlit, isolated, or hazardous public areas in your neighborhood.
+          Help protect women and fellow citizens by submitting accurate reports of unlit, isolated, or unsafe public areas in your neighborhood.
         </p>
       </div>
 
