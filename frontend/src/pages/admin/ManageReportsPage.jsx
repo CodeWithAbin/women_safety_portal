@@ -40,8 +40,8 @@ const ManageReportsPage = () => {
       if (res.success) {
         setFeedback(
           newStatus === 'accepted'
-            ? 'Report successfully accepted and published as a hazardous place.'
-            : 'Report successfully rejected.'
+            ? 'Report successfully verified and published as a hazardous place.'
+            : 'Report successfully rejected and archived.'
         );
         // Remove processed report from list
         setReports((prev) => prev.filter((r) => r.id !== reportId));
@@ -66,28 +66,30 @@ const ManageReportsPage = () => {
       {error && <AlertBanner type="error" message={error} onDismiss={() => setError('')} />}
 
       {loading ? (
-        <LoadingSpinner message="Fetching pending reports queue..." />
+        <LoadingSpinner message="Fetching pending reports moderation queue..." />
       ) : reports.length === 0 ? (
         <EmptyState
           icon="✅"
           title="All Reports Reviewed"
-          message="There are no pending user submissions in the moderation queue."
+          message="There are currently no pending citizen submissions in the moderation queue."
         />
       ) : (
         <div>
-          <div style={{ marginBottom: '1.25rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+          <div style={{ marginBottom: '1.25rem', color: 'var(--text-muted)', fontSize: '0.92rem' }}>
             <strong>{reports.length}</strong> report{reports.length > 1 ? 's' : ''} awaiting administrative review:
           </div>
 
-          {reports.map((report) => (
-            <ReportReviewCard
-              key={report.id}
-              report={report}
-              onAccept={(id) => handleStatusChange(id, 'accepted')}
-              onReject={(id) => handleStatusChange(id, 'rejected')}
-              processingId={processingId}
-            />
-          ))}
+          <div>
+            {reports.map((report) => (
+              <ReportReviewCard
+                key={report.id}
+                report={report}
+                onAccept={(id) => handleStatusChange(id, 'accepted')}
+                onReject={(id) => handleStatusChange(id, 'rejected')}
+                processingId={processingId}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -95,3 +97,4 @@ const ManageReportsPage = () => {
 };
 
 export default ManageReportsPage;
+

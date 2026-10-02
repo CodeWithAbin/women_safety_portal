@@ -185,11 +185,11 @@ const ManagePlacesPage = () => {
         <div>
           <h1 className="page-title">Manage Hazardous Places</h1>
           <p className="page-subtitle">
-            View, add, modify, and delete verified hazardous areas.
+            View, add, modify, and delete published hazardous areas in the portal directory.
           </p>
         </div>
-        <button className="btn btn-primary" onClick={handleOpenAdd}>
-          + Add New Place
+        <button type="button" className="btn btn-primary" onClick={handleOpenAdd}>
+          <span>➕</span> Add New Place
         </button>
       </div>
 
@@ -197,7 +197,7 @@ const ManagePlacesPage = () => {
       {error && <AlertBanner type="error" message={error} onDismiss={() => setError('')} />}
 
       {/* Filter Bar */}
-      <div className="card" style={{ padding: '1.25rem 1.5rem', marginBottom: '1.75rem' }}>
+      <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
         <StateDistrictSelector
           selectedState={filterState}
           selectedDistrict={filterDistrict}
@@ -210,10 +210,10 @@ const ManagePlacesPage = () => {
           districtLabel="Filter Places by District"
         />
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginTop: '0.25rem' }}>
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label" htmlFor="admin-search-input">
-              Search Places
+              Search Keyword
             </label>
             <input
               id="admin-search-input"
@@ -227,7 +227,7 @@ const ManagePlacesPage = () => {
 
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label" htmlFor="admin-min-rating-select">
-              Minimum Rating
+              Minimum Safety Rating
             </label>
             <select
               id="admin-min-rating-select"
@@ -254,10 +254,10 @@ const ManagePlacesPage = () => {
               value={sort}
               onChange={(e) => setSort(e.target.value)}
             >
-              <option value="">Default</option>
-              <option value="rating_desc">Highest Safety Rating</option>
-              <option value="rating_asc">Lowest Safety Rating</option>
-              <option value="newest">Newest First</option>
+              <option value="">Default Order</option>
+              <option value="rating_desc">Highest Safety Rating First</option>
+              <option value="rating_asc">Lowest Safety Rating First</option>
+              <option value="newest">Most Recently Added</option>
             </select>
           </div>
         </div>
@@ -269,7 +269,7 @@ const ManagePlacesPage = () => {
         <EmptyState
           icon="📍"
           title="No Places Found"
-          message="No hazardous places match the current location filter."
+          message="No hazardous places match the current location and search filters."
           actionButton={
             <button className="btn btn-primary btn-sm" onClick={handleOpenAdd}>
               + Add First Place
@@ -292,22 +292,22 @@ const ManagePlacesPage = () => {
 
       {/* Add Place Modal */}
       {showAddModal && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" role="dialog" aria-modal="true">
           <div className="modal-container">
             <div className="modal-header">
               <h3 className="modal-title">Add Hazardous Place</h3>
-              <button className="modal-close" onClick={() => setShowAddModal(false)}>
+              <button className="modal-close" onClick={() => setShowAddModal(false)} aria-label="Close modal">
                 &times;
               </button>
             </div>
             <form onSubmit={handleCreatePlace}>
               <div className="modal-body">
                 <div className="form-group">
-                  <label className="form-label">Place Name <span className="required">*</span></label>
+                  <label className="form-label">Place Name / Title <span className="required">*</span></label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. Unlit Junction"
+                    placeholder="e.g. Unlit Junction near Market"
                     value={placeForm.name}
                     onChange={(e) => setPlaceForm({ ...placeForm, name: e.target.value })}
                     required
@@ -318,7 +318,7 @@ const ManagePlacesPage = () => {
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. Near Metro Station"
+                    placeholder="e.g. Near Metro Station Exit 2"
                     value={placeForm.address}
                     onChange={(e) => setPlaceForm({ ...placeForm, address: e.target.value })}
                     required
@@ -332,14 +332,14 @@ const ManagePlacesPage = () => {
                   required={true}
                 />
                 <div className="form-group">
-                  <label className="form-label">Rating (1 to 5)</label>
+                  <label className="form-label">Initial Hazard Rating (1 to 5)</label>
                   <select
                     className="form-control"
                     value={placeForm.rating}
                     onChange={(e) => setPlaceForm({ ...placeForm, rating: Number(e.target.value) })}
                   >
                     {[1, 2, 3, 4, 5].map((r) => (
-                      <option key={r} value={r}>Level {r} {r >= 4 ? '(High Hazard)' : r === 3 ? '(Medium)' : '(Low)'}</option>
+                      <option key={r} value={r}>Level {r} {r >= 5 ? '(Critical Hazard)' : r >= 4 ? '(High Hazard)' : r === 3 ? '(Moderate)' : '(Minor)'}</option>
                     ))}
                   </select>
                 </div>
@@ -380,11 +380,11 @@ const ManagePlacesPage = () => {
 
       {/* Edit Place Modal */}
       {editPlace && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" role="dialog" aria-modal="true">
           <div className="modal-container">
             <div className="modal-header">
               <h3 className="modal-title">Edit Hazardous Place</h3>
-              <button className="modal-close" onClick={() => setEditPlace(null)}>
+              <button className="modal-close" onClick={() => setEditPlace(null)} aria-label="Close modal">
                 &times;
               </button>
             </div>
@@ -425,7 +425,7 @@ const ManagePlacesPage = () => {
                     onChange={(e) => setPlaceForm({ ...placeForm, rating: Number(e.target.value) })}
                   >
                     {[1, 2, 3, 4, 5].map((r) => (
-                      <option key={r} value={r}>Level {r} {r >= 4 ? '(High Hazard)' : r === 3 ? '(Medium)' : '(Low)'}</option>
+                      <option key={r} value={r}>Level {r} {r >= 5 ? '(Critical Hazard)' : r >= 4 ? '(High Hazard)' : r === 3 ? '(Moderate)' : '(Minor)'}</option>
                     ))}
                   </select>
                 </div>
@@ -478,3 +478,4 @@ const ManagePlacesPage = () => {
 };
 
 export default ManagePlacesPage;
+

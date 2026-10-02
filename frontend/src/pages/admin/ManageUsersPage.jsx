@@ -98,9 +98,9 @@ const ManageUsersPage = () => {
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">Manage Registered Users</h1>
+        <h1 className="page-title">Manage Registered Citizens</h1>
         <p className="page-subtitle">
-          View registered citizens, update details, or remove inactive accounts.
+          View registered citizens, update details, or manage user accounts in the directory.
         </p>
       </div>
 
@@ -108,7 +108,7 @@ const ManageUsersPage = () => {
       {error && <AlertBanner type="error" message={error} onDismiss={() => setError('')} />}
 
       {/* Filter Bar */}
-      <div className="card" style={{ padding: '1.25rem 1.5rem', marginBottom: '1.75rem' }}>
+      <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
         <StateDistrictSelector
           selectedState={filterState}
           selectedDistrict={filterDistrict}
@@ -123,24 +123,24 @@ const ManageUsersPage = () => {
       </div>
 
       {loading ? (
-        <LoadingSpinner message="Loading user directory..." />
+        <LoadingSpinner message="Loading registered citizens directory..." />
       ) : users.length === 0 ? (
         <EmptyState
           icon="👥"
           title="No Users Found"
-          message="No registered users match the current location filter."
+          message="No registered citizens match the selected location filter."
         />
       ) : (
         <div className="table-container">
           <table className="table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Email</th>
+                <th>Citizen Name</th>
+                <th>Email Address</th>
                 <th>Role</th>
-                <th>Location</th>
+                <th>Registered Location</th>
                 <th>Phone</th>
-                <th>Registered On</th>
+                <th>Joined Date</th>
                 <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
@@ -156,7 +156,7 @@ const ManageUsersPage = () => {
                 return (
                   <tr key={u.id}>
                     <td>
-                      <strong>{u.name}</strong>
+                      <strong style={{ color: 'var(--primary-navy)' }}>{u.name}</strong>
                     </td>
                     <td>{u.email}</td>
                     <td>
@@ -172,6 +172,7 @@ const ManageUsersPage = () => {
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
                         <button
+                          type="button"
                           className="btn btn-secondary btn-sm"
                           onClick={() => handleOpenEdit(u)}
                         >
@@ -179,6 +180,7 @@ const ManageUsersPage = () => {
                         </button>
                         {!isAdminAccount && (
                           <button
+                            type="button"
                             className="btn btn-danger btn-sm"
                             onClick={() => setDeleteTargetUser(u)}
                           >
@@ -197,11 +199,11 @@ const ManageUsersPage = () => {
 
       {/* Edit User Modal */}
       {editUser && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" role="dialog" aria-modal="true">
           <div className="modal-container">
             <div className="modal-header">
-              <h3 className="modal-title">Edit User Details</h3>
-              <button className="modal-close" onClick={() => setEditUser(null)}>
+              <h3 className="modal-title">Edit Citizen Details</h3>
+              <button className="modal-close" onClick={() => setEditUser(null)} aria-label="Close modal">
                 &times;
               </button>
             </div>
@@ -249,7 +251,7 @@ const ManageUsersPage = () => {
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-primary" disabled={modalLoading}>
-                  {modalLoading ? 'Saving...' : 'Save Details'}
+                  {modalLoading ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>
@@ -261,7 +263,7 @@ const ManageUsersPage = () => {
       <ConfirmModal
         isOpen={!!deleteTargetUser}
         title="Delete User Account"
-        message={`Are you sure you want to permanently delete user "${deleteTargetUser?.name}" (${deleteTargetUser?.email})? Their submitted hazardous places will remain preserved.`}
+        message={`Are you sure you want to permanently delete citizen "${deleteTargetUser?.name}" (${deleteTargetUser?.email})? Their submitted hazardous places will remain preserved.`}
         confirmText="Delete User"
         isDestructive={true}
         loading={modalLoading}
@@ -273,3 +275,4 @@ const ManageUsersPage = () => {
 };
 
 export default ManageUsersPage;
+

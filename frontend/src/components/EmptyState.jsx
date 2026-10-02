@@ -7,13 +7,16 @@ const EmptyState = ({
   actionButton = null 
 }) => {
   return (
-    <div className="empty-state">
-      <div className="empty-state-icon">{icon}</div>
+    <div className="empty-state" role="status">
+      <div className="empty-state-icon" aria-hidden="true">{icon}</div>
       <h3 className="empty-state-title">{title}</h3>
-      <p style={{ maxWidth: '450px', margin: '0 auto 1.25rem' }}>{message}</p>
+      <p style={{ maxWidth: '440px', margin: '0 auto 1.25rem', color: 'var(--text-muted)', fontSize: '0.92rem', lineHeight: 1.5 }}>
+        {message}
+      </p>
       {actionButton && <div>{actionButton}</div>}
     </div>
   );
 };
 
 export default EmptyState;
+

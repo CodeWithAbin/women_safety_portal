@@ -153,54 +153,54 @@ const ReportPlacePage = () => {
       : 'N/A';
 
   return (
-    <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '700px', margin: '0 auto' }}>
       <div className="page-header">
         <h1 className="page-title">Report a Hazardous Place</h1>
         <p className="page-subtitle">
-          Help improve community safety by reporting unsafe, dark, or hazardous public areas.
+          Help protect women and your community by reporting unlit, unsafe, or hazardous public areas.
         </p>
       </div>
 
-      <div className="card" style={{ padding: '2rem' }}>
+      <div className="card" style={{ padding: '2.25rem 2rem' }}>
         {error && <AlertBanner type="error" message={error} onDismiss={() => setError('')} />}
         {successMsg && <AlertBanner type="success" message={successMsg} onDismiss={() => setSuccessMsg('')} />}
 
         {/* Similar Report Prompt Modal / Alert */}
         {similarReport && (
           <div style={{
-            marginBottom: '1.75rem',
-            padding: '1.25rem',
-            backgroundColor: '#eff6ff',
-            borderRadius: 'var(--radius-md, 8px)',
-            border: '1.5px solid #3b82f6',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+            marginBottom: '2rem',
+            padding: '1.35rem',
+            backgroundColor: 'var(--primary-blue-subtle)',
+            borderRadius: 'var(--radius-md)',
+            border: '1.5px solid var(--primary-blue-border)',
+            boxShadow: 'var(--shadow-sm)'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.65rem' }}>
               <span style={{ fontSize: '1.4rem' }}>💡</span>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e40af', margin: 0 }}>
-                Similar Report Found at This Location
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--primary-navy)', margin: 0 }}>
+                Existing Report Found at This Location
               </h3>
             </div>
 
-            <p style={{ fontSize: '0.9rem', color: '#1e3a8a', marginBottom: '1rem', lineHeight: '1.5' }}>
-              A similar report already exists at this location. You can rate the existing place with your rating ({formData.rating}★) or continue publishing your own report.
+            <p style={{ fontSize: '0.92rem', color: 'var(--text-body)', marginBottom: '1rem', lineHeight: '1.55' }}>
+              A safety report has already been verified at or near this address. You can submit your rating ({formData.rating}★) to support the existing record, or continue publishing your distinct concern.
             </p>
 
             <div style={{
               backgroundColor: '#ffffff',
-              padding: '1rem',
-              borderRadius: '6px',
-              border: '1px solid #bfdbfe',
+              padding: '1.15rem',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--border-light)',
               marginBottom: '1.25rem'
             }}>
-              <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--primary-navy, #0f172a)', marginBottom: '0.35rem' }}>
+              <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--primary-navy)', marginBottom: '0.35rem' }}>
                 🚨 {similarReport.name}
               </div>
-              <div style={{ fontSize: '0.85rem', color: '#475569', marginBottom: '0.35rem' }}>
+              <div style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
                 📍 {similarReport.address}, {similarReport.district}, {similarReport.state}
               </div>
-              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2563eb' }}>
-                ⭐ Community Safety Rating: {existingCommunityRating} / 5 ({similarReport.rating_count || 1} community rating{similarReport.rating_count === 1 ? '' : 's'})
+              <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--primary-blue)' }}>
+                ⭐ Community Safety Rating: {existingCommunityRating} / 5 ({similarReport.rating_count || 1} rating{similarReport.rating_count === 1 ? '' : 's'})
               </div>
             </div>
 
@@ -210,12 +210,6 @@ const ReportPlacePage = () => {
                 className="btn btn-primary"
                 onClick={handleRateExisting}
                 disabled={ratingExisting}
-                style={{
-                  backgroundColor: '#2563eb',
-                  borderColor: '#2563eb',
-                  fontWeight: 600,
-                  padding: '0.6rem 1rem'
-                }}
               >
                 {ratingExisting ? 'Rating...' : `⭐ Rate Existing Place (${formData.rating}★)`}
               </button>
@@ -225,10 +219,6 @@ const ReportPlacePage = () => {
                 className="btn btn-secondary"
                 onClick={publishReportDirectly}
                 disabled={loading}
-                style={{
-                  fontWeight: 600,
-                  padding: '0.6rem 1rem'
-                }}
               >
                 {loading ? 'Publishing...' : 'Continue Publishing My Report'}
               </button>
@@ -239,8 +229,8 @@ const ReportPlacePage = () => {
                 onClick={() => setSimilarReport(null)}
                 style={{
                   backgroundColor: 'transparent',
-                  color: '#64748b',
-                  fontSize: '0.85rem',
+                  color: 'var(--text-muted)',
+                  fontSize: '0.88rem',
                   padding: '0.6rem 0.75rem'
                 }}
               >
@@ -253,13 +243,13 @@ const ReportPlacePage = () => {
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label" htmlFor="placeName">
-              Problem Statement / Place Title <span className="required">*</span>
+              Problem Statement / Hazard Title <span className="required">*</span>
             </label>
             <input
               id="placeName"
               type="text"
               className="form-control"
-              placeholder="e.g. Spotted attackers on the street / Broken street lights"
+              placeholder="e.g. Broken street lights / Suspicious gathering at bus stop"
               value={formData.name}
               onChange={(e) => handleFieldChange('name', e.target.value)}
               required
@@ -274,7 +264,7 @@ const ReportPlacePage = () => {
               id="address"
               type="text"
               className="form-control"
-              placeholder="e.g. Thrissur Swaraj Road, Near Bus Stand"
+              placeholder="e.g. Swaraj Round North, Near Town Hall"
               value={formData.address}
               onChange={(e) => handleFieldChange('address', e.target.value)}
               required
@@ -291,7 +281,7 @@ const ReportPlacePage = () => {
 
           <div className="form-group">
             <label className="form-label">
-              Hazard Severity Rating (1 = Low, 5 = Severe Hazard) <span className="required">*</span>
+              Hazard Severity Rating (1 = Minor Concern, 5 = Critical Hazard) <span className="required">*</span>
             </label>
             <div className="rating-selector">
               {[1, 2, 3, 4, 5].map((lvl) => (
@@ -301,7 +291,7 @@ const ReportPlacePage = () => {
                   className={`rating-btn ${formData.rating === lvl ? 'active' : ''}`}
                   onClick={() => handleFieldChange('rating', lvl)}
                 >
-                  {lvl} {lvl === 5 ? '🔥 Critical' : lvl === 1 ? '⚠️ Minor' : '★'}
+                  {lvl} {lvl === 5 ? '🔥 Critical' : lvl === 4 ? '⚠️ High' : lvl === 1 ? '🛡️ Minor' : '★'}
                 </button>
               ))}
             </div>
@@ -314,7 +304,7 @@ const ReportPlacePage = () => {
             <textarea
               id="description"
               className="form-control"
-              placeholder="Describe the problem (e.g. attackers spotted hiding behind trees after 8 PM, lack of streetlights)..."
+              placeholder="Provide context regarding the safety risk (e.g. dark walkway between 8 PM to 6 AM, overgrown bushes, non-functional CCTV)..."
               value={formData.description}
               onChange={(e) => handleFieldChange('description', e.target.value)}
               required
@@ -334,11 +324,11 @@ const ReportPlacePage = () => {
               onChange={handlePhotoChange}
               required={!photoPreview}
             />
-            <div className="form-hint">Accepted formats: JPG, PNG, WebP (Max 5MB)</div>
+            <div className="form-hint">Supported formats: JPG, PNG, WebP (Max file size: 5MB)</div>
 
             {photoPreview && (
-              <div style={{ marginTop: '0.75rem' }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem' }}>Image Preview:</div>
+              <div style={{ marginTop: '0.85rem' }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--primary-navy)', marginBottom: '0.35rem' }}>Attached Photo Preview:</div>
                 <img src={photoPreview} alt="Hazard Preview" className="photo-preview" />
               </div>
             )}
@@ -346,11 +336,11 @@ const ReportPlacePage = () => {
 
           <button
             type="submit"
-            className="btn btn-primary btn-block"
+            className="btn btn-primary btn-block btn-lg"
             disabled={loading || Boolean(similarReport)}
-            style={{ marginTop: '1.25rem', padding: '0.85rem' }}
+            style={{ marginTop: '1.5rem' }}
           >
-            {loading ? 'Checking & Submitting...' : 'Submit Report for Review'}
+            {loading ? 'Submitting Report...' : 'Submit Report for Review'}
           </button>
         </form>
       </div>
@@ -359,3 +349,4 @@ const ReportPlacePage = () => {
 };
 
 export default ReportPlacePage;
+

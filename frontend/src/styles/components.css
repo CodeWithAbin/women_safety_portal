@@ -1,4 +1,6 @@
-/* Component Styles for Women Safety Portal */
+/* ==========================================================================
+   Component Styles for Women Safety Portal
+   ========================================================================== */
 
 /* -------------------------------------------------------------
    1. BUTTONS
@@ -9,72 +11,103 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
-  font-size: 0.95rem;
+  font-family: var(--font-family);
+  font-size: 0.92rem;
   font-weight: 600;
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.15s ease-in-out;
+  transition: all var(--transition-fast);
   text-decoration: none;
   line-height: 1.25;
+  white-space: nowrap;
+  user-select: none;
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: not-allowed;
   pointer-events: none;
 }
 
+/* Primary Button (Main Action) */
 .btn-primary {
   background-color: var(--primary-blue);
   color: #ffffff;
   border-color: var(--primary-blue);
+  box-shadow: 0 1px 2px 0 rgba(37, 99, 235, 0.2);
 }
 
 .btn-primary:hover {
   background-color: var(--primary-blue-hover);
   border-color: var(--primary-blue-hover);
   text-decoration: none;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
 }
 
+.btn-primary:active {
+  transform: translateY(1px);
+}
+
+/* Secondary Button (Neutral / Outline Surface) */
 .btn-secondary {
   background-color: #ffffff;
   color: var(--text-main);
-  border-color: var(--border-light);
+  border-color: var(--border-medium);
+  box-shadow: var(--shadow-xs);
 }
 
 .btn-secondary:hover {
   background-color: var(--bg-subtle);
-  border-color: var(--text-subtle);
+  border-color: var(--text-muted);
   text-decoration: none;
 }
 
+.btn-secondary:active {
+  transform: translateY(1px);
+}
+
+/* Danger Button (Delete / High Risk / Reject) */
 .btn-danger {
-  background-color: var(--safety-danger);
+  background-color: var(--hazard-high);
   color: #ffffff;
-  border-color: var(--safety-danger);
+  border-color: var(--hazard-high);
+  box-shadow: 0 1px 2px 0 rgba(225, 29, 72, 0.2);
 }
 
 .btn-danger:hover {
   background-color: #be123c;
+  border-color: #be123c;
   text-decoration: none;
+  box-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.3);
 }
 
+/* Success Button (Accept / Approve / Safe) */
 .btn-success {
-  background-color: var(--safety-success);
+  background-color: var(--hazard-low);
   color: #ffffff;
-  border-color: var(--safety-success);
+  border-color: var(--hazard-low);
+  box-shadow: 0 1px 2px 0 rgba(5, 150, 105, 0.2);
 }
 
 .btn-success:hover {
   background-color: #047857;
+  border-color: #047857;
   text-decoration: none;
+  box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.3);
 }
 
+/* Button Sizes */
 .btn-sm {
-  padding: 0.375rem 0.75rem;
+  padding: 0.4rem 0.8rem;
   font-size: 0.85rem;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
+}
+
+.btn-lg {
+  padding: 0.8rem 1.6rem;
+  font-size: 1rem;
+  border-radius: var(--radius-md);
 }
 
 .btn-block {
@@ -82,46 +115,68 @@
 }
 
 /* -------------------------------------------------------------
-   2. FORMS & INPUTS
+   2. FORMS, LABELS & INPUTS
 ------------------------------------------------------------- */
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: 0.4rem;
   margin-bottom: 1.25rem;
 }
 
 .form-label {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--primary-navy);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .form-label .required {
-  color: var(--safety-danger);
-  margin-left: 0.2rem;
+  color: var(--hazard-high);
+  font-weight: 700;
 }
 
 .form-control {
   width: 100%;
-  padding: 0.625rem 0.875rem;
+  padding: 0.65rem 0.9rem;
   font-size: 0.95rem;
   font-family: inherit;
   color: var(--text-main);
-  background-color: #ffffff;
-  border: 1px solid var(--border-light);
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-medium);
   border-radius: var(--radius-sm);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  line-height: 1.4;
 }
 
 .form-control:focus {
   outline: none;
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 .form-control::placeholder {
   color: var(--text-subtle);
+}
+
+.form-control:disabled {
+  background-color: var(--bg-subtle);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  border-color: var(--border-light);
+}
+
+select.form-control {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.65rem center;
+  background-repeat: no-repeat;
+  background-size: 1.25em 1.25em;
+  padding-right: 2.25rem;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 textarea.form-control {
@@ -132,34 +187,45 @@ textarea.form-control {
 .form-hint {
   font-size: 0.8rem;
   color: var(--text-muted);
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
 }
 
-/* Rating Selector Pills */
+/* Rating Selector Pills (1-5 Star Selection) */
 .rating-selector {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .rating-btn {
   flex: 1;
-  padding: 0.5rem;
+  min-width: 55px;
+  padding: 0.55rem 0.5rem;
   text-align: center;
-  border: 1px solid var(--border-light);
+  border: 1.5px solid var(--border-medium);
   background-color: #ffffff;
   border-radius: var(--radius-sm);
   cursor: pointer;
   font-weight: 600;
-  transition: all 0.15s ease;
+  font-size: 0.88rem;
+  color: var(--text-body);
+  transition: all var(--transition-fast);
+}
+
+.rating-btn:hover {
+  border-color: var(--primary-blue);
+  background-color: var(--primary-blue-subtle);
+  color: var(--primary-blue);
 }
 
 .rating-btn.active {
   background-color: var(--primary-blue);
   color: #ffffff;
   border-color: var(--primary-blue);
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
 }
 
-/* Image Upload Dropzone & Preview */
+/* Image Upload Container & Preview */
 .photo-upload-container {
   display: flex;
   flex-direction: column;
@@ -168,10 +234,11 @@ textarea.form-control {
 
 .photo-preview {
   width: 100%;
-  max-height: 220px;
+  max-height: 230px;
   object-fit: cover;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-xs);
 }
 
 /* -------------------------------------------------------------
@@ -185,6 +252,7 @@ textarea.form-control {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  transition: box-shadow var(--transition-smooth), border-color var(--transition-smooth);
 }
 
 .card-header {
@@ -193,6 +261,7 @@ textarea.form-control {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background-color: #ffffff;
 }
 
 .card-body {
@@ -210,25 +279,47 @@ textarea.form-control {
   gap: 0.75rem;
 }
 
-/* Place Card Specific */
+/* Place Card Specific Component */
 .place-card {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth), border-color var(--transition-smooth);
 }
 
 .place-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--border-medium);
+}
+
+.place-card-image-wrap {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background-color: var(--bg-subtle);
+  overflow: hidden;
 }
 
 .place-card-image {
   width: 100%;
-  height: 200px;
+  height: 100%;
   object-fit: cover;
-  background-color: var(--bg-subtle);
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.place-card:hover .place-card-image {
+  transform: scale(1.02);
+}
+
+.place-card-badge-overlay {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 2;
+  box-shadow: var(--shadow-sm);
 }
 
 .place-card-content {
-  padding: 1.25rem;
+  padding: 1.25rem 1.4rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -239,98 +330,199 @@ textarea.form-control {
   font-size: 1.15rem;
   font-weight: 700;
   color: var(--primary-navy);
+  line-height: 1.35;
 }
 
 .place-card-address {
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   color: var(--text-muted);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  line-height: 1.4;
+}
+
+.place-card-desc {
+  font-size: 0.9rem;
+  color: var(--text-body);
+  line-height: 1.45;
+  flex: 1;
+}
+
+/* Distinct Community Safety Rating Card Section */
+.community-rating-card {
+  background-color: #f8fafc;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  margin: 0.35rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.community-rating-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.community-rating-score {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary-navy);
   display: flex;
   align-items: center;
   gap: 0.35rem;
 }
 
-.place-card-desc {
-  font-size: 0.9rem;
-  color: var(--text-main);
-  line-height: 1.4;
-  flex: 1;
+.community-rating-count {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.rating-action-btn {
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.rating-action-btn.unrated {
+  background-color: var(--primary-blue-subtle);
+  color: var(--primary-blue);
+  border-color: var(--primary-blue-border);
+}
+
+.rating-action-btn.unrated:hover {
+  background-color: var(--primary-blue);
+  color: #ffffff;
+}
+
+.rating-action-btn.rated {
+  background-color: var(--hazard-low-bg);
+  color: var(--hazard-low);
+  border-color: var(--hazard-low-border);
+}
+
+.rating-action-btn.rated:hover {
+  background-color: #d1fae5;
+}
+
+/* Rating Selector Popup Drawer */
+.rating-selector-drawer {
+  padding-top: 0.65rem;
+  border-top: 1px dashed var(--border-medium);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
 }
 
 /* -------------------------------------------------------------
-   4. BADGES
+   4. HAZARD & STATUS BADGES
 ------------------------------------------------------------- */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.25rem 0.625rem;
+  padding: 0.3rem 0.7rem;
   font-size: 0.75rem;
   font-weight: 700;
-  border-radius: 9999px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  line-height: 1;
 }
 
-.badge-danger {
-  background-color: var(--safety-danger-light);
-  color: var(--safety-danger);
+/* Low Hazard (Safe / Minor) */
+.badge-hazard-low, .badge-success {
+  background-color: var(--hazard-low-bg);
+  color: var(--hazard-low);
+  border: 1px solid var(--hazard-low-border);
 }
 
-.badge-warning {
-  background-color: var(--safety-warning-light);
-  color: var(--safety-warning);
+/* Medium Hazard (Moderate Warning) */
+.badge-hazard-medium, .badge-warning {
+  background-color: var(--hazard-medium-bg);
+  color: var(--hazard-medium);
+  border: 1px solid var(--hazard-medium-border);
 }
 
-.badge-success {
-  background-color: var(--safety-success-light);
-  color: var(--safety-success);
+/* High Hazard (High Risk) */
+.badge-hazard-high, .badge-danger {
+  background-color: var(--hazard-high-bg);
+  color: var(--hazard-high);
+  border: 1px solid var(--hazard-high-border);
 }
 
+/* Severe Hazard (Critical Risk) */
+.badge-hazard-severe {
+  background-color: var(--hazard-severe-bg);
+  color: var(--hazard-severe);
+  border: 1px solid var(--hazard-severe-border);
+}
+
+/* Info & Admin Badges */
 .badge-info {
-  background-color: var(--safety-info-light);
-  color: var(--safety-info);
+  background-color: var(--primary-blue-subtle);
+  color: var(--primary-blue);
+  border: 1px solid var(--primary-blue-border);
 }
 
 .badge-admin {
   background-color: #ede9fe;
   color: #6d28d9;
+  border: 1px solid #ddd6fe;
 }
 
 /* -------------------------------------------------------------
-   5. ALERTS
+   5. ALERTS & NOTICES
 ------------------------------------------------------------- */
 .alert {
-  padding: 0.875rem 1.25rem;
+  padding: 0.9rem 1.25rem;
   border-radius: var(--radius-sm);
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+  border-left-width: 4px;
 }
 
 .alert-error {
-  background-color: var(--safety-danger-light);
+  background-color: var(--hazard-high-bg);
   color: #9f1239;
-  border: 1px solid #fecdd3;
+  border: 1px solid var(--hazard-high-border);
+  border-left: 4px solid var(--hazard-high);
 }
 
 .alert-success {
-  background-color: var(--safety-success-light);
+  background-color: var(--hazard-low-bg);
   color: #065f46;
-  border: 1px solid #a7f3d0;
+  border: 1px solid var(--hazard-low-border);
+  border-left: 4px solid var(--hazard-low);
 }
 
 .alert-warning {
-  background-color: var(--safety-warning-light);
+  background-color: var(--hazard-medium-bg);
   color: #92400e;
-  border: 1px solid #fde68a;
+  border: 1px solid var(--hazard-medium-border);
+  border-left: 4px solid var(--hazard-medium);
 }
 
 .alert-info {
-  background-color: var(--safety-info-light);
-  color: #075985;
-  border: 1px solid #bae6fd;
+  background-color: var(--primary-blue-subtle);
+  color: #1e40af;
+  border: 1px solid var(--primary-blue-border);
+  border-left: 4px solid var(--primary-blue);
 }
 
 /* -------------------------------------------------------------
@@ -349,22 +541,25 @@ textarea.form-control {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
 }
 
 .table th {
   background-color: var(--bg-subtle);
   color: var(--primary-navy);
-  font-weight: 600;
-  padding: 0.875rem 1rem;
+  font-weight: 700;
+  padding: 0.95rem 1.15rem;
   border-bottom: 1px solid var(--border-light);
   white-space: nowrap;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
 }
 
 .table td {
-  padding: 1rem;
+  padding: 1rem 1.15rem;
   border-bottom: 1px solid var(--border-light);
   vertical-align: middle;
+  color: var(--text-body);
 }
 
 .table tr:last-child td {
@@ -372,7 +567,7 @@ textarea.form-control {
 }
 
 .table tr:hover td {
-  background-color: #fafafa;
+  background-color: #f8fafc;
 }
 
 /* -------------------------------------------------------------
@@ -384,13 +579,19 @@ textarea.form-control {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(2px);
+  background-color: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
-  padding: 1rem;
+  padding: 1.25rem;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-container {
@@ -398,11 +599,18 @@ textarea.form-control {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-modal);
   width: 100%;
-  max-width: 540px;
+  max-width: 560px;
   max-height: 90vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  border: 1px solid var(--border-light);
+  animation: modalSlideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideUp {
+  from { transform: translateY(15px); opacity: 0.8; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 .modal-header {
@@ -426,6 +634,13 @@ textarea.form-control {
   color: var(--text-muted);
   cursor: pointer;
   line-height: 1;
+  padding: 0.25rem;
+  border-radius: var(--radius-xs);
+  transition: color var(--transition-fast);
+}
+
+.modal-close:hover {
+  color: var(--primary-navy);
 }
 
 .modal-body {
@@ -434,7 +649,7 @@ textarea.form-control {
 }
 
 .modal-footer {
-  padding: 1rem 1.5rem;
+  padding: 1.15rem 1.5rem;
   background-color: var(--bg-subtle);
   border-top: 1px solid var(--border-light);
   display: flex;
@@ -443,7 +658,7 @@ textarea.form-control {
 }
 
 /* -------------------------------------------------------------
-   8. NAVBAR
+   8. NAVBAR & HEADER
 ------------------------------------------------------------- */
 .navbar {
   background-color: #ffffff;
@@ -451,12 +666,13 @@ textarea.form-control {
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
 }
 
 .navbar-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0.875rem 1.25rem;
+  padding: 0.875rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -465,58 +681,115 @@ textarea.form-control {
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-weight: 700;
-  font-size: 1.15rem;
+  gap: 0.65rem;
+  font-weight: 800;
+  font-family: var(--font-family-heading);
+  font-size: 1.2rem;
   color: var(--primary-navy);
   text-decoration: none;
+  letter-spacing: -0.02em;
 }
 
 .brand-logo:hover {
   text-decoration: none;
+  color: var(--primary-navy);
 }
 
-.brand-badge {
-  background-color: var(--safety-danger);
-  color: #ffffff;
-  padding: 0.2rem 0.45rem;
-  font-size: 0.7rem;
-  font-weight: 800;
-  border-radius: 4px;
+.brand-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background-color: var(--primary-blue-subtle);
+  border-radius: var(--radius-sm);
+  font-size: 1.25rem;
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 0.5rem;
   list-style: none;
 }
 
 .nav-link {
   color: var(--text-muted);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   text-decoration: none;
-  padding: 0.4rem 0.6rem;
+  padding: 0.5rem 0.85rem;
   border-radius: var(--radius-sm);
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast);
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
-.nav-link:hover, .nav-link.active {
+.nav-link:hover {
+  color: var(--primary-navy);
+  background-color: var(--bg-subtle);
+  text-decoration: none;
+}
+
+.nav-link.active {
   color: var(--primary-blue);
-  background-color: var(--primary-blue-light);
+  background-color: var(--primary-blue-subtle);
+  font-weight: 700;
   text-decoration: none;
 }
 
 .notif-badge {
-  background-color: var(--safety-danger);
+  background-color: var(--hazard-high);
   color: #ffffff;
-  font-size: 0.7rem;
-  padding: 0.1rem 0.4rem;
-  border-radius: 9999px;
-  margin-left: 0.35rem;
-  font-weight: 700;
+  font-size: 0.72rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-pill);
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* Mobile Navigation Hamburger & Drawer */
+.mobile-nav-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.65rem;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--primary-navy);
+}
+
+.mobile-nav-drawer {
+  display: none;
+}
+
+@media (max-width: 820px) {
+  .mobile-nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-desktop {
+    display: none;
+  }
+
+  .mobile-nav-drawer {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border-light);
+    background-color: #ffffff;
+    gap: 0.5rem;
+  }
+
+  .mobile-nav-drawer .nav-link {
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+  }
 }
 
 /* -------------------------------------------------------------
@@ -527,18 +800,18 @@ textarea.form-control {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 3rem 1rem;
+  padding: 3.5rem 1.5rem;
   color: var(--text-muted);
   gap: 1rem;
 }
 
 .spinner {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border: 3px solid var(--border-light);
   border-top-color: var(--primary-blue);
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.75s linear infinite;
 }
 
 @keyframes spin {
@@ -547,21 +820,27 @@ textarea.form-control {
 
 .empty-state {
   text-align: center;
-  padding: 3rem 1.5rem;
+  padding: 3.5rem 2rem;
   background-color: #ffffff;
-  border: 1px dashed var(--border-light);
+  border: 1.5px dashed var(--border-medium);
   border-radius: var(--radius-md);
   color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .empty-state-icon {
-  font-size: 2.5rem;
+  font-size: 3rem;
   margin-bottom: 0.75rem;
+  line-height: 1;
 }
 
 .empty-state-title {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--primary-navy);
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.4rem;
 }
+

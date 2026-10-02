@@ -43,40 +43,51 @@ const Navbar = () => {
           className="brand-logo"
           onClick={closeMenu}
         >
-          <span style={{ fontSize: '1.35rem' }}>🛡️</span>
+          <div className="brand-icon-wrap">🛡️</div>
           <span>Women Safety Portal</span>
           {role === 'admin' && <span className="badge badge-admin">Admin</span>}
         </Link>
 
-        <nav>
+        {/* Mobile menu toggle */}
+        <button
+          className="mobile-nav-toggle"
+          onClick={() => setMobileMenuOpen((prev) => !prev)}
+          aria-label="Toggle navigation menu"
+          aria-expanded={mobileMenuOpen}
+        >
+          {mobileMenuOpen ? '✕' : '☰'}
+        </button>
+
+        {/* Desktop Navigation */}
+        <nav className="nav-desktop">
           <ul className="nav-links">
             {isAuthenticated ? (
               role === 'admin' ? (
                 /* Admin Navigation Links */
                 <>
                   <li>
-                    <NavLink to="/admin/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                    <NavLink to="/admin/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                       Overview
                     </NavLink>
                   </li>
                   <li>
-                    <NavLink to="/admin/reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                    <NavLink to="/admin/reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                       Review Reports
                     </NavLink>
                   </li>
                   <li>
-                    <NavLink to="/admin/places" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                    <NavLink to="/admin/places" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                       Hazardous Places
                     </NavLink>
                   </li>
                   <li>
-                    <NavLink to="/admin/users" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                    <NavLink to="/admin/users" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                       Users
                     </NavLink>
                   </li>
-                  <li style={{ marginLeft: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <li style={{ marginLeft: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                      {user.email}
+                      {user?.email}
                     </span>
                     <button onClick={handleLogout} className="btn btn-secondary btn-sm">
                       Logout
@@ -87,29 +98,29 @@ const Navbar = () => {
                 /* Standard User Navigation Links */
                 <>
                   <li>
-                    <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                    <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                       Dashboard
                     </NavLink>
                   </li>
                   <li>
-                    <NavLink to="/places" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                    <NavLink to="/places" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                       Browse Places
                     </NavLink>
                   </li>
                   <li>
-                    <NavLink to="/report" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                    <NavLink to="/report" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                       Report Place
                     </NavLink>
                   </li>
                   <li>
-                    <NavLink to="/notifications" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                    <NavLink to="/notifications" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                       Notifications
                       {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
                     </NavLink>
                   </li>
-                  <li style={{ marginLeft: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <li style={{ marginLeft: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--primary-navy)' }}>
-                      {user.name}
+                      {user?.name}
                     </span>
                     <button onClick={handleLogout} className="btn btn-secondary btn-sm">
                       Logout
@@ -121,12 +132,12 @@ const Navbar = () => {
               /* Public Links */
               <>
                 <li>
-                  <NavLink to="/login" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                  <NavLink to="/login" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                     Sign In
                   </NavLink>
                 </li>
                 <li>
-                  <NavLink to="/register" className="btn btn-primary btn-sm" onClick={closeMenu}>
+                  <NavLink to="/register" className="btn btn-primary btn-sm">
                     Create Account
                   </NavLink>
                 </li>
@@ -135,8 +146,69 @@ const Navbar = () => {
           </ul>
         </nav>
       </div>
+
+      {/* Mobile Navigation Drawer */}
+      {mobileMenuOpen && (
+        <div className="mobile-nav-drawer">
+          {isAuthenticated ? (
+            role === 'admin' ? (
+              <>
+                <NavLink to="/admin/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                  Overview
+                </NavLink>
+                <NavLink to="/admin/reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                  Review Reports
+                </NavLink>
+                <NavLink to="/admin/places" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                  Hazardous Places
+                </NavLink>
+                <NavLink to="/admin/users" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                  Users
+                </NavLink>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.75rem', borderTop: '1px solid var(--border-light)' }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{user?.email}</span>
+                  <button onClick={handleLogout} className="btn btn-secondary btn-sm">
+                    Logout
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                  Dashboard
+                </NavLink>
+                <NavLink to="/places" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                  Browse Places
+                </NavLink>
+                <NavLink to="/report" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                  Report Place
+                </NavLink>
+                <NavLink to="/notifications" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                  Notifications {unreadCount > 0 && `(${unreadCount})`}
+                </NavLink>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.75rem', borderTop: '1px solid var(--border-light)' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--primary-navy)' }}>{user?.name}</span>
+                  <button onClick={handleLogout} className="btn btn-secondary btn-sm">
+                    Logout
+                  </button>
+                </div>
+              </>
+            )
+          ) : (
+            <>
+              <NavLink to="/login" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                Sign In
+              </NavLink>
+              <NavLink to="/register" className="btn btn-primary btn-sm" onClick={closeMenu}>
+                Create Account
+              </NavLink>
+            </>
+          )}
+        </div>
+      )}
     </header>
   );
 };
 
 export default Navbar;
+

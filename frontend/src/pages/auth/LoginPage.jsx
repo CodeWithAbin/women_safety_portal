@@ -32,15 +32,27 @@ const LoginPage = () => {
   };
 
   return (
-    <div style={{ maxWidth: '440px', margin: '3rem auto 0', padding: '0 1rem' }}>
-      <div className="card" style={{ padding: '2rem 1.5rem', boxShadow: 'var(--shadow-lg)' }}>
-        <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🛡️</div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary-navy)' }}>
+    <div style={{ maxWidth: '440px', margin: '3rem auto', padding: '0 1rem' }}>
+      <div className="card" style={{ padding: '2.25rem 2rem', boxShadow: 'var(--shadow-lg)' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <div style={{
+            width: '54px',
+            height: '54px',
+            margin: '0 auto 0.75rem',
+            backgroundColor: 'var(--primary-blue-subtle)',
+            borderRadius: 'var(--radius-md)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.75rem'
+          }}>
+            🛡️
+          </div>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--primary-navy)', letterSpacing: '-0.02em' }}>
             Women Safety Portal
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
-            Sign in to report and browse safety hazards
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem', marginTop: '0.35rem' }}>
+            Sign in to report hazards and browse community safety ratings
           </p>
         </div>
 
@@ -80,18 +92,18 @@ const LoginPage = () => {
 
           <button
             type="submit"
-            className="btn btn-primary btn-block"
+            className="btn btn-primary btn-block btn-lg"
             disabled={loading}
-            style={{ marginTop: '0.75rem', padding: '0.75rem' }}
+            style={{ marginTop: '1rem' }}
           >
             {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border-light)', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+        <div style={{ textAlign: 'center', marginTop: '1.75rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border-light)', fontSize: '0.92rem', color: 'var(--text-muted)' }}>
           Don't have an account?{' '}
-          <Link to="/register" style={{ fontWeight: 600 }}>
-            Create an Account
+          <Link to="/register" style={{ fontWeight: 600, color: 'var(--primary-blue)' }}>
+            Create an Account &rarr;
           </Link>
         </div>
       </div>
@@ -100,3 +112,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+

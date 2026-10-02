@@ -16,11 +16,12 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onRatingSuccess }
 
   const numRating = Number(communityRating);
 
-  const getRatingBadge = (score) => {
-    if (isNaN(score)) return null;
-    if (score >= 4) return <span className="badge badge-danger">Hazard Level: High ({score}/5)</span>;
-    if (score >= 2.5) return <span className="badge badge-warning">Hazard Level: Medium ({score}/5)</span>;
-    return <span className="badge badge-info">Hazard Level: Low ({score}/5)</span>;
+  const getHazardBadge = (score) => {
+    if (isNaN(score)) return <span className="badge badge-info">Hazard: Unrated</span>;
+    if (score >= 4.5) return <span className="badge badge-hazard-severe">🔥 Severe Hazard ({score}/5)</span>;
+    if (score >= 3.5) return <span className="badge badge-hazard-high">⚠️ High Hazard ({score}/5)</span>;
+    if (score >= 2.0) return <span className="badge badge-hazard-medium">⚡ Moderate Hazard ({score}/5)</span>;
+    return <span className="badge badge-hazard-low">🛡️ Low Hazard ({score}/5)</span>;
   };
 
   const formattedDate = place.created_at
@@ -48,8 +49,8 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onRatingSuccess }
         setUserRating(selectedRating);
         setHasRated(true);
         setShowRatingSelector(false);
-        setRatingFeedback('Rating saved!');
-        setTimeout(() => setRatingFeedback(''), 3000);
+        setRatingFeedback('Thank you! Rating saved.');
+        setTimeout(() => setRatingFeedback(''), 3500);
         if (onRatingSuccess) {
           onRatingSuccess(place.id, res.data);
         }
@@ -62,62 +63,59 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onRatingSuccess }
   };
 
   return (
-    <div className="card place-card">
-      <img
-        src={getPhotoUrl(place.photo)}
-        alt={place.name}
-        className="place-card-image"
-        loading="lazy"
-        onError={(e) => {
-          e.target.onerror = null;
-          e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22200%22%20viewBox%3D%220%200%20400%20200%22%3E%3Crect%20fill%3D%22%23f1f5f9%22%20width%3D%22400%22%20height%3D%22200%22%2F%3E%3Ctext%20fill%3D%22%2394a3b8%22%20font-family%3D%22sans-serif%22%20font-size%3D%2216%22%20dy%3D%2210.5%22%20font-weight%3D%22bold%22%20x%3D%2250%25%22%20y%3D%2250%25%22%20text-anchor%3D%22middle%22%3EPhoto%20Unavailable%3C%2Ftext%3E%3C%2Fsvg%3E';
-        }}
-      />
+    <article className="card place-card" aria-label={`Hazardous Place: ${place.name}`}>
+      {/* 1. Image with overlay hazard badge */}
+      <div className="place-card-image-wrap">
+        <img
+          src={getPhotoUrl(place.photo)}
+          alt={place.name}
+          className="place-card-image"
+          loading="lazy"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22200%22%20viewBox%3D%220%200%20400%20200%22%3E%3Crect%20fill%3D%22%23f1f5f9%22%20width%3D%22400%22%20height%3D%22200%22%2F%3E%3Ctext%20fill%3D%22%2394a3b8%22%20font-family%3D%22sans-serif%22%20font-size%3D%2215%22%20dy%3D%225%22%20font-weight%3D%22600%22%20x%3D%2250%25%22%20y%3D%2250%25%22%20text-anchor%3D%22middle%22%3EPhoto%20Unavailable%3C%2Ftext%3E%3C%2Fsvg%3E';
+          }}
+        />
+        <div className="place-card-badge-overlay">
+          {getHazardBadge(numRating)}
+        </div>
+      </div>
+
+      {/* Card Content */}
       <div className="place-card-content">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-          <h3 className="place-card-title">🚨 {place.name}</h3>
-          {getRatingBadge(numRating)}
+        {/* 2. Place Name / Problem Title */}
+        <h3 className="place-card-title">{place.name}</h3>
+
+        {/* 3. Location */}
+        <div className="place-card-address">
+          <span style={{ fontSize: '1.05rem', color: 'var(--primary-blue)', flexShrink: 0 }}>📍</span>
+          <span>{place.address}, {place.district}, {place.state}</span>
         </div>
 
-        <p className="place-card-address">
-          <span>📍</span> {place.address}, {place.district}, {place.state}
-        </p>
+        {/* 4. Description / Problem Statement */}
+        <p className="place-card-desc">{place.description}</p>
 
-        {/* Community Safety Rating Display */}
-        <div style={{
-          margin: '0.5rem 0',
-          padding: '0.6rem 0.75rem',
-          backgroundColor: 'var(--bg-subtle, #f8fafc)',
-          borderRadius: 'var(--radius-sm, 6px)',
-          border: '1px solid var(--border-light, #e2e8f0)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.35rem'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.4rem' }}>
+        {/* 5. Community Safety Rating Box */}
+        <section className="community-rating-card" aria-label="Community Safety Rating Information">
+          <div className="community-rating-header">
             <div>
-              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--primary-navy, #0f172a)' }}>
-                ⭐ Community Safety Rating: <strong>{communityRating} / 5</strong>
+              <div className="community-rating-score">
+                <span>⭐</span>
+                <span>Community Safety Rating:</span>
+                <strong>{communityRating} / 5</strong>
               </div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted, #64748b)' }}>
-                Based on {ratingCount} community rating{ratingCount === 1 ? '' : 's'}
+              <div className="community-rating-count">
+                Based on <strong>{ratingCount}</strong> community rating{ratingCount === 1 ? '' : 's'}
               </div>
             </div>
 
             {!isAdmin && (
               <button
                 type="button"
-                className="btn btn-sm"
+                className={`rating-action-btn ${hasRated ? 'rated' : 'unrated'}`}
                 onClick={() => setShowRatingSelector((prev) => !prev)}
-                style={{
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  padding: '0.35rem 0.65rem',
-                  borderRadius: '4px',
-                  backgroundColor: hasRated ? '#f0fdf4' : '#fff1f2',
-                  color: hasRated ? '#166534' : 'var(--primary-pink, #ec4899)',
-                  border: hasRated ? '1px solid #86efac' : '1px solid #fecdd3'
-                }}
+                aria-expanded={showRatingSelector}
+                aria-label="Rate this place"
               >
                 {hasRated ? `⭐ Your Rating: ${userRating}★ (Edit)` : '⭐ Rate This Place'}
               </button>
@@ -126,16 +124,9 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onRatingSuccess }
 
           {/* Interactive Rating Selector */}
           {!isAdmin && showRatingSelector && (
-            <div style={{
-              marginTop: '0.5rem',
-              paddingTop: '0.5rem',
-              borderTop: '1px dashed var(--border-light, #e2e8f0)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.4rem'
-            }}>
-              <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-navy, #0f172a)' }}>
-                Select Safety Rating (1 = Low, 5 = Severe Hazard):
+            <div className="rating-selector-drawer">
+              <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-navy)' }}>
+                Select Hazard Severity (1 = Minor, 5 = Severe):
               </div>
               <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -143,16 +134,8 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onRatingSuccess }
                     key={star}
                     type="button"
                     onClick={() => setSelectedRating(star)}
-                    style={{
-                      padding: '0.3rem 0.55rem',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      border: selectedRating === star ? '1.5px solid var(--primary-pink, #ec4899)' : '1px solid #cbd5e1',
-                      backgroundColor: selectedRating === star ? '#fdf2f8' : '#ffffff',
-                      color: selectedRating === star ? 'var(--primary-pink, #ec4899)' : '#334155'
-                    }}
+                    className={`btn btn-sm ${selectedRating === star ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.82rem' }}
                   >
                     {star} ★
                   </button>
@@ -162,7 +145,7 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onRatingSuccess }
                   className="btn btn-primary btn-sm"
                   onClick={handleRatingSubmit}
                   disabled={submittingRating}
-                  style={{ marginLeft: 'auto', padding: '0.3rem 0.65rem', fontSize: '0.8rem' }}
+                  style={{ marginLeft: 'auto', padding: '0.35rem 0.8rem' }}
                 >
                   {submittingRating ? 'Saving...' : 'Submit Rating'}
                 </button>
@@ -171,15 +154,14 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onRatingSuccess }
           )}
 
           {ratingFeedback && (
-            <div style={{ fontSize: '0.78rem', color: '#16a34a', fontWeight: 600, marginTop: '0.2rem' }}>
-              {ratingFeedback}
+            <div style={{ fontSize: '0.8rem', color: '#16a34a', fontWeight: 600, marginTop: '0.2rem' }}>
+              ✓ {ratingFeedback}
             </div>
           )}
-        </div>
+        </section>
 
-        <p className="place-card-desc">{place.description}</p>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '0.75rem', borderTop: '1px solid var(--border-light)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+        {/* 6. Card Footer: Date & Admin Controls */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '0.85rem', borderTop: '1px solid var(--border-light)', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
           {formattedDate && <span>Reported: {formattedDate}</span>}
           {isAdmin && (
             <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
@@ -193,8 +175,9 @@ const PlaceCard = ({ place, onEdit, onDelete, isAdmin = false, onRatingSuccess }
           )}
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 
 export default PlaceCard;
+

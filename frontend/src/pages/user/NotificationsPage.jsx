@@ -44,11 +44,11 @@ const NotificationsPage = () => {
   };
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '840px', margin: '0 auto' }}>
       <div className="page-header">
         <h1 className="page-title">My Notifications</h1>
         <p className="page-subtitle">
-          Updates and verification decisions on your reported places.
+          Real-time updates and administrative review decisions on your submitted hazardous places.
         </p>
       </div>
 
@@ -60,7 +60,7 @@ const NotificationsPage = () => {
         <EmptyState
           icon="🔔"
           title="No Notifications Yet"
-          message="When an administrator reviews and verifies your submitted place reports, you will receive updates here."
+          message="When an administrator reviews your submitted hazardous place reports or new safety updates occur, they will appear here."
         />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -77,46 +77,47 @@ const NotificationsPage = () => {
             });
 
             return (
-              <div
+              <article
                 key={notif.id}
                 className="card"
                 style={{
                   padding: '1.25rem 1.5rem',
                   borderLeft: isUnread
                     ? isAccepted
-                      ? '4px solid var(--safety-success)'
-                      : '4px solid var(--safety-danger)'
+                      ? '4px solid var(--hazard-low)'
+                      : '4px solid var(--primary-blue)'
                     : '1px solid var(--border-light)',
-                  backgroundColor: isUnread ? '#fafbfc' : '#ffffff'
+                  backgroundColor: isUnread ? '#f8fafc' : '#ffffff'
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    <span style={{ fontSize: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                    <span style={{ fontSize: '1.3rem' }}>
                       {isAccepted ? '✅' : 'ℹ️'}
                     </span>
                     <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--primary-navy)' }}>
                       {notif.title}
                     </h3>
                     {isUnread && (
-                      <span className="badge badge-warning" style={{ fontSize: '0.65rem' }}>
+                      <span className="badge badge-warning" style={{ fontSize: '0.7rem' }}>
                         New
                       </span>
                     )}
                   </div>
 
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-subtle)', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                     {formattedDate}
                   </span>
                 </div>
 
-                <p style={{ margin: '0.75rem 0 0.5rem', fontSize: '0.92rem', color: 'var(--text-main)', lineHeight: 1.5 }}>
+                <p style={{ margin: '0.75rem 0 0.5rem', fontSize: '0.92rem', color: 'var(--text-body)', lineHeight: 1.55 }}>
                   {notif.message}
                 </p>
 
                 {isUnread && (
                   <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
                     <button
+                      type="button"
                       className="btn btn-secondary btn-sm"
                       onClick={() => handleMarkAsRead(notif.id)}
                       disabled={actionLoadingId === notif.id}
@@ -125,7 +126,7 @@ const NotificationsPage = () => {
                     </button>
                   </div>
                 )}
-              </div>
+              </article>
             );
           })}
         </div>
@@ -135,3 +136,4 @@ const NotificationsPage = () => {
 };
 
 export default NotificationsPage;
+

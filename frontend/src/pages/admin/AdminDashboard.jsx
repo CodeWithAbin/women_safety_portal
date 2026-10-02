@@ -16,7 +16,6 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchAdminMetrics = async () => {
       try {
-        // Derive counts from existing 16 endpoints in parallel
         const [reportsRes, placesRes, usersRes] = await Promise.all([
           adminService.getPendingReports('pending'),
           adminService.getPlaces(),
@@ -47,29 +46,29 @@ const AdminDashboard = () => {
       <div className="page-header">
         <h1 className="page-title">Administrator Dashboard</h1>
         <p className="page-subtitle">
-          Overview of moderation queues, verified hazardous locations, and registered citizens.
+          Moderation queue overview, published hazardous locations, and registered citizens.
         </p>
       </div>
 
-      {error && <AlertBanner type="error" message={error} />}
+      {error && <AlertBanner type="error" message={error} onDismiss={() => setError('')} />}
 
       {/* Metrics Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2.25rem' }}>
         {/* Pending Reports Card */}
-        <div className="card" style={{ borderLeft: '4px solid var(--safety-warning)' }}>
-          <div className="card-body">
+        <div className="card" style={{ borderLeft: '4px solid var(--hazard-medium)' }}>
+          <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                  PENDING REPORTS
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
+                  PENDING REVIEW QUEUE
                 </div>
-                <div style={{ fontSize: '2.25rem', fontWeight: 800, color: 'var(--safety-warning)', marginTop: '0.25rem' }}>
+                <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--hazard-medium)', marginTop: '0.2rem', lineHeight: 1 }}>
                   {metrics.pendingReports}
                 </div>
               </div>
-              <div style={{ fontSize: '2rem' }}>⏳</div>
+              <div style={{ fontSize: '2.25rem' }}>⏳</div>
             </div>
-            <div style={{ marginTop: '1rem' }}>
+            <div style={{ marginTop: 'auto' }}>
               <Link to="/admin/reports" className="btn btn-secondary btn-sm btn-block">
                 Review Pending Queue &rarr;
               </Link>
@@ -79,19 +78,19 @@ const AdminDashboard = () => {
 
         {/* Accepted Places Card */}
         <div className="card" style={{ borderLeft: '4px solid var(--primary-blue)' }}>
-          <div className="card-body">
+          <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                  ACCEPTED PLACES
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
+                  PUBLISHED HAZARDS
                 </div>
-                <div style={{ fontSize: '2.25rem', fontWeight: 800, color: 'var(--primary-blue)', marginTop: '0.25rem' }}>
+                <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--primary-blue)', marginTop: '0.2rem', lineHeight: 1 }}>
                   {metrics.acceptedPlaces}
                 </div>
               </div>
-              <div style={{ fontSize: '2rem' }}>📍</div>
+              <div style={{ fontSize: '2.25rem' }}>📍</div>
             </div>
-            <div style={{ marginTop: '1rem' }}>
+            <div style={{ marginTop: 'auto' }}>
               <Link to="/admin/places" className="btn btn-secondary btn-sm btn-block">
                 Manage Places &rarr;
               </Link>
@@ -100,22 +99,22 @@ const AdminDashboard = () => {
         </div>
 
         {/* Registered Users Card */}
-        <div className="card" style={{ borderLeft: '4px solid var(--safety-success)' }}>
-          <div className="card-body">
+        <div className="card" style={{ borderLeft: '4px solid var(--hazard-low)' }}>
+          <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                  REGISTERED USERS
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
+                  REGISTERED CITIZENS
                 </div>
-                <div style={{ fontSize: '2.25rem', fontWeight: 800, color: 'var(--safety-success)', marginTop: '0.25rem' }}>
+                <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--hazard-low)', marginTop: '0.2rem', lineHeight: 1 }}>
                   {metrics.registeredUsers}
                 </div>
               </div>
-              <div style={{ fontSize: '2rem' }}>👥</div>
+              <div style={{ fontSize: '2.25rem' }}>👥</div>
             </div>
-            <div style={{ marginTop: '1rem' }}>
+            <div style={{ marginTop: 'auto' }}>
               <Link to="/admin/users" className="btn btn-secondary btn-sm btn-block">
-                Manage Users &rarr;
+                Manage Directory &rarr;
               </Link>
             </div>
           </div>
@@ -126,18 +125,18 @@ const AdminDashboard = () => {
       <div className="card">
         <div className="card-header">
           <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--primary-navy)' }}>
-            Administrative Actions
+            Administrative Control Panel
           </h2>
         </div>
-        <div className="card-body" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
-          <Link to="/admin/reports" className="btn btn-primary" style={{ padding: '1rem' }}>
+        <div className="card-body" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
+          <Link to="/admin/reports" className="btn btn-primary" style={{ padding: '1rem 1.25rem' }}>
             <span>📝</span> Review Pending Reports ({metrics.pendingReports})
           </Link>
-          <Link to="/admin/places" className="btn btn-secondary" style={{ padding: '1rem' }}>
+          <Link to="/admin/places" className="btn btn-secondary" style={{ padding: '1rem 1.25rem' }}>
             <span>➕</span> Add / Manage Hazardous Places
           </Link>
-          <Link to="/admin/users" className="btn btn-secondary" style={{ padding: '1rem' }}>
-            <span>👥</span> View Registered Citizens
+          <Link to="/admin/users" className="btn btn-secondary" style={{ padding: '1rem 1.25rem' }}>
+            <span>👥</span> View Registered Citizens ({metrics.registeredUsers})
           </Link>
         </div>
       </div>
@@ -146,3 +145,4 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+

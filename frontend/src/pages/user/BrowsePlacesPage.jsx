@@ -58,12 +58,12 @@ const BrowsePlacesPage = () => {
       <div className="page-header">
         <h1 className="page-title">Browse Hazardous Places</h1>
         <p className="page-subtitle">
-          Explore verified unsafe and hazardous areas filtered by State and District.
+          Explore verified unsafe and hazardous areas, filter by location, and contribute community safety ratings.
         </p>
       </div>
 
-      {/* Cascading Filter Controls */}
-      <div className="card" style={{ padding: '1.25rem 1.5rem', marginBottom: '1.75rem' }}>
+      {/* Cascading Filter & Search Controls */}
+      <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
         <StateDistrictSelector
           selectedState={state}
           selectedDistrict={district}
@@ -76,16 +76,16 @@ const BrowsePlacesPage = () => {
           districtLabel="Filter by District"
         />
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginTop: '0.25rem' }}>
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label" htmlFor="search-input">
-              Search Places
+              Search by Keyword
             </label>
             <input
               id="search-input"
               type="text"
               className="form-control"
-              placeholder="Search by name or address..."
+              placeholder="Search by name, landmark, street..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -93,7 +93,7 @@ const BrowsePlacesPage = () => {
 
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label" htmlFor="min-rating-select">
-              Minimum Rating
+              Minimum Safety Rating
             </label>
             <select
               id="min-rating-select"
@@ -112,7 +112,7 @@ const BrowsePlacesPage = () => {
 
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label" htmlFor="sort-select">
-              Sort By
+              Sort Results
             </label>
             <select
               id="sort-select"
@@ -120,28 +120,28 @@ const BrowsePlacesPage = () => {
               value={sort}
               onChange={(e) => setSort(e.target.value)}
             >
-              <option value="">Default</option>
-              <option value="rating_desc">Highest Safety Rating</option>
-              <option value="rating_asc">Lowest Safety Rating</option>
-              <option value="newest">Newest First</option>
+              <option value="">Default Order</option>
+              <option value="rating_desc">Highest Safety Rating First</option>
+              <option value="rating_asc">Lowest Safety Rating First</option>
+              <option value="newest">Most Recently Reported</option>
             </select>
           </div>
         </div>
       </div>
 
-      {error && <AlertBanner type="error" message={error} />}
+      {error && <AlertBanner type="error" message={error} onDismiss={() => setError('')} />}
 
       {loading ? (
-        <LoadingSpinner message="Searching for hazardous places in selected area..." />
+        <LoadingSpinner message="Searching verified hazardous places..." />
       ) : places.length === 0 ? (
         <EmptyState
           icon="🛡️"
           title="No Hazardous Places Reported"
-          message={`No verified hazardous places found for ${district ? `${district}, ` : ''}${state || 'the selected location'}.`}
+          message={`No verified places match your filters in ${district ? `${district}, ` : ''}${state || 'the selected location'}.`}
         />
       ) : (
         <>
-          <div style={{ marginBottom: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+          <div style={{ marginBottom: '1.25rem', color: 'var(--text-muted)', fontSize: '0.92rem' }}>
             Showing <strong>{places.length}</strong> verified hazardous place{places.length > 1 ? 's' : ''}:
           </div>
           <div className="grid-cards">
@@ -156,3 +156,4 @@ const BrowsePlacesPage = () => {
 };
 
 export default BrowsePlacesPage;
+
