@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { adminService } from '../../services/api';
 import StateDistrictSelector from '../../components/StateDistrictSelector';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -33,10 +33,10 @@ const ManageUsersPage = () => {
     try {
       const res = await adminService.getUsers(filterState, filterDistrict);
       if (res.success) {
-        setUsers(res.data);
+        setUsers(res.data || []);
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to fetch users.');
+      setError(err.response?.data?.message || err.message || 'Failed to fetch registered citizens.');
     } finally {
       setLoading(false);
     }
@@ -45,6 +45,15 @@ const ManageUsersPage = () => {
   useEffect(() => {
     fetchUsers();
   }, [filterState, filterDistrict]);
+
+  const hasActiveFilters = useMemo(() => {
+    return Boolean(filterState !== '' || filterDistrict !== '');
+  }, [filterState, filterDistrict]);
+
+  const handleClearFilters = () => {
+    setFilterState('');
+    setFilterDistrict('');
+  };
 
   const handleOpenEdit = (user) => {
     setUserForm({
@@ -65,12 +74,12 @@ const ManageUsersPage = () => {
     try {
       const res = await adminService.updateUser(editUser.id, userForm);
       if (res.success) {
-        setSuccessMsg('User details updated successfully.');
+        setSuccessMsg('Citizen details updated successfully.');
         setEditUser(null);
         fetchUsers();
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to update user.');
+      setError(err.response?.data?.message || err.message || 'Failed to update citizen details.');
     } finally {
       setModalLoading(false);
     }
@@ -84,23 +93,27 @@ const ManageUsersPage = () => {
     try {
       const res = await adminService.deleteUser(deleteTargetUser.id);
       if (res.success) {
-        setSuccessMsg(res.message || 'User deleted successfully.');
+        setSuccessMsg(res.message || 'Citizen account deleted successfully.');
         setDeleteTargetUser(null);
         fetchUsers();
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to delete user.');
+      setError(err.response?.data?.message || err.message || 'Failed to delete citizen account.');
     } finally {
       setModalLoading(false);
     }
   };
 
   return (
-    <div>
-      <div className="page-header">
+    <div className="manage-users-page">
+      {/* Page Header */}
+      <div className="page-header" style={{ marginBottom: '1.75rem' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.25rem 0.65rem', backgroundColor: '#ede9fe', color: '#6d28d9', borderRadius: 'var(--radius-pill)', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+          <span>👥</span> User Management
+        </div>
         <h1 className="page-title">Manage Registered Citizens</h1>
         <p className="page-subtitle">
-          View registered citizens, update details, or manage user accounts in the directory.
+          View registered citizens, update details, or manage user accounts in the community safety directory.
         </p>
       </div>
 
@@ -108,7 +121,23 @@ const ManageUsersPage = () => {
       {error && <AlertBanner type="error" message={error} onDismiss={() => setError('')} />}
 
       {/* Filter Bar */}
-      <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
+      <div className="filter-card">
+        <div className="filter-header-row">
+          <div className="filter-header-title">
+            <span>📍</span> Filter Citizens by Location
+          </div>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={handleClearFilters}
+              style={{ fontSize: '0.82rem', padding: '0.3rem 0.75rem' }}
+            >
+              <span>↺</span> Reset Location Filter
+            </button>
+          )}
+        </div>
+
         <StateDistrictSelector
           selectedState={filterState}
           selectedDistrict={filterDistrict}
@@ -120,19 +149,75 @@ const ManageUsersPage = () => {
           stateLabel="Filter Users by State"
           districtLabel="Filter Users by District"
         />
+
+        {/* Active Filter Chips */}
+        {hasActiveFilters && (
+          <div className="filter-chips-bar" aria-label="Active Filters">
+            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Active Filters:</span>
+            {filterState && (
+              <span className="filter-chip">
+                <span>📍 State: {filterState}</span>
+                <button type="button" className="filter-chip-remove" onClick={() => { setFilterState(''); setFilterDistrict(''); }}>×</button>
+              </span>
+            )}
+            {filterDistrict && (
+              <span className="filter-chip">
+                <span>📍 District: {filterDistrict}</span>
+                <button type="button" className="filter-chip-remove" onClick={() => setFilterDistrict('')}>×</button>
+              </span>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Results Counter Bar */}
+      {users.length > 0 && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '0.5rem',
+          marginBottom: '1.25rem',
+          padding: '0.65rem 1rem',
+          backgroundColor: '#ffffff',
+          border: '1px solid var(--border-light)',
+          borderRadius: 'var(--radius-sm)',
+          fontSize: '0.9rem',
+          color: 'var(--text-body)'
+        }}>
+          <div>
+            Showing <strong>{users.length}</strong> registered citizen{users.length > 1 ? 's' : ''}{' '}
+            in <strong style={{ color: 'var(--primary-navy)' }}>{filterDistrict || 'All Districts'}, {filterState || 'All States'}</strong>
+          </div>
+          <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+            Admin accounts are protected from direct deletion
+          </span>
+        </div>
+      )}
 
       {loading ? (
         <LoadingSpinner message="Loading registered citizens directory..." />
       ) : users.length === 0 ? (
         <EmptyState
           icon="👥"
-          title="No Users Found"
-          message="No registered citizens match the selected location filter."
+          title="No Citizens Found"
+          message={
+            hasActiveFilters
+              ? 'No registered citizens match the selected location filter.'
+              : 'There are currently no registered citizens in the system.'
+          }
+          actionButton={
+            hasActiveFilters ? (
+              <button type="button" className="btn btn-secondary" onClick={handleClearFilters}>
+                <span>↺</span> Clear Location Filters
+              </button>
+            ) : null
+          }
         />
       ) : (
         <div className="table-container">
-          <table className="table">
+          <table className="table" aria-label="Registered Citizens Directory">
             <thead>
               <tr>
                 <th>Citizen Name</th>
@@ -147,11 +232,13 @@ const ManageUsersPage = () => {
             <tbody>
               {users.map((u) => {
                 const isAdminAccount = u.role === 'admin';
-                const formattedDate = new Date(u.created_at).toLocaleDateString(undefined, {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric'
-                });
+                const formattedDate = u.created_at
+                  ? new Date(u.created_at).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })
+                  : '—';
 
                 return (
                   <tr key={u.id}>
@@ -161,11 +248,11 @@ const ManageUsersPage = () => {
                     <td>{u.email}</td>
                     <td>
                       <span className={`badge ${isAdminAccount ? 'badge-admin' : 'badge-info'}`}>
-                        {u.role}
+                        {isAdminAccount ? '🛡️ Admin' : '👤 Citizen'}
                       </span>
                     </td>
                     <td>
-                      {u.district}, {u.state}
+                      {u.district || '—'}, {u.state || '—'}
                     </td>
                     <td>{u.phone || '—'}</td>
                     <td>{formattedDate}</td>
@@ -199,10 +286,10 @@ const ManageUsersPage = () => {
 
       {/* Edit User Modal */}
       {editUser && (
-        <div className="modal-overlay" role="dialog" aria-modal="true">
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="edit-user-modal-title">
           <div className="modal-container">
             <div className="modal-header">
-              <h3 className="modal-title">Edit Citizen Details</h3>
+              <h3 id="edit-user-modal-title" className="modal-title">Edit Citizen Details</h3>
               <button className="modal-close" onClick={() => setEditUser(null)} aria-label="Close modal">
                 &times;
               </button>
@@ -210,8 +297,11 @@ const ManageUsersPage = () => {
             <form onSubmit={handleUpdateUser}>
               <div className="modal-body">
                 <div className="form-group">
-                  <label className="form-label">Full Name <span className="required">*</span></label>
+                  <label className="form-label" htmlFor="user-name">
+                    Full Name <span className="required">*</span>
+                  </label>
                   <input
+                    id="user-name"
                     type="text"
                     className="form-control"
                     value={userForm.name}
@@ -220,8 +310,11 @@ const ManageUsersPage = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Email Address <span className="required">*</span></label>
+                  <label className="form-label" htmlFor="user-email">
+                    Email Address <span className="required">*</span>
+                  </label>
                   <input
+                    id="user-email"
                     type="email"
                     className="form-control"
                     value={userForm.email}
@@ -237,10 +330,14 @@ const ManageUsersPage = () => {
                   required={true}
                 />
                 <div className="form-group">
-                  <label className="form-label">Phone Number</label>
+                  <label className="form-label" htmlFor="user-phone">
+                    Phone Number
+                  </label>
                   <input
+                    id="user-phone"
                     type="tel"
                     className="form-control"
+                    placeholder="e.g. +91 9876543210"
                     value={userForm.phone}
                     onChange={(e) => setUserForm({ ...userForm, phone: e.target.value })}
                   />

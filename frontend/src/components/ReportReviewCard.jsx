@@ -16,29 +16,54 @@ const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
 
   const getSeverityBadge = (rating) => {
     const num = Number(rating);
-    if (num >= 4.5) return <span className="badge badge-hazard-severe">🔥 Severe Hazard ({rating}/5)</span>;
-    if (num >= 3.5) return <span className="badge badge-hazard-high">⚠️ High Hazard ({rating}/5)</span>;
-    if (num >= 2.0) return <span className="badge badge-hazard-medium">⚡ Moderate Hazard ({rating}/5)</span>;
-    return <span className="badge badge-hazard-low">🛡️ Low Hazard ({rating}/5)</span>;
+    if (isNaN(num)) return <span className="badge badge-info">Initial Rating: Unrated</span>;
+    if (num >= 4.5) return <span className="badge badge-hazard-severe">🔥 Critical ({rating}/5)</span>;
+    if (num >= 3.5) return <span className="badge badge-hazard-high">⚠️ High ({rating}/5)</span>;
+    if (num >= 2.0) return <span className="badge badge-hazard-medium">⚡ Moderate ({rating}/5)</span>;
+    return <span className="badge badge-hazard-low">🛡️ Low ({rating}/5)</span>;
   };
 
   return (
-    <article className="card" style={{ marginBottom: '1.75rem', overflow: 'hidden' }}>
+    <article className="card" style={{ marginBottom: '1.75rem', overflow: 'hidden', border: '1px solid var(--border-light)', boxShadow: 'var(--shadow-card)' }} aria-label={`Pending Report: ${report.name}`}>
+      
+      {/* Card Top Banner / Identification Header */}
+      <div style={{
+        padding: '0.85rem 1.4rem',
+        backgroundColor: '#fef3c7',
+        borderBottom: '1px solid #fde68a',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '0.5rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem', fontWeight: 700, color: '#92400e' }}>
+          <span>⏳</span> Moderation Item #{report.id}
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <span className="badge badge-warning">Pending Review</span>
+          <span style={{ fontSize: '0.82rem', color: '#92400e', fontWeight: 600 }}>
+            Initial Reporter Assessment:
+          </span>
+          {getSeverityBadge(report.rating)}
+        </div>
+      </div>
+
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
         gap: '1.5rem',
         padding: '1.5rem'
       }}>
-        {/* Left Column: Image & Submission Time */}
+        {/* Left Section: Evidence Photo & Submission Timestamp */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <div style={{
             position: 'relative',
             width: '100%',
-            height: '190px',
+            height: '220px',
             borderRadius: 'var(--radius-sm)',
             overflow: 'hidden',
-            border: '1px solid var(--border-light)',
+            border: '1px solid var(--border-medium)',
             backgroundColor: 'var(--bg-subtle)'
           }}>
             <img
@@ -47,7 +72,8 @@ const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
               style={{
                 width: '100%',
                 height: '100%',
-                objectFit: 'cover'
+                objectFit: 'cover',
+                display: 'block'
               }}
               loading="lazy"
               onError={(e) => {
@@ -56,61 +82,81 @@ const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
               }}
             />
           </div>
-          <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-            <strong>Submitted:</strong> {formattedDate || 'N/A'}
+
+          <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span>📅</span>
+            <span><strong>Submitted:</strong> {formattedDate || 'Date unavailable'}</span>
           </div>
         </div>
 
-        {/* Right Column: Place Details & Moderation Actions */}
+        {/* Right Section: Report Details, Citizen Details & Moderation Action */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-navy)' }}>
+          <div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '0.35rem', lineHeight: 1.3 }}>
               {report.name}
             </h3>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <span className="badge badge-warning">Pending Review</span>
-              {getSeverityBadge(report.rating)}
+            <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'flex-start', gap: '0.35rem' }}>
+              <span style={{ color: 'var(--primary-blue)', flexShrink: 0 }}>📍</span>
+              <span><strong>Location:</strong> {report.address}, {report.district}, {report.state}</span>
             </div>
           </div>
 
-          <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'flex-start', gap: '0.4rem' }}>
-            <span style={{ color: 'var(--primary-blue)' }}>📍</span>
-            <span><strong>Location:</strong> {report.address}, {report.district}, {report.state}</span>
-          </div>
-
-          <div style={{ fontSize: '0.92rem', color: 'var(--text-body)', lineHeight: 1.5 }}>
-            <strong>Problem Statement:</strong> {report.description}
-          </div>
-
           <div style={{
-            backgroundColor: 'var(--bg-subtle)',
+            fontSize: '0.92rem',
+            color: 'var(--text-body)',
+            lineHeight: 1.55,
+            backgroundColor: '#f8fafc',
             padding: '0.85rem 1rem',
+            borderRadius: 'var(--radius-sm)',
+            border: '1px solid var(--border-light)'
+          }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
+              Reported Problem Statement:
+            </div>
+            {report.description}
+          </div>
+
+          {/* Citizen Reporter Info Box */}
+          <div style={{
+            backgroundColor: '#f1f5f9',
+            padding: '0.75rem 1rem',
             borderRadius: 'var(--radius-sm)',
             border: '1px solid var(--border-light)',
             marginTop: 'auto'
           }}>
-            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--primary-navy)', marginBottom: '0.2rem' }}>
-              Citizen Reporter Information:
+            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--primary-navy)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.2rem' }}>
+              Citizen Reporter Information
             </div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              {report.reporter_name || 'Anonymous / Unregistered'} &bull; {report.reporter_email || 'No email provided'} {report.reporter_phone ? `&bull; 📞 ${report.reporter_phone}` : ''}
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-body)' }}>
+              <strong>{report.reporter_name || 'Anonymous Citizen'}</strong> &bull; {report.reporter_email || 'No email recorded'} {report.reporter_phone ? `&bull; 📞 ${report.reporter_phone}` : ''}
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+          {/* Moderation Decision Actions */}
+          <div style={{
+            display: 'flex',
+            gap: '0.75rem',
+            justifyContent: 'flex-end',
+            paddingTop: '0.5rem',
+            borderTop: '1px solid var(--border-light)',
+            flexWrap: 'wrap'
+          }}>
             <button
               type="button"
               className="btn btn-danger btn-sm"
               onClick={() => onReject(report.id)}
               disabled={isProcessing}
+              style={{ minWidth: '120px' }}
             >
               {isProcessing ? 'Processing...' : '✕ Reject Report'}
             </button>
+
             <button
               type="button"
               className="btn btn-success btn-sm"
               onClick={() => onAccept(report.id)}
               disabled={isProcessing}
+              style={{ minWidth: '150px' }}
             >
               {isProcessing ? 'Processing...' : '✓ Accept & Publish'}
             </button>
