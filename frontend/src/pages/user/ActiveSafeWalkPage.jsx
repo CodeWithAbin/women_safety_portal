@@ -1,19 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { safeWalkService } from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import AlertBanner from '../../components/AlertBanner';
 import EmptyState from '../../components/EmptyState';
 import ConfirmModal from '../../components/ConfirmModal';
+import SafeWalkMap from '../../components/SafeWalkMap';
 
 const ActiveSafeWalkPage = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   const [walk, setWalk] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Live Location State (for Walker)
+  const [walkerLocation, setWalkerLocation] = useState(null);
+  const [locationError, setLocationError] = useState('');
+  const [lastLocationUpdateTime, setLastLocationUpdateTime] = useState(null);
+  const [timeAgoDisplay, setTimeAgoDisplay] = useState('');
 
   // Modals & Action States
   const [completeModalOpen, setCompleteModalOpen] = useState(false);
@@ -22,31 +28,224 @@ const ActiveSafeWalkPage = () => {
   const [completedState, setCompletedState] = useState(false);
   const [cancelledState, setCancelledState] = useState(false);
 
-  const fetchActiveWalk = async () => {
-    setLoading(true);
-    setError('');
+  // Refs for tracking lifecycle & cleanup
+  const watchIdRef = useRef(null);
+  const lastSentTimeRef = useRef(0);
+  const pollingTimerRef = useRef(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // Fetch active walk initial data
+  const fetchActiveWalk = useCallback(async (isInitial = false) => {
+    if (isInitial) setLoading(true);
     try {
       const res = await safeWalkService.getActiveSafeWalk();
+      if (!isMountedRef.current) return;
+
       if (res.success && res.data) {
         setWalk(res.data);
+        if (res.data.last_latitude && res.data.last_longitude) {
+          setWalkerLocation({
+            latitude: res.data.last_latitude,
+            longitude: res.data.last_longitude
+          });
+        }
+        if (res.data.updated_at) {
+          setLastLocationUpdateTime(new Date(res.data.updated_at));
+        }
       } else {
         setWalk(null);
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to load active Safe Walk session.');
+      if (isMountedRef.current) {
+        console.warn('Active Safe Walk fetch notice:', err);
+        if (isInitial) {
+          setError(err.response?.data?.message || err.message || 'Failed to load active Safe Walk session.');
+        }
+      }
     } finally {
-      setLoading(false);
+      if (isMountedRef.current && isInitial) {
+        setLoading(false);
+      }
     }
-  };
-
-  useEffect(() => {
-    fetchActiveWalk();
   }, []);
 
-  // Complete Walk Handler
+  useEffect(() => {
+    fetchActiveWalk(true);
+  }, [fetchActiveWalk]);
+
+  // Determine roles
+  const isWalker = Boolean(user && walk && walk.user_id === user.id);
+  const isCompanion = Boolean(user && walk && walk.companion_id === user.id);
+  const isActive = Boolean(walk && walk.status === 'ACTIVE');
+
+  // =========================================================================
+  // 1. WALKER GPS WATCHER & THROTTLED LOCATION SHARING
+  // =========================================================================
+  useEffect(() => {
+    if (!isWalker || !isActive || !walk?.id) return;
+
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    setLocationError('');
+
+    // Watch position callback
+    const handlePositionSuccess = (position) => {
+      if (!isMountedRef.current) return;
+
+      const lat = parseFloat(position.coords.latitude.toFixed(6));
+      const lon = parseFloat(position.coords.longitude.toFixed(6));
+
+      // Update local walker state for immediate map display
+      setWalkerLocation({ latitude: lat, longitude: lon });
+      const now = Date.now();
+
+      // Throttle backend updates to once every 12 seconds
+      if (now - lastSentTimeRef.current >= 12000) {
+        lastSentTimeRef.current = now;
+        setLastLocationUpdateTime(new Date());
+
+        safeWalkService
+          .updateLocation(walk.id, { latitude: lat, longitude: lon })
+          .then((res) => {
+            if (res.success && isMountedRef.current) {
+              setLastLocationUpdateTime(new Date());
+            }
+          })
+          .catch((err) => {
+            console.warn('Background location update notice:', err.message);
+          });
+      }
+    };
+
+    const handlePositionError = (err) => {
+      if (!isMountedRef.current) return;
+      if (err.code === 1) {
+        // Permission denied
+        setLocationError(
+          'Location sharing is unavailable. You can continue your Safe Walk, but your companion will not receive your current location.'
+        );
+      } else {
+        console.warn('GPS position acquisition notice:', err.message);
+      }
+    };
+
+    const options = {
+      enableHighAccuracy: true,
+      maximumAge: 5000,
+      timeout: 15000
+    };
+
+    try {
+      watchIdRef.current = navigator.geolocation.watchPosition(
+        handlePositionSuccess,
+        handlePositionError,
+        options
+      );
+    } catch (e) {
+      console.warn('Could not start GPS watch:', e);
+    }
+
+    // Cleanup GPS watcher on unmount or when walk is completed/cancelled
+    return () => {
+      if (watchIdRef.current !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    };
+  }, [isWalker, isActive, walk?.id]);
+
+  // =========================================================================
+  // 2. COMPANION PERIODIC POLLING (Every 12 Seconds)
+  // =========================================================================
+  useEffect(() => {
+    if (!isCompanion || !isActive || !walk?.id) return;
+
+    const pollIntervalMs = 12000;
+
+    pollingTimerRef.current = setInterval(async () => {
+      if (!isMountedRef.current) return;
+      try {
+        const res = await safeWalkService.getSafeWalkById(walk.id);
+        if (res.success && res.data && isMountedRef.current) {
+          setWalk(res.data);
+          if (res.data.last_latitude && res.data.last_longitude) {
+            setWalkerLocation({
+              latitude: res.data.last_latitude,
+              longitude: res.data.last_longitude
+            });
+          }
+          if (res.data.updated_at) {
+            setLastLocationUpdateTime(new Date(res.data.updated_at));
+          }
+
+          // If journey completed or cancelled, stop polling
+          if (res.data.status !== 'ACTIVE') {
+            clearInterval(pollingTimerRef.current);
+          }
+        }
+      } catch (err) {
+        console.warn('Companion polling notice:', err.message);
+      }
+    }, pollIntervalMs);
+
+    // Cleanup polling timer on unmount
+    return () => {
+      if (pollingTimerRef.current) {
+        clearInterval(pollingTimerRef.current);
+        pollingTimerRef.current = null;
+      }
+    };
+  }, [isCompanion, isActive, walk?.id]);
+
+  // =========================================================================
+  // 3. RELATIVE TIME AGO CALCULATION (for location update status)
+  // =========================================================================
+  useEffect(() => {
+    if (!lastLocationUpdateTime) {
+      setTimeAgoDisplay('');
+      return;
+    }
+
+    const updateDisplay = () => {
+      const secondsAgo = Math.floor((Date.now() - lastLocationUpdateTime.getTime()) / 1000);
+      if (secondsAgo < 10) {
+        setTimeAgoDisplay('Just now');
+      } else if (secondsAgo < 60) {
+        setTimeAgoDisplay(`${secondsAgo}s ago`);
+      } else {
+        const minsAgo = Math.floor(secondsAgo / 60);
+        setTimeAgoDisplay(`${minsAgo}m ago`);
+      }
+    };
+
+    updateDisplay();
+    const timer = setInterval(updateDisplay, 5000);
+    return () => clearInterval(timer);
+  }, [lastLocationUpdateTime]);
+
+  // =========================================================================
+  // ACTION HANDLERS: Complete & Cancel
+  // =========================================================================
   const handleCompleteWalk = async () => {
     if (!walk) return;
     setActionLoading(true);
+
+    // Immediately stop geolocation watch
+    if (watchIdRef.current !== null && navigator.geolocation) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+
     try {
       const res = await safeWalkService.completeSafeWalk(walk.id);
       if (res.success) {
@@ -60,10 +259,16 @@ const ActiveSafeWalkPage = () => {
     }
   };
 
-  // Cancel Walk Handler
   const handleCancelWalk = async () => {
     if (!walk) return;
     setActionLoading(true);
+
+    // Immediately stop geolocation watch
+    if (watchIdRef.current !== null && navigator.geolocation) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+
     try {
       const res = await safeWalkService.cancelSafeWalk(walk.id);
       if (res.success) {
@@ -81,7 +286,9 @@ const ActiveSafeWalkPage = () => {
     return <LoadingSpinner message="Retrieving active Safe Walk status..." />;
   }
 
-  // Completed State View
+  // =========================================================================
+  // VIEW: Completed State
+  // =========================================================================
   if (completedState) {
     return (
       <div className="safewalk-container" style={{ maxWidth: '680px' }}>
@@ -91,7 +298,7 @@ const ActiveSafeWalkPage = () => {
             Journey Completed!
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '1rem', lineHeight: 1.6, maxWidth: '480px', margin: '0 auto 2rem' }}>
-            Your Safe Walk has ended and your companion no longer has access to an active journey.
+            Your Safe Walk has ended and your companion no longer has access to your journey or location.
           </p>
 
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -99,7 +306,7 @@ const ActiveSafeWalkPage = () => {
               🚶‍♀️ Start Another Safe Walk
             </Link>
             <Link to="/dashboard" className="btn btn-secondary" style={{ padding: '0.75rem 1.5rem' }}>
-              Dashboard
+              Return to Dashboard
             </Link>
           </div>
         </div>
@@ -107,7 +314,9 @@ const ActiveSafeWalkPage = () => {
     );
   }
 
-  // Cancelled State View
+  // =========================================================================
+  // VIEW: Cancelled State
+  // =========================================================================
   if (cancelledState) {
     return (
       <div className="safewalk-container" style={{ maxWidth: '680px' }}>
@@ -117,7 +326,7 @@ const ActiveSafeWalkPage = () => {
             Safe Walk Cancelled
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '1rem', lineHeight: 1.6, maxWidth: '480px', margin: '0 auto 2rem' }}>
-            Your Safe Walk session has been cancelled. Your companion has been informed.
+            Your Safe Walk session has ended and location sharing is stopped.
           </p>
 
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -133,14 +342,16 @@ const ActiveSafeWalkPage = () => {
     );
   }
 
-  // Empty State View (No Active Walk)
+  // =========================================================================
+  // VIEW: No Active Walk
+  // =========================================================================
   if (!walk) {
     return (
       <div className="safewalk-container" style={{ maxWidth: '680px' }}>
         <EmptyState
           icon="🚶‍♀️"
           title="No Active Safe Walk Session"
-          message="You do not have any active Safe Walk journeys currently in progress as a walker or companion."
+          message="You do not have any active Safe Walk journeys in progress as a walker or companion."
           actionButton={
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '0.75rem' }}>
               <Link to="/safe-walk" className="btn btn-primary">
@@ -156,10 +367,6 @@ const ActiveSafeWalkPage = () => {
     );
   }
 
-  // Role Determination
-  const isWalker = user && walk.user_id === user.id;
-  const isCompanion = user && walk.companion_id === user.id;
-
   const formattedStartedAt = walk.started_at
     ? new Date(walk.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' })
     : 'Just now';
@@ -168,10 +375,21 @@ const ActiveSafeWalkPage = () => {
     ? new Date(walk.expected_arrival).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' })
     : 'Not specified';
 
+  // Target coordinates for SafeWalkMap
+  const displayLat = walkerLocation?.latitude || walk.last_latitude || walk.start_latitude || null;
+  const displayLon = walkerLocation?.longitude || walk.last_longitude || walk.start_longitude || null;
+
   return (
     <div className="safewalk-container">
       {error && (
         <AlertBanner type="error" message={error} onClose={() => setError('')} />
+      )}
+
+      {locationError && (
+        <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', borderRadius: 'var(--radius-sm)', padding: '0.85rem 1.15rem', color: '#92400e', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span>ℹ️</span>
+          <span>{locationError}</span>
+        </div>
       )}
 
       {/* Companion View Notification Banner */}
@@ -181,7 +399,7 @@ const ActiveSafeWalkPage = () => {
           <div>
             <strong style={{ display: 'block', fontSize: '0.98rem' }}>You are the Community Companion for this journey</strong>
             <span style={{ fontSize: '0.86rem', color: '#1e3a8a' }}>
-              {walk.user_name} is currently walking to their destination. You will be notified when they arrive safely.
+              {walk.user_name} has shared their live Safe Walk journey with you. Updates refresh automatically.
             </span>
           </div>
         </div>
@@ -212,7 +430,7 @@ const ActiveSafeWalkPage = () => {
         </div>
 
         {/* Journey Details Key Metrics */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '1.75rem' }}>
           <div style={{ padding: '1.15rem', backgroundColor: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
             <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>
               📍 Destination
@@ -244,15 +462,39 @@ const ActiveSafeWalkPage = () => {
           </div>
         </div>
 
-        {/* Start Coordinates (if available) */}
-        {walk.start_latitude && walk.start_longitude && (
-          <div style={{ padding: '0.85rem 1.15rem', backgroundColor: '#f8fafc', border: '1px solid var(--border-medium)', borderRadius: 'var(--radius-sm)', marginBottom: '1.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.88rem' }}>
-            <span style={{ color: 'var(--text-muted)' }}>🧭 Start Coordinates:</span>
-            <span style={{ fontWeight: 700, color: 'var(--primary-navy)' }}>
-              {walk.start_latitude}, {walk.start_longitude}
-            </span>
+        {/* =========================================================================
+            SAFE WALK LIVE MAP (Leaflet Live Journey View)
+            ========================================================================= */}
+        <section style={{ marginBottom: '1.75rem' }} aria-label="Safe Walk Live Map">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.92rem', fontWeight: 700, color: 'var(--primary-navy)' }}>
+              <span>🗺️</span> {isWalker ? 'Your Live Safe Walk Map' : `${walk.user_name}'s Live Location`}
+            </div>
+            {timeAgoDisplay && (
+              <span style={{ fontSize: '0.8rem', color: '#059669', fontWeight: 600 }}>
+                ● Last update: {timeAgoDisplay}
+              </span>
+            )}
           </div>
-        )}
+
+          <SafeWalkMap
+            latitude={displayLat}
+            longitude={displayLon}
+            walkerName={walk.user_name || 'Walker'}
+            destination={walk.destination}
+            lastUpdated={timeAgoDisplay}
+            isWalker={isWalker}
+            status={walk.status}
+            height="320px"
+          />
+        </section>
+
+        {/* Privacy Notice */}
+        <div style={{ padding: '0.85rem 1rem', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 'var(--radius-sm)', marginBottom: '1.5rem', fontSize: '0.84rem', color: '#166534', lineHeight: 1.5 }}>
+          <strong>🔒 Privacy Protection:</strong> {isWalker
+            ? 'Your current location is shared only with your selected community companion while this Safe Walk is active. Location sharing stops when the Safe Walk is completed or cancelled.'
+            : 'You have access to this journey location because you were selected as a community companion. Location sharing stops when the Safe Walk concludes.'}
+        </div>
 
         {/* Walker Action Controls */}
         {isWalker && (

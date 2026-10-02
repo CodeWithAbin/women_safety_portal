@@ -2,6 +2,7 @@ package com.womensafety.controller;
 
 import com.womensafety.model.SafeWalk;
 import com.womensafety.model.dto.ApiResponse;
+import com.womensafety.model.dto.LocationUpdateRequest;
 import com.womensafety.model.dto.SafeWalkCreateRequest;
 import com.womensafety.security.UserPrincipal;
 import com.womensafety.service.SafeWalkService;
@@ -61,6 +62,16 @@ public class SafeWalkController {
             @PathVariable Long id,
             @AuthenticationPrincipal UserPrincipal principal) {
         ApiResponse<SafeWalk> response = safeWalkService.cancelSafeWalk(id, principal);
+        return ResponseEntity.ok(response);
+    }
+
+    // 6. Update current live location (walker only)
+    @PatchMapping("/{id}/location")
+    public ResponseEntity<ApiResponse<SafeWalk>> updateLocation(
+            @PathVariable Long id,
+            @Valid @RequestBody LocationUpdateRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        ApiResponse<SafeWalk> response = safeWalkService.updateLocation(id, request, principal);
         return ResponseEntity.ok(response);
     }
 }

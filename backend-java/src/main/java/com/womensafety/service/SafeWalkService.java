@@ -6,6 +6,7 @@ import com.womensafety.exception.ResourceNotFoundException;
 import com.womensafety.model.SafeWalk;
 import com.womensafety.model.User;
 import com.womensafety.model.dto.ApiResponse;
+import com.womensafety.model.dto.LocationUpdateRequest;
 import com.womensafety.model.dto.SafeWalkCreateRequest;
 import com.womensafety.repository.CompanionRepository;
 import com.womensafety.repository.NotificationRepository;
@@ -187,4 +188,33 @@ public class SafeWalkService {
         SafeWalk updated = safeWalkRepository.findById(id).orElse(walk);
         return ApiResponse.success("Safe Walk session cancelled", updated);
     }
+
+    public ApiResponse<SafeWalk> updateLocation(Long id, LocationUpdateRequest request, UserPrincipal principal) {
+        SafeWalk walk = safeWalkRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Safe Walk session not found"));
+
+        // Only the walker who owns the Safe Walk can update its location
+        if (!walk.getUserId().equals(principal.getId())) {
+            throw new ForbiddenException("Only the walker can update the journey location");
+        }
+
+        // The Safe Walk must currently have status ACTIVE
+        if (!"ACTIVE".equalsIgnoreCase(walk.getStatus())) {
+            throw new BadRequestException("Cannot update location for a " + walk.getStatus().toLowerCase() + " Safe Walk");
+        }
+
+        Double lat = request.getLatitude();
+        Double lng = request.getLongitude();
+        if (lat == null || lat < -90.0 || lat > 90.0) {
+            throw new BadRequestException("Latitude must be between -90 and 90");
+        }
+        if (lng == null || lng < -180.0 || lng > 180.0) {
+            throw new BadRequestException("Longitude must be between -180 and 180");
+        }
+
+        safeWalkRepository.updateLocation(id, lat, lng);
+        SafeWalk updated = safeWalkRepository.findById(id).orElse(walk);
+        return ApiResponse.success("Location updated successfully", updated);
+    }
 }
+

@@ -255,6 +255,10 @@ export const safeWalkService = {
   cancelSafeWalk: async (id) => {
     const response = await apiClient.patch(`/api/safe-walks/${id}/cancel`);
     return response.data;
+  },
+  updateLocation: async (id, { latitude, longitude }) => {
+    const response = await apiClient.patch(`/api/safe-walks/${id}/location`, { latitude, longitude });
+    return response.data;
   }
 };
 
