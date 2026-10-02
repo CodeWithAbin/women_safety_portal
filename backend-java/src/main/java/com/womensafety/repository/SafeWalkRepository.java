@@ -22,6 +22,7 @@ public class SafeWalkRepository {
             SELECT 
                 sw.id, sw.user_id, sw.companion_id, sw.start_latitude, sw.start_longitude,
                 sw.destination, sw.expected_arrival, sw.status, sw.last_latitude, sw.last_longitude,
+                sw.last_location_updated_at,
                 sw.started_at, sw.completed_at, sw.cancelled_at, sw.created_at, sw.updated_at,
                 u1.name AS user_name, u1.email AS user_email, u1.phone AS user_phone,
                 u2.name AS companion_name, u2.email AS companion_email, u2.phone AS companion_phone
@@ -38,6 +39,7 @@ public class SafeWalkRepository {
             SELECT 
                 sw.id, sw.user_id, sw.companion_id, sw.start_latitude, sw.start_longitude,
                 sw.destination, sw.expected_arrival, sw.status, sw.last_latitude, sw.last_longitude,
+                sw.last_location_updated_at,
                 sw.started_at, sw.completed_at, sw.cancelled_at, sw.created_at, sw.updated_at,
                 u1.name AS user_name, u1.email AS user_email, u1.phone AS user_phone,
                 u2.name AS companion_name, u2.email AS companion_email, u2.phone AS companion_phone
@@ -56,6 +58,7 @@ public class SafeWalkRepository {
             SELECT 
                 sw.id, sw.user_id, sw.companion_id, sw.start_latitude, sw.start_longitude,
                 sw.destination, sw.expected_arrival, sw.status, sw.last_latitude, sw.last_longitude,
+                sw.last_location_updated_at,
                 sw.started_at, sw.completed_at, sw.cancelled_at, sw.created_at, sw.updated_at,
                 u1.name AS user_name, u1.email AS user_email, u1.phone AS user_phone,
                 u2.name AS companion_name, u2.email AS companion_email, u2.phone AS companion_phone
@@ -72,8 +75,8 @@ public class SafeWalkRepository {
     public Long insert(Long userId, Long companionId, Double startLat, Double startLng, String destination, String expectedArrival) {
         String sql = """
             INSERT INTO safe_walks 
-            (user_id, companion_id, start_latitude, start_longitude, destination, expected_arrival, status, last_latitude, last_longitude, started_at)
-            VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE', ?, ?, CURRENT_TIMESTAMP)
+            (user_id, companion_id, start_latitude, start_longitude, destination, expected_arrival, status, last_latitude, last_longitude, last_location_updated_at, started_at)
+            VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE', ?, ?, CASE WHEN ? IS NOT NULL AND ? IS NOT NULL THEN CURRENT_TIMESTAMP ELSE NULL END, CURRENT_TIMESTAMP)
         """;
         TursoClient.ExecuteResult res = tursoClient.update(sql, java.util.Arrays.asList(
                 userId,
@@ -82,6 +85,8 @@ public class SafeWalkRepository {
                 startLng,
                 destination.trim(),
                 expectedArrival,
+                startLat,
+                startLng,
                 startLat,
                 startLng
         ));
@@ -99,7 +104,7 @@ public class SafeWalkRepository {
     }
 
     public void updateLocation(Long id, Double lat, Double lng) {
-        String sql = "UPDATE safe_walks SET last_latitude = ?, last_longitude = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+        String sql = "UPDATE safe_walks SET last_latitude = ?, last_longitude = ?, last_location_updated_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
         tursoClient.update(sql, java.util.Arrays.asList(lat, lng, id));
     }
 
@@ -117,6 +122,7 @@ public class SafeWalkRepository {
 
         if (row.get("last_latitude") != null) walk.setLastLatitude(((Number) row.get("last_latitude")).doubleValue());
         if (row.get("last_longitude") != null) walk.setLastLongitude(((Number) row.get("last_longitude")).doubleValue());
+        walk.setLastLocationUpdatedAt(row.get("last_location_updated_at") != null ? row.get("last_location_updated_at").toString() : null);
 
         walk.setStartedAt(row.get("started_at") != null ? row.get("started_at").toString() : null);
         walk.setCompletedAt(row.get("completed_at") != null ? row.get("completed_at").toString() : null);

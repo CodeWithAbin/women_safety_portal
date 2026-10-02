@@ -32,6 +32,9 @@ public class SafeWalk {
     @JsonProperty("last_longitude")
     private Double lastLongitude;
 
+    @JsonProperty("last_location_updated_at")
+    private String lastLocationUpdatedAt;
+
     @JsonProperty("started_at")
     private String startedAt;
 
@@ -97,6 +100,9 @@ public class SafeWalk {
 
     public Double getLastLongitude() { return lastLongitude; }
     public void setLastLongitude(Double lastLongitude) { this.lastLongitude = lastLongitude; }
+
+    public String getLastLocationUpdatedAt() { return lastLocationUpdatedAt; }
+    public void setLastLocationUpdatedAt(String lastLocationUpdatedAt) { this.lastLocationUpdatedAt = lastLocationUpdatedAt; }
 
     public String getStartedAt() { return startedAt; }
     public void setStartedAt(String startedAt) { this.startedAt = startedAt; }

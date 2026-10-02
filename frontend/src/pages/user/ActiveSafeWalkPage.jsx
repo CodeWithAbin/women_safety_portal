@@ -56,8 +56,10 @@ const ActiveSafeWalkPage = () => {
             longitude: res.data.last_longitude
           });
         }
-        if (res.data.updated_at) {
-          setLastLocationUpdateTime(new Date(res.data.updated_at));
+        if (res.data.last_location_updated_at) {
+          setLastLocationUpdateTime(new Date(res.data.last_location_updated_at));
+        } else {
+          setLastLocationUpdateTime(null);
         }
       } else {
         setWalk(null);
@@ -112,13 +114,16 @@ const ActiveSafeWalkPage = () => {
       // Throttle backend updates to once every 12 seconds
       if (now - lastSentTimeRef.current >= 12000) {
         lastSentTimeRef.current = now;
-        setLastLocationUpdateTime(new Date());
 
         safeWalkService
           .updateLocation(walk.id, { latitude: lat, longitude: lon })
           .then((res) => {
             if (res.success && isMountedRef.current) {
-              setLastLocationUpdateTime(new Date());
+              if (res.data?.last_location_updated_at) {
+                setLastLocationUpdateTime(new Date(res.data.last_location_updated_at));
+              } else {
+                setLastLocationUpdateTime(new Date());
+              }
             }
           })
           .catch((err) => {
@@ -184,8 +189,10 @@ const ActiveSafeWalkPage = () => {
               longitude: res.data.last_longitude
             });
           }
-          if (res.data.updated_at) {
-            setLastLocationUpdateTime(new Date(res.data.updated_at));
+          if (res.data.last_location_updated_at) {
+            setLastLocationUpdateTime(new Date(res.data.last_location_updated_at));
+          } else {
+            setLastLocationUpdateTime(null);
           }
 
           // If journey completed or cancelled, stop polling
@@ -470,9 +477,13 @@ const ActiveSafeWalkPage = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.92rem', fontWeight: 700, color: 'var(--primary-navy)' }}>
               <span>🗺️</span> {isWalker ? 'Your Live Safe Walk Map' : `${walk.user_name}'s Live Location`}
             </div>
-            {timeAgoDisplay && (
+            {lastLocationUpdateTime ? (
               <span style={{ fontSize: '0.8rem', color: '#059669', fontWeight: 600 }}>
-                ● Last update: {timeAgoDisplay}
+                ● Last update: {timeAgoDisplay || 'Just now'}
+              </span>
+            ) : (
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                Waiting for walker's location...
               </span>
             )}
           </div>
@@ -482,7 +493,7 @@ const ActiveSafeWalkPage = () => {
             longitude={displayLon}
             walkerName={walk.user_name || 'Walker'}
             destination={walk.destination}
-            lastUpdated={timeAgoDisplay}
+            lastUpdated={lastLocationUpdateTime ? (timeAgoDisplay || 'Just now') : null}
             isWalker={isWalker}
             status={walk.status}
             height="320px"

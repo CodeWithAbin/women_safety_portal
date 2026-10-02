@@ -120,7 +120,7 @@ public class DatabaseInitializer {
                 );
             """);
 
-            // 6. Safe Walk Journeys Table (Phase 6A)
+            // 6. Safe Walk Journeys Table (Phase 6A + Phase 6C location timestamp)
             tursoClient.update("""
                 CREATE TABLE IF NOT EXISTS safe_walks (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -133,6 +133,7 @@ public class DatabaseInitializer {
                     status TEXT NOT NULL DEFAULT 'ACTIVE',
                     last_latitude REAL,
                     last_longitude REAL,
+                    last_location_updated_at DATETIME,
                     started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     completed_at DATETIME,
                     cancelled_at DATETIME,
@@ -142,6 +143,11 @@ public class DatabaseInitializer {
                     FOREIGN KEY (companion_id) REFERENCES users(id) ON DELETE CASCADE
                 );
             """);
+
+            // Migration for existing safe_walks table
+            try {
+                tursoClient.update("ALTER TABLE safe_walks ADD COLUMN last_location_updated_at DATETIME;");
+            } catch (Exception ignored) {}
 
             // 7. Indexes
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_places_state_district_status ON places (state, district, status);");
