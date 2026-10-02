@@ -5,6 +5,7 @@ import com.womensafety.model.Place;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,6 +19,17 @@ public class PlaceRepository {
         this.tursoClient = tursoClient;
     }
 
+    public static double calculateDistanceKm(double lat1, double lon1, double lat2, double lon2) {
+        final double R = 6371.0;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2.0) * Math.sin(dLat / 2.0)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2.0) * Math.sin(dLon / 2.0);
+        double c = 2.0 * Math.atan2(Math.sqrt(a), Math.sqrt(1.0 - a));
+        return R * c;
+    }
+
     public Optional<Place> findById(Long id) {
         return findById(id, null);
     }
@@ -25,7 +37,7 @@ public class PlaceRepository {
     public Optional<Place> findById(Long id, Long currentUserId) {
         String sql = """
             SELECT 
-                p.id, p.name, p.address, p.state, p.district, p.photo, p.rating,
+                p.id, p.name, p.address, p.state, p.district, p.latitude, p.longitude, p.photo, p.rating,
                 COALESCE((SELECT ROUND(AVG(pr.rating), 1) FROM place_ratings pr WHERE pr.place_id = p.id), p.rating) AS community_rating,
                 COALESCE((SELECT COUNT(*) FROM place_ratings pr WHERE pr.place_id = p.id), 1) AS rating_count,
                 p.description, 
@@ -38,6 +50,10 @@ public class PlaceRepository {
     }
 
     public List<Place> findAllAccepted(String state, String district, String search, Integer minRating, String sort, Long currentUserId) {
+        return findAllAccepted(state, district, search, minRating, sort, currentUserId, null, null, null);
+    }
+
+    public List<Place> findAllAccepted(String state, String district, String search, Integer minRating, String sort, Long currentUserId, Double latitude, Double longitude, Double radiusKm) {
         StringBuilder sql = new StringBuilder("""
             SELECT 
                 p.id,
@@ -45,6 +61,8 @@ public class PlaceRepository {
                 p.address,
                 p.state,
                 p.district,
+                p.latitude,
+                p.longitude,
                 p.photo,
                 p.rating,
                 COALESCE((SELECT ROUND(AVG(pr.rating), 1) FROM place_ratings pr WHERE pr.place_id = p.id), p.rating) AS community_rating,
@@ -95,15 +113,36 @@ public class PlaceRepository {
             sql.append(" ORDER BY p.created_at DESC, p.id DESC");
         }
 
-        return tursoClient.query(sql.toString(), args).stream()
+        List<Place> places = tursoClient.query(sql.toString(), args).stream()
                 .map(this::mapRowToPlace)
                 .toList();
+
+        if (latitude != null && longitude != null && radiusKm != null) {
+            List<Place> nearbyPlaces = new ArrayList<>();
+            for (Place p : places) {
+                if (p.getLatitude() != null && p.getLongitude() != null) {
+                    double dist = calculateDistanceKm(latitude, longitude, p.getLatitude(), p.getLongitude());
+                    if (dist <= radiusKm) {
+                        p.setDistanceKm(Math.round(dist * 10.0) / 10.0);
+                        nearbyPlaces.add(p);
+                    }
+                }
+            }
+
+            if (sort == null || sort.trim().isEmpty()) {
+                nearbyPlaces.sort(Comparator.comparing(Place::getDistanceKm));
+            }
+
+            return nearbyPlaces;
+        }
+
+        return places;
     }
 
     public List<Place> findReports(String status) {
         StringBuilder sql = new StringBuilder("""
             SELECT 
-                p.id, p.name, p.address, p.state, p.district, p.photo, p.rating,
+                p.id, p.name, p.address, p.state, p.district, p.latitude, p.longitude, p.photo, p.rating,
                 COALESCE((SELECT ROUND(AVG(pr.rating), 1) FROM place_ratings pr WHERE pr.place_id = p.id), p.rating) AS community_rating,
                 COALESCE((SELECT COUNT(*) FROM place_ratings pr WHERE pr.place_id = p.id), 1) AS rating_count,
                 p.description, 
@@ -134,6 +173,8 @@ public class PlaceRepository {
                 p.address,
                 p.state,
                 p.district,
+                p.latitude,
+                p.longitude,
                 p.photo,
                 p.rating,
                 COALESCE((SELECT ROUND(AVG(pr.rating), 1) FROM place_ratings pr WHERE pr.place_id = p.id), p.rating) AS community_rating,
@@ -229,7 +270,7 @@ public class PlaceRepository {
         String normalizedName = normalizeText(name);
 
         String sql = """
-            SELECT id, name, address, state, district, photo, rating,
+            SELECT id, name, address, state, district, latitude, longitude, photo, rating,
                    COALESCE((SELECT ROUND(AVG(pr.rating), 1) FROM place_ratings pr WHERE pr.place_id = places.id), places.rating) AS community_rating,
                    COALESCE((SELECT COUNT(*) FROM place_ratings pr WHERE pr.place_id = places.id), 1) AS rating_count,
                    description, status, resolved, resolved_at, submitted_by, created_at, updated_at
@@ -260,13 +301,15 @@ public class PlaceRepository {
         return input.trim().toLowerCase().replaceAll("\\s+", " ");
     }
 
-    public Long insertReport(String name, String address, String state, String district, String photo, int rating, String description, Long submittedBy) {
-        String sql = "INSERT INTO places (name, address, state, district, photo, rating, description, status, submitted_by) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)";
+    public Long insertReport(String name, String address, String state, String district, Double latitude, Double longitude, String photo, int rating, String description, Long submittedBy) {
+        String sql = "INSERT INTO places (name, address, state, district, latitude, longitude, photo, rating, description, status, submitted_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)";
         TursoClient.ExecuteResult res = tursoClient.update(sql, java.util.Arrays.asList(
                 name.trim(),
                 address.trim(),
                 state.trim(),
                 district.trim(),
+                latitude,
+                longitude,
                 photo,
                 rating,
                 description.trim(),
@@ -279,13 +322,15 @@ public class PlaceRepository {
         return placeId;
     }
 
-    public Long insertAdminPlace(String name, String address, String state, String district, String photo, int rating, String description) {
-        String sql = "INSERT INTO places (name, address, state, district, photo, rating, description, status, submitted_by) VALUES (?, ?, ?, ?, ?, ?, ?, 'accepted', NULL)";
+    public Long insertAdminPlace(String name, String address, String state, String district, Double latitude, Double longitude, String photo, int rating, String description) {
+        String sql = "INSERT INTO places (name, address, state, district, latitude, longitude, photo, rating, description, status, submitted_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted', NULL)";
         TursoClient.ExecuteResult res = tursoClient.update(sql, java.util.Arrays.asList(
                 name.trim(),
                 address.trim(),
                 state.trim(),
                 district.trim(),
+                latitude,
+                longitude,
                 photo,
                 rating,
                 description.trim()
@@ -293,13 +338,15 @@ public class PlaceRepository {
         return res.lastInsertRowid();
     }
 
-    public void update(Long id, String name, String address, String state, String district, String photo, int rating, String description) {
-        String sql = "UPDATE places SET name = ?, address = ?, state = ?, district = ?, photo = ?, rating = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+    public void update(Long id, String name, String address, String state, String district, Double latitude, Double longitude, String photo, int rating, String description) {
+        String sql = "UPDATE places SET name = ?, address = ?, state = ?, district = ?, latitude = ?, longitude = ?, photo = ?, rating = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
         tursoClient.update(sql, java.util.Arrays.asList(
                 name.trim(),
                 address.trim(),
                 state.trim(),
                 district.trim(),
+                latitude,
+                longitude,
                 photo,
                 rating,
                 description.trim(),
@@ -353,6 +400,10 @@ public class PlaceRepository {
         place.setAddress((String) row.get("address"));
         place.setState((String) row.get("state"));
         place.setDistrict((String) row.get("district"));
+        
+        if (row.get("latitude") != null) place.setLatitude(((Number) row.get("latitude")).doubleValue());
+        if (row.get("longitude") != null) place.setLongitude(((Number) row.get("longitude")).doubleValue());
+
         place.setPhoto((String) row.get("photo"));
         if (row.get("rating") != null) place.setRating(((Number) row.get("rating")).intValue());
         place.setDescription((String) row.get("description"));

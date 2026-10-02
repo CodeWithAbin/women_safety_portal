@@ -123,6 +123,17 @@ public class AdminService {
             throw new BadRequestException("Rating must be an integer between 1 and 5.");
         }
 
+        Double lat = req.getLatitude();
+        Double lon = req.getLongitude();
+        if (lat != null || lon != null) {
+            if (lat != null && (lat < -90.0 || lat > 90.0)) {
+                throw new BadRequestException("Latitude must be between -90 and 90 degrees.");
+            }
+            if (lon != null && (lon < -180.0 || lon > 180.0)) {
+                throw new BadRequestException("Longitude must be between -180 and 180 degrees.");
+            }
+        }
+
         String photoUrl = fileStorageService.store(photo);
 
         Long placeId = placeRepository.insertAdminPlace(
@@ -130,6 +141,8 @@ public class AdminService {
                 req.getAddress().trim(),
                 req.getState().trim(),
                 req.getDistrict().trim(),
+                lat,
+                lon,
                 photoUrl,
                 ratingVal,
                 req.getDescription().trim()
@@ -164,6 +177,15 @@ public class AdminService {
             throw new BadRequestException("Rating must be an integer between 1 and 5.");
         }
 
+        Double lat = req.getLatitude() != null ? req.getLatitude() : existingPlace.getLatitude();
+        Double lon = req.getLongitude() != null ? req.getLongitude() : existingPlace.getLongitude();
+        if (req.getLatitude() != null && (req.getLatitude() < -90.0 || req.getLatitude() > 90.0)) {
+            throw new BadRequestException("Latitude must be between -90 and 90 degrees.");
+        }
+        if (req.getLongitude() != null && (req.getLongitude() < -180.0 || req.getLongitude() > 180.0)) {
+            throw new BadRequestException("Longitude must be between -180 and 180 degrees.");
+        }
+
         String photoUrl = (photo != null && !photo.isEmpty())
                 ? fileStorageService.store(photo)
                 : existingPlace.getPhoto();
@@ -174,6 +196,8 @@ public class AdminService {
                 req.getAddress().trim(),
                 req.getState().trim(),
                 req.getDistrict().trim(),
+                lat,
+                lon,
                 photoUrl,
                 ratingVal,
                 req.getDescription().trim()

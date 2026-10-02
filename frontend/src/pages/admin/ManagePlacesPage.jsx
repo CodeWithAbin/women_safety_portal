@@ -32,6 +32,8 @@ const ManagePlacesPage = () => {
     address: '',
     state: 'Kerala',
     district: 'Ernakulam',
+    latitude: '',
+    longitude: '',
     rating: 3,
     description: ''
   });
@@ -88,6 +90,8 @@ const ManagePlacesPage = () => {
       address: '',
       state: 'Kerala',
       district: 'Ernakulam',
+      latitude: '',
+      longitude: '',
       rating: 3,
       description: ''
     });
@@ -124,6 +128,8 @@ const ManagePlacesPage = () => {
       address: place.address,
       state: place.state,
       district: place.district,
+      latitude: place.latitude != null ? place.latitude : '',
+      longitude: place.longitude != null ? place.longitude : '',
       rating: place.rating || 3,
       description: place.description
     });
@@ -139,6 +145,15 @@ const ManagePlacesPage = () => {
       return;
     }
 
+    if (placeForm.latitude !== '' && (Number(placeForm.latitude) < -90 || Number(placeForm.latitude) > 90)) {
+      setError('Latitude must be between -90 and 90.');
+      return;
+    }
+    if (placeForm.longitude !== '' && (Number(placeForm.longitude) < -180 || Number(placeForm.longitude) > 180)) {
+      setError('Longitude must be between -180 and 180.');
+      return;
+    }
+
     setModalLoading(true);
     setError('');
 
@@ -151,6 +166,8 @@ const ManagePlacesPage = () => {
       data.append('rating', placeForm.rating);
       data.append('description', placeForm.description);
       data.append('photo', photoFile);
+      if (placeForm.latitude !== '') data.append('latitude', placeForm.latitude);
+      if (placeForm.longitude !== '') data.append('longitude', placeForm.longitude);
 
       const res = await adminService.createPlace(data);
       if (res.success) {
@@ -168,6 +185,16 @@ const ManagePlacesPage = () => {
 
   const handleUpdatePlace = async (e) => {
     e.preventDefault();
+
+    if (placeForm.latitude !== '' && (Number(placeForm.latitude) < -90 || Number(placeForm.latitude) > 90)) {
+      setError('Latitude must be between -90 and 90.');
+      return;
+    }
+    if (placeForm.longitude !== '' && (Number(placeForm.longitude) < -180 || Number(placeForm.longitude) > 180)) {
+      setError('Longitude must be between -180 and 180.');
+      return;
+    }
+
     setModalLoading(true);
     setError('');
 
@@ -182,6 +209,8 @@ const ManagePlacesPage = () => {
         data.append('rating', placeForm.rating);
         data.append('description', placeForm.description);
         data.append('photo', photoFile);
+        if (placeForm.latitude !== '') data.append('latitude', placeForm.latitude);
+        if (placeForm.longitude !== '') data.append('longitude', placeForm.longitude);
         res = await adminService.updatePlace(editPlace.id, data, true);
       } else {
         res = await adminService.updatePlace(editPlace.id, placeForm, false);
@@ -521,6 +550,43 @@ const ManagePlacesPage = () => {
                     rows={3}
                   />
                 </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group" style={{ marginBottom: '0.25rem' }}>
+                    <label className="form-label" htmlFor="add-lat">
+                      Latitude (Optional)
+                    </label>
+                    <input
+                      id="add-lat"
+                      type="number"
+                      step="any"
+                      className="form-control"
+                      placeholder="e.g. 9.9816"
+                      value={placeForm.latitude}
+                      onChange={(e) => setPlaceForm({ ...placeForm, latitude: e.target.value })}
+                      min="-90"
+                      max="90"
+                    />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: '0.25rem' }}>
+                    <label className="form-label" htmlFor="add-lng">
+                      Longitude (Optional)
+                    </label>
+                    <input
+                      id="add-lng"
+                      type="number"
+                      step="any"
+                      className="form-control"
+                      placeholder="e.g. 76.2999"
+                      value={placeForm.longitude}
+                      onChange={(e) => setPlaceForm({ ...placeForm, longitude: e.target.value })}
+                      min="-180"
+                      max="180"
+                    />
+                  </div>
+                </div>
+                <div className="form-hint" style={{ marginTop: 0, marginBottom: '1.25rem' }}>
+                  Coordinates help display this place on the safety map.
+                </div>
                 <div className="form-group">
                   <label className="form-label" htmlFor="add-photo">
                     Photo of Location <span className="required">*</span>
@@ -627,6 +693,43 @@ const ManagePlacesPage = () => {
                     required
                     rows={3}
                   />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group" style={{ marginBottom: '0.25rem' }}>
+                    <label className="form-label" htmlFor="edit-lat">
+                      Latitude (Optional)
+                    </label>
+                    <input
+                      id="edit-lat"
+                      type="number"
+                      step="any"
+                      className="form-control"
+                      placeholder="e.g. 9.9816"
+                      value={placeForm.latitude}
+                      onChange={(e) => setPlaceForm({ ...placeForm, latitude: e.target.value })}
+                      min="-90"
+                      max="90"
+                    />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: '0.25rem' }}>
+                    <label className="form-label" htmlFor="edit-lng">
+                      Longitude (Optional)
+                    </label>
+                    <input
+                      id="edit-lng"
+                      type="number"
+                      step="any"
+                      className="form-control"
+                      placeholder="e.g. 76.2999"
+                      value={placeForm.longitude}
+                      onChange={(e) => setPlaceForm({ ...placeForm, longitude: e.target.value })}
+                      min="-180"
+                      max="180"
+                    />
+                  </div>
+                </div>
+                <div className="form-hint" style={{ marginTop: 0, marginBottom: '1.25rem' }}>
+                  Coordinates help display this place on the safety map.
                 </div>
                 <div className="form-group">
                   <label className="form-label" htmlFor="edit-photo">

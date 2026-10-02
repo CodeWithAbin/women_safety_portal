@@ -913,6 +913,68 @@ textarea.form-control {
 }
 
 /* -------------------------------------------------------------
+   9B. MAP & NEARBY DISCOVERY STYLES
+------------------------------------------------------------- */
+.browse-places-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (min-width: 992px) {
+  .browse-places-layout {
+    display: grid;
+    grid-template-columns: minmax(360px, 460px) 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .map-sticky-panel {
+    position: sticky;
+    top: 85px;
+    z-index: 10;
+  }
+}
+
+.map-control-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  background-color: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.custom-map-marker {
+  background: transparent;
+  border: none;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.9;
+  }
+  70% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+}
+
+.place-card-selected {
+  outline: 2.5px solid var(--primary-blue);
+  box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.2) !important;
+}
+
+/* -------------------------------------------------------------
    10. ALERTS & NOTICES
 ------------------------------------------------------------- */
 .alert {

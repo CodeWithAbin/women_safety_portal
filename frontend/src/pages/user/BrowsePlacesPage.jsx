@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { placeService } from '../../services/api';
 import StateDistrictSelector from '../../components/StateDistrictSelector';
 import PlaceCard from '../../components/PlaceCard';
+import SafetyMap from '../../components/SafetyMap';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import AlertBanner from '../../components/AlertBanner';
@@ -20,6 +21,13 @@ const BrowsePlacesPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Location / Nearby state
+  const [userCoords, setUserCoords] = useState(null);
+  const [radiusKm, setRadiusKm] = useState(10);
+  const [locating, setLocating] = useState(false);
+  const [locationStatusMsg, setLocationStatusMsg] = useState('');
+  const [selectedPlaceId, setSelectedPlaceId] = useState(null);
+
   // Debounce search input to avoid unnecessary requests while typing
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -28,7 +36,16 @@ const BrowsePlacesPage = () => {
     return () => clearTimeout(handler);
   }, [search]);
 
-  const fetchPlaces = async (selectedState, selectedDistrict, searchQuery, ratingFilter, sortOption) => {
+  const fetchPlaces = async (
+    selectedState,
+    selectedDistrict,
+    searchQuery,
+    ratingFilter,
+    sortOption,
+    lat,
+    lon,
+    radius
+  ) => {
     setLoading(true);
     setError('');
     try {
@@ -37,10 +54,13 @@ const BrowsePlacesPage = () => {
         selectedDistrict,
         searchQuery,
         ratingFilter,
-        sortOption
+        sortOption,
+        lat,
+        lon,
+        radius
       );
       if (res.success) {
-        setPlaces(res.data);
+        setPlaces(res.data || []);
       }
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to fetch hazardous places.');
@@ -51,8 +71,17 @@ const BrowsePlacesPage = () => {
   };
 
   useEffect(() => {
-    fetchPlaces(state, district, debouncedSearch, minRating, sort);
-  }, [state, district, debouncedSearch, minRating, sort]);
+    fetchPlaces(
+      state,
+      district,
+      debouncedSearch,
+      minRating,
+      sort,
+      userCoords?.latitude,
+      userCoords?.longitude,
+      userCoords ? radiusKm : null
+    );
+  }, [state, district, debouncedSearch, minRating, sort, userCoords, radiusKm]);
 
   // Check if any non-default filter is active
   const hasActiveFilters = useMemo(() => {
@@ -61,9 +90,10 @@ const BrowsePlacesPage = () => {
       (district && district !== (user?.district || 'Ernakulam')) ||
       search.trim() !== '' ||
       minRating !== '' ||
-      sort !== ''
+      sort !== '' ||
+      userCoords !== null
     );
-  }, [state, district, search, minRating, sort, user]);
+  }, [state, district, search, minRating, sort, userCoords, user]);
 
   const handleClearFilters = () => {
     setState(user?.state || 'Kerala');
@@ -71,6 +101,41 @@ const BrowsePlacesPage = () => {
     setSearch('');
     setMinRating('');
     setSort('');
+    setUserCoords(null);
+    setLocationStatusMsg('');
+    setSelectedPlaceId(null);
+  };
+
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationStatusMsg('Geolocation is not supported by your browser.');
+      return;
+    }
+    setLocating(true);
+    setLocationStatusMsg('');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocating(false);
+        const lat = parseFloat(position.coords.latitude.toFixed(6));
+        const lon = parseFloat(position.coords.longitude.toFixed(6));
+        setUserCoords({ latitude: lat, longitude: lon });
+        setLocationStatusMsg('Showing verified hazards near your location.');
+      },
+      (err) => {
+        setLocating(false);
+        if (err.code === 1) {
+          setLocationStatusMsg('Location access was not granted. You can still browse places by State and District.');
+        } else {
+          setLocationStatusMsg('Could not retrieve your location. You can browse places by State and District.');
+        }
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  };
+
+  const handleClearLocation = () => {
+    setUserCoords(null);
+    setLocationStatusMsg('');
   };
 
   const handleRatingUpdate = (placeId, updatedData) => {
@@ -78,6 +143,12 @@ const BrowsePlacesPage = () => {
       prev.map((p) => (p.id === placeId ? { ...p, ...updatedData } : p))
     );
   };
+
+  const placesWithCoords = useMemo(() => {
+    return places.filter((p) => p.latitude != null && p.longitude != null);
+  }, [places]);
+
+  const placesWithoutCoordsCount = places.length - placesWithCoords.length;
 
   return (
     <div className="browse-places-page">
@@ -88,7 +159,7 @@ const BrowsePlacesPage = () => {
         </div>
         <h1 className="page-title">Explore Safety Information</h1>
         <p className="page-subtitle">
-          Check reported and verified safety concerns across districts, examine community hazard ratings, and contribute your own ratings to keep everyone safe.
+          Check reported and verified safety concerns on the interactive map, examine community hazard ratings, and explore nearby reports in your area.
         </p>
       </div>
 
@@ -171,7 +242,7 @@ const BrowsePlacesPage = () => {
               value={sort}
               onChange={(e) => setSort(e.target.value)}
             >
-              <option value="">Default Order</option>
+              <option value="">{userCoords ? 'Closest Distance First' : 'Default Order'}</option>
               <option value="rating_desc">Highest Safety Rating First (5★ → 1★)</option>
               <option value="rating_asc">Lowest Safety Rating First (1★ → 5★)</option>
               <option value="newest">Most Recently Reported</option>
@@ -183,6 +254,20 @@ const BrowsePlacesPage = () => {
         {hasActiveFilters && (
           <div className="filter-chips-bar" aria-label="Active Filters">
             <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Active Filters:</span>
+            {userCoords && (
+              <span className="filter-chip" style={{ backgroundColor: '#e0f2fe', color: '#0369a1', borderColor: '#7dd3fc' }}>
+                <span>📍 Nearby ({radiusKm} km radius)</span>
+                <button
+                  type="button"
+                  className="filter-chip-remove"
+                  onClick={handleClearLocation}
+                  title="Remove location filter"
+                  aria-label="Remove location filter"
+                >
+                  ×
+                </button>
+              </span>
+            )}
             {state && (
               <span className="filter-chip">
                 <span>📍 State: {state}</span>
@@ -257,9 +342,68 @@ const BrowsePlacesPage = () => {
         )}
       </div>
 
+      {/* Map Controls & Geolocation Hub */}
+      <div className="map-control-bar">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          {!userCoords ? (
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={handleUseMyLocation}
+              disabled={locating}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+            >
+              <span>📍</span> {locating ? 'Detecting Location...' : 'Use My Location'}
+            </button>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.3rem 0.65rem', backgroundColor: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', borderRadius: 'var(--radius-pill)', fontSize: '0.82rem', fontWeight: 700 }}>
+                <span>✓</span> Location Active
+              </div>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={handleClearLocation}
+                style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }}
+              >
+                Reset Location
+              </button>
+            </div>
+          )}
+
+          {/* Radius Selector (enabled when user location is active) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
+            <label htmlFor="radius-select" style={{ fontWeight: 600, color: 'var(--primary-navy)' }}>
+              Nearby Radius:
+            </label>
+            <select
+              id="radius-select"
+              className="form-control"
+              style={{ width: 'auto', padding: '0.3rem 0.65rem', fontSize: '0.85rem' }}
+              value={radiusKm}
+              disabled={!userCoords}
+              onChange={(e) => setRadiusKm(Number(e.target.value))}
+            >
+              <option value="1">1 km</option>
+              <option value="5">5 km</option>
+              <option value="10">10 km</option>
+              <option value="25">25 km</option>
+              <option value="50">50 km</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Status message */}
+        {locationStatusMsg && (
+          <div style={{ fontSize: '0.84rem', color: userCoords ? '#059669' : 'var(--text-muted)', fontWeight: 500 }}>
+            {locationStatusMsg}
+          </div>
+        )}
+      </div>
+
       {error && <AlertBanner type="error" message={error} onDismiss={() => setError('')} />}
 
-      {/* Results Section */}
+      {/* Main Content Layout: Map + Cards */}
       {loading ? (
         <LoadingSpinner message="Searching verified safety reports..." />
       ) : places.length === 0 ? (
@@ -267,7 +411,9 @@ const BrowsePlacesPage = () => {
           icon={hasActiveFilters ? '🔍' : '🛡️'}
           title={hasActiveFilters ? 'No Matching Safety Reports Found' : 'No Hazardous Places Reported'}
           message={
-            hasActiveFilters
+            userCoords
+              ? `No verified hazardous places found within ${radiusKm} km of your location. Try expanding the nearby radius or searching by district.`
+              : hasActiveFilters
               ? `No verified hazardous places match your current search and filter settings. Try adjusting your search query or location.`
               : `No verified hazardous places have been reported in ${district ? `${district}, ` : ''}${state || 'the selected location'}.`
           }
@@ -284,44 +430,87 @@ const BrowsePlacesPage = () => {
           }
         />
       ) : (
-        <>
-          {/* Results Summary Bar */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '0.5rem',
-            marginBottom: '1.25rem',
-            padding: '0.65rem 1rem',
-            backgroundColor: '#ffffff',
-            border: '1px solid var(--border-light)',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: '0.9rem',
-            color: 'var(--text-body)'
-          }}>
-            <div>
-              Showing <strong>{places.length}</strong> verified hazardous place{places.length > 1 ? 's' : ''}{' '}
-              in <strong style={{ color: 'var(--primary-navy)' }}>{district || 'All Districts'}, {state || 'All States'}</strong>
+        <div className="browse-places-layout">
+          {/* Column 1: Map Panel */}
+          <div className="map-sticky-panel">
+            <div style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--primary-navy)' }}>
+                🗺️ Interactive Safety Map
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                {placesWithCoords.length} plotted on map
+              </div>
             </div>
-            {places.length > 0 && (
-              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                ⭐ Click "Rate This Place" on any card to submit your assessment
-              </span>
+
+            <SafetyMap
+              places={places}
+              userLocation={userCoords}
+              radiusKm={userCoords ? radiusKm : null}
+              selectedPlaceId={selectedPlaceId}
+              onMarkerClick={(p) => {
+                setSelectedPlaceId(p.id);
+                const el = document.getElementById('place-card-' + p.id);
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+              }}
+            />
+
+            {/* Note for places without coordinates */}
+            {placesWithoutCoordsCount > 0 && (
+              <div style={{ marginTop: '0.65rem', padding: '0.5rem 0.75rem', backgroundColor: '#f8fafc', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                ℹ️ {placesWithCoords.length} of {places.length} places shown on map. Some reports do not have map coordinates yet.
+              </div>
             )}
           </div>
 
-          {/* Place Cards Grid */}
-          <div className="grid-cards">
-            {places.map((place) => (
-              <PlaceCard
-                key={place.id}
-                place={place}
-                onRatingSuccess={handleRatingUpdate}
-              />
-            ))}
+          {/* Column 2: Places List */}
+          <div>
+            {/* Results Summary Bar */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '0.5rem',
+              marginBottom: '1rem',
+              padding: '0.65rem 1rem',
+              backgroundColor: '#ffffff',
+              border: '1px solid var(--border-light)',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: '0.9rem',
+              color: 'var(--text-body)'
+            }}>
+              <div>
+                Showing <strong>{places.length}</strong> verified place{places.length > 1 ? 's' : ''}{' '}
+                {userCoords
+                  ? `within ${radiusKm} km of your location`
+                  : `in ${district || 'All Districts'}, ${state || 'All States'}`}
+              </div>
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                Click a card to focus on map
+              </span>
+            </div>
+
+            {/* Place Cards Grid / Stack */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {places.map((place) => (
+                <div
+                  key={place.id}
+                  id={`place-card-${place.id}`}
+                  className={selectedPlaceId === place.id ? 'place-card-selected' : ''}
+                  style={{ borderRadius: 'var(--radius-md)', transition: 'box-shadow 0.2s ease, outline 0.2s ease', cursor: 'pointer' }}
+                  onClick={() => setSelectedPlaceId(place.id)}
+                >
+                  <PlaceCard
+                    place={place}
+                    onRatingSuccess={handleRatingUpdate}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

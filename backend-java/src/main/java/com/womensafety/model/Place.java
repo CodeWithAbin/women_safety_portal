@@ -10,10 +10,15 @@ public class Place {
     private String address;
     private String state;
     private String district;
+    private Double latitude;
+    private Double longitude;
     private String photo;
     private Integer rating;
     private String description;
     private String status;
+
+    @JsonProperty("distance_km")
+    private Double distanceKm;
 
     @JsonProperty("resolved")
     private Boolean resolved;
@@ -68,6 +73,15 @@ public class Place {
 
     public String getDistrict() { return district; }
     public void setDistrict(String district) { this.district = district; }
+
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
+
+    public Double getDistanceKm() { return distanceKm; }
+    public void setDistanceKm(Double distanceKm) { this.distanceKm = distanceKm; }
 
     public String getPhoto() { return photo; }
     public void setPhoto(String photo) { this.photo = photo; }

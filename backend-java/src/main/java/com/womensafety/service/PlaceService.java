@@ -27,6 +27,10 @@ public class PlaceService {
     }
 
     public ApiResponse<List<Place>> getPlaces(String state, String district, String search, Integer minRating, String sort, UserPrincipal principal) {
+        return getPlaces(state, district, search, minRating, sort, null, null, null, principal);
+    }
+
+    public ApiResponse<List<Place>> getPlaces(String state, String district, String search, Integer minRating, String sort, Double latitude, Double longitude, Double radiusKm, UserPrincipal principal) {
         if (minRating != null && (minRating < 1 || minRating > 5)) {
             throw new BadRequestException("minRating must be an integer between 1 and 5.");
         }
@@ -38,8 +42,23 @@ public class PlaceService {
             }
         }
 
+        if (latitude != null || longitude != null || radiusKm != null) {
+            if (latitude == null || longitude == null || radiusKm == null) {
+                throw new BadRequestException("latitude, longitude, and radiusKm are all required for nearby place discovery.");
+            }
+            if (latitude < -90.0 || latitude > 90.0) {
+                throw new BadRequestException("Latitude must be between -90 and 90 degrees.");
+            }
+            if (longitude < -180.0 || longitude > 180.0) {
+                throw new BadRequestException("Longitude must be between -180 and 180 degrees.");
+            }
+            if (radiusKm <= 0.0 || radiusKm > 100.0) {
+                throw new BadRequestException("radiusKm must be a positive number up to 100 km.");
+            }
+        }
+
         Long userId = principal != null ? principal.getId() : null;
-        List<Place> places = placeRepository.findAllAccepted(state, district, search, minRating, sort, userId);
+        List<Place> places = placeRepository.findAllAccepted(state, district, search, minRating, sort, userId, latitude, longitude, radiusKm);
         ApiResponse<List<Place>> response = ApiResponse.success("Places retrieved successfully", places);
         response.setCount(places.size());
         return response;
@@ -121,6 +140,17 @@ public class PlaceService {
             throw new BadRequestException("Rating must be an integer between 1 and 5.");
         }
 
+        Double lat = req.getLatitude();
+        Double lon = req.getLongitude();
+        if (lat != null || lon != null) {
+            if (lat != null && (lat < -90.0 || lat > 90.0)) {
+                throw new BadRequestException("Latitude must be between -90 and 90 degrees.");
+            }
+            if (lon != null && (lon < -180.0 || lon > 180.0)) {
+                throw new BadRequestException("Longitude must be between -180 and 180 degrees.");
+            }
+        }
+
         String photoUrl = fileStorageService.store(photo);
 
         Long placeId = placeRepository.insertReport(
@@ -128,6 +158,8 @@ public class PlaceService {
                 req.getAddress().trim(),
                 req.getState().trim(),
                 req.getDistrict().trim(),
+                lat,
+                lon,
                 photoUrl,
                 ratingVal,
                 req.getDescription().trim(),

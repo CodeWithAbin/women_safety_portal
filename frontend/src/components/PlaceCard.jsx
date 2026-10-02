@@ -116,6 +116,21 @@ const PlaceCard = ({ place, onEdit, onDelete, onResolve, isAdmin = false, onRati
           <span>{place.address}, {place.district}, {place.state}</span>
         </div>
 
+        {/* Distance Badge (if location search active) */}
+        {place.distance_km != null && (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.25rem 0.6rem', backgroundColor: '#e0f2fe', color: '#0369a1', borderRadius: 'var(--radius-pill)', fontSize: '0.8rem', fontWeight: 700, width: 'fit-content' }}>
+            <span>🧭</span> {place.distance_km} km away
+          </div>
+        )}
+
+        {/* Admin Coordinates display */}
+        {isAdmin && place.latitude != null && place.longitude != null && (
+          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+            <span>🌐 Coordinates:</span>
+            <strong>{Number(place.latitude).toFixed(4)}, {Number(place.longitude).toFixed(4)}</strong>
+          </div>
+        )}
+
         {/* 4. Description / Problem Statement */}
         <p className="place-card-desc">{place.description}</p>
 

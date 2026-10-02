@@ -70,7 +70,7 @@ export const authService = {
  * User Places Services
  */
 export const placeService = {
-  getAcceptedPlaces: async (state, district, search, minRating, sort) => {
+  getAcceptedPlaces: async (state, district, search, minRating, sort, latitude, longitude, radiusKm) => {
     const params = {};
     if (state && typeof state === 'object') {
       const opts = state;
@@ -79,12 +79,18 @@ export const placeService = {
       if (opts.search && typeof opts.search === 'string' && opts.search.trim()) params.search = opts.search.trim();
       if (opts.minRating !== undefined && opts.minRating !== null && opts.minRating !== '') params.minRating = opts.minRating;
       if (opts.sort && typeof opts.sort === 'string' && opts.sort.trim()) params.sort = opts.sort.trim();
+      if (opts.latitude !== undefined && opts.latitude !== null && opts.latitude !== '') params.latitude = opts.latitude;
+      if (opts.longitude !== undefined && opts.longitude !== null && opts.longitude !== '') params.longitude = opts.longitude;
+      if (opts.radiusKm !== undefined && opts.radiusKm !== null && opts.radiusKm !== '') params.radiusKm = opts.radiusKm;
     } else {
       if (state && typeof state === 'string' && state.trim()) params.state = state.trim();
       if (district && typeof district === 'string' && district.trim()) params.district = district.trim();
       if (search && typeof search === 'string' && search.trim()) params.search = search.trim();
       if (minRating !== undefined && minRating !== null && minRating !== '') params.minRating = minRating;
       if (sort && typeof sort === 'string' && sort.trim()) params.sort = sort.trim();
+      if (latitude !== undefined && latitude !== null && latitude !== '') params.latitude = latitude;
+      if (longitude !== undefined && longitude !== null && longitude !== '') params.longitude = longitude;
+      if (radiusKm !== undefined && radiusKm !== null && radiusKm !== '') params.radiusKm = radiusKm;
     }
     const response = await apiClient.get('/api/places', { params });
     return response.data;

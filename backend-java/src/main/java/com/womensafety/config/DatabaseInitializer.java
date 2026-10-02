@@ -45,6 +45,8 @@ public class DatabaseInitializer {
                     address TEXT NOT NULL,
                     state TEXT NOT NULL,
                     district TEXT NOT NULL,
+                    latitude REAL,
+                    longitude REAL,
                     photo TEXT NOT NULL,
                     rating INTEGER NOT NULL,
                     description TEXT NOT NULL,
@@ -64,6 +66,12 @@ public class DatabaseInitializer {
             } catch (Exception ignored) {}
             try {
                 tursoClient.update("ALTER TABLE places ADD COLUMN resolved_at DATETIME;");
+            } catch (Exception ignored) {}
+            try {
+                tursoClient.update("ALTER TABLE places ADD COLUMN latitude REAL;");
+            } catch (Exception ignored) {}
+            try {
+                tursoClient.update("ALTER TABLE places ADD COLUMN longitude REAL;");
             } catch (Exception ignored) {}
 
             // 3. Notifications Table

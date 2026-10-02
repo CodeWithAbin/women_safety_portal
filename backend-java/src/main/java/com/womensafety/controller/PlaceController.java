@@ -26,7 +26,7 @@ public class PlaceController {
         this.placeService = placeService;
     }
 
-    // Browse accepted hazardous places filtered by State, District, Search, MinRating & Sort (Authenticated/Public)
+    // Browse accepted hazardous places filtered by State, District, Search, MinRating, Sort & Location (Authenticated/Public)
     @GetMapping
     public ResponseEntity<ApiResponse<List<Place>>> getPlaces(
             @RequestParam(required = false) String state,
@@ -34,8 +34,11 @@ public class PlaceController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Integer minRating,
             @RequestParam(required = false) String sort,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude,
+            @RequestParam(required = false) Double radiusKm,
             @AuthenticationPrincipal UserPrincipal principal) {
-        ApiResponse<List<Place>> response = placeService.getPlaces(state, district, search, minRating, sort, principal);
+        ApiResponse<List<Place>> response = placeService.getPlaces(state, district, search, minRating, sort, latitude, longitude, radiusKm, principal);
         return ResponseEntity.ok(response);
     }
 

@@ -14,12 +14,16 @@ const ReportPlacePage = () => {
     address: '',
     state: user?.state || 'Kerala',
     district: user?.district || 'Ernakulam',
+    latitude: null,
+    longitude: null,
     rating: 4,
     description: ''
   });
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [locationStatusMsg, setLocationStatusMsg] = useState('');
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [submittedReportName, setSubmittedReportName] = useState('');
@@ -30,6 +34,39 @@ const ReportPlacePage = () => {
 
   const handleFieldChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationStatusMsg('Geolocation is not supported by your browser.');
+      return;
+    }
+    setLocating(true);
+    setLocationStatusMsg('');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocating(false);
+        const lat = parseFloat(position.coords.latitude.toFixed(6));
+        const lon = parseFloat(position.coords.longitude.toFixed(6));
+        setFormData((prev) => ({ ...prev, latitude: lat, longitude: lon }));
+        setLocationStatusMsg('Location coordinates captured successfully!');
+        setTimeout(() => setLocationStatusMsg(''), 4000);
+      },
+      (err) => {
+        setLocating(false);
+        if (err.code === 1) {
+          setLocationStatusMsg('Location permission denied. You can still submit the report without coordinates.');
+        } else {
+          setLocationStatusMsg('Could not detect location. You can proceed without coordinates.');
+        }
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  };
+
+  const handleClearLocation = () => {
+    setFormData((prev) => ({ ...prev, latitude: null, longitude: null }));
+    setLocationStatusMsg('');
   };
 
   const processFile = (file) => {
@@ -82,12 +119,15 @@ const ReportPlacePage = () => {
       address: '',
       state: user?.state || 'Kerala',
       district: user?.district || 'Ernakulam',
+      latitude: null,
+      longitude: null,
       rating: 4,
       description: ''
     });
     setPhotoFile(null);
     setPhotoPreview(null);
     setSimilarReport(null);
+    setLocationStatusMsg('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -108,6 +148,10 @@ const ReportPlacePage = () => {
       data.append('rating', formData.rating);
       data.append('description', formData.description);
       data.append('photo', photoFile);
+      if (formData.latitude != null && formData.longitude != null) {
+        data.append('latitude', formData.latitude);
+        data.append('longitude', formData.longitude);
+      }
 
       const res = await placeService.reportPlace(data);
       if (res.success) {
@@ -355,7 +399,7 @@ const ReportPlacePage = () => {
             required={true}
           />
 
-          <div className="form-group" style={{ marginBottom: 0 }}>
+          <div className="form-group" style={{ marginBottom: '1.25rem' }}>
             <label className="form-label" htmlFor="address">
               Street Address & Notable Landmark <span className="required">*</span>
             </label>
@@ -371,6 +415,53 @@ const ReportPlacePage = () => {
             <div className="form-hint">
               Be as specific as possible with street names, junctions, or nearby landmark buildings.
             </div>
+          </div>
+
+          {/* Optional Map Coordinates / Geolocation */}
+          <div className="form-group" style={{ marginBottom: 0, padding: '1rem', backgroundColor: '#f8fafc', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.5rem' }}>
+              <div>
+                <span style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--primary-navy)' }}>
+                  🧭 Map Coordinates (Optional)
+                </span>
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '0.15rem 0 0 0' }}>
+                  Coordinates help pinpoint this hazard on the community safety map.
+                </p>
+              </div>
+
+              {!formData.latitude ? (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleGetCurrentLocation}
+                  disabled={locating}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+                >
+                  <span>📍</span> {locating ? 'Detecting Location...' : 'Use My Current Location'}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleClearLocation}
+                  style={{ fontSize: '0.8rem', color: 'var(--hazard-high)' }}
+                >
+                  ✕ Remove Coordinates
+                </button>
+              )}
+            </div>
+
+            {formData.latitude != null && (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.8rem', backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 'var(--radius-sm)', fontSize: '0.86rem', color: '#065f46', fontWeight: 600 }}>
+                <span>✓</span> Captured Coordinates: {formData.latitude}, {formData.longitude}
+              </div>
+            )}
+
+            {locationStatusMsg && (
+              <div style={{ fontSize: '0.82rem', color: formData.latitude ? '#059669' : 'var(--text-muted)', marginTop: '0.35rem' }}>
+                {locationStatusMsg}
+              </div>
+            )}
           </div>
         </section>
 
