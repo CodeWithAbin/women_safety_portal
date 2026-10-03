@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
@@ -259,10 +260,87 @@ public class SafeWalkService {
         return ApiResponse.success("Safe Walk journey extended by " + extensionMinutes + " minutes", updated);
     }
 
+    public ApiResponse<SafeWalk> triggerSos(Long id, UserPrincipal principal) {
+        SafeWalk walk = safeWalkRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Safe Walk session not found"));
+
+        // Only the walker who owns the Safe Walk can trigger SOS
+        if (!walk.getUserId().equals(principal.getId())) {
+            throw new ForbiddenException("Only the walker can send an SOS alert for this Safe Walk");
+        }
+
+        // Must currently have status ACTIVE at database level
+        if (!"ACTIVE".equalsIgnoreCase(walk.getStatus())) {
+            throw new BadRequestException("Cannot send SOS alert for a " + walk.getStatus().toLowerCase() + " Safe Walk");
+        }
+
+        evaluateTimingState(walk);
+
+        // Reject SOS after COMPLETED or CANCELLED
+        String timing = walk.getTimingStatus();
+        if ("COMPLETED".equalsIgnoreCase(timing) || "CANCELLED".equalsIgnoreCase(timing)) {
+            throw new BadRequestException("Cannot send SOS alert after Safe Walk is " + timing.toLowerCase());
+        }
+
+        // Anti-spam / Cooldown protection: 60 seconds cooldown
+        if (walk.getLastSosSentAt() != null) {
+            Instant lastSos = parseInstant(walk.getLastSosSentAt());
+            if (lastSos != null) {
+                long elapsedSeconds = Duration.between(lastSos, Instant.now()).getSeconds();
+                if (elapsedSeconds >= 0 && elapsedSeconds < 60) {
+                    long remainingSeconds = 60 - elapsedSeconds;
+                    throw new BadRequestException("SOS was already sent recently. Please wait " + remainingSeconds + " seconds before sending another alert.");
+                }
+            }
+        }
+
+        // Update last SOS timestamp in database
+        safeWalkRepository.updateLastSosSentAt(id);
+
+        // Send companion notification
+        try {
+            notificationRepository.insert(
+                    walk.getCompanionId(),
+                    null,
+                    "Safe Walk SOS Alert",
+                    principal.getName() + " has sent an SOS alert during their Safe Walk to " + walk.getDestination() + ". Check their latest location.",
+                    "safe_walk_sos"
+            );
+            log.info("SOS alert notification sent to companion {} for Safe Walk {}", walk.getCompanionId(), id);
+        } catch (Exception e) {
+            log.warn("Failed to create SOS notification for companion {}: {}", walk.getCompanionId(), e.getMessage());
+        }
+
+        SafeWalk updated = safeWalkRepository.findById(id).orElse(walk);
+        evaluateTimingState(updated);
+        return ApiResponse.success("SOS alert sent to your companion", updated);
+    }
+
     public void evaluateTimingState(SafeWalk walk) {
         if (walk == null) return;
 
         walk.setGracePeriodMinutes(DEFAULT_GRACE_PERIOD_MINUTES);
+
+        // Calculate SOS cooldown
+        if (walk.getLastSosSentAt() != null) {
+            Instant lastSos = parseInstant(walk.getLastSosSentAt());
+            if (lastSos != null) {
+                long elapsedSeconds = Duration.between(lastSos, Instant.now()).getSeconds();
+                if (elapsedSeconds >= 0 && elapsedSeconds < 60) {
+                    walk.setSosCooldownActive(true);
+                    walk.setSosCooldownRemainingSeconds(60 - elapsedSeconds);
+                } else {
+                    walk.setSosCooldownActive(false);
+                    walk.setSosCooldownRemainingSeconds(0L);
+                }
+            } else {
+                walk.setSosCooldownActive(false);
+                walk.setSosCooldownRemainingSeconds(0L);
+            }
+        } else {
+            walk.setSosCooldownActive(false);
+            walk.setSosCooldownRemainingSeconds(0L);
+        }
 
         String status = walk.getStatus();
         if ("COMPLETED".equalsIgnoreCase(status)) {

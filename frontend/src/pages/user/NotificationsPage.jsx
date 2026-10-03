@@ -6,6 +6,7 @@ import EmptyState from '../../components/EmptyState';
 import AlertBanner from '../../components/AlertBanner';
 import {
   IconAlertTriangle,
+  IconAlertOctagon,
   IconWalker,
   IconCheckCircle,
   IconAlertCircle,
@@ -54,6 +55,8 @@ const NotificationsPage = () => {
 
   const getNotificationIcon = (type) => {
     switch (type) {
+      case 'safe_walk_sos':
+        return <IconAlertOctagon size={18} color="#dc2626" />;
       case 'safe_walk_overdue':
         return <IconAlertTriangle size={18} color="#b45309" />;
       case 'safe_walk_started':
@@ -94,6 +97,7 @@ const NotificationsPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {notifications.map((notif) => {
             const isUnread = notif.is_read === 0;
+            const isSos = notif.type === 'safe_walk_sos';
             const isOverdue = notif.type === 'safe_walk_overdue';
             const isAccepted = notif.type === 'report_accepted';
             const isSafeWalk = notif.type && notif.type.startsWith('safe_walk');
@@ -113,13 +117,15 @@ const NotificationsPage = () => {
                 style={{
                   padding: '1.25rem 1.5rem',
                   borderLeft: isUnread
-                    ? isOverdue
-                      ? '4px solid #f59e0b'
-                      : isAccepted
-                        ? '4px solid var(--hazard-low)'
-                        : '4px solid var(--primary-blue)'
+                    ? isSos
+                      ? '4px solid #dc2626'
+                      : isOverdue
+                        ? '4px solid #f59e0b'
+                        : isAccepted
+                          ? '4px solid var(--hazard-low)'
+                          : '4px solid var(--primary-blue)'
                     : '1px solid var(--border-light)',
-                  backgroundColor: isUnread ? (isOverdue ? '#fffbeb' : '#f8fafc') : '#ffffff'
+                  backgroundColor: isUnread ? (isSos ? '#fef2f2' : isOverdue ? '#fffbeb' : '#f8fafc') : '#ffffff'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
@@ -127,12 +133,12 @@ const NotificationsPage = () => {
                     <span style={{ display: 'inline-flex', alignItems: 'center' }}>
                       {getNotificationIcon(notif.type)}
                     </span>
-                    <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: isOverdue ? '#92400e' : 'var(--primary-navy)', margin: 0 }}>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: isSos ? '#991b1b' : isOverdue ? '#92400e' : 'var(--primary-navy)', margin: 0 }}>
                       {notif.title}
                     </h3>
                     {isUnread && (
-                      <span className="badge badge-warning" style={{ fontSize: '0.7rem' }}>
-                        New
+                      <span className={`badge ${isSos ? 'badge-danger' : 'badge-warning'}`} style={{ fontSize: '0.7rem', backgroundColor: isSos ? '#dc2626' : undefined, color: isSos ? '#ffffff' : undefined }}>
+                        {isSos ? 'SOS Alert' : 'New'}
                       </span>
                     )}
                   </div>

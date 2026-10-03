@@ -263,6 +263,10 @@ export const safeWalkService = {
   extendSafeWalk: async (id, extensionMinutes) => {
     const response = await apiClient.patch(`/api/safe-walks/${id}/extend`, { extension_minutes: extensionMinutes });
     return response.data;
+  },
+  triggerSos: async (id) => {
+    const response = await apiClient.post(`/api/safe-walks/${id}/sos`);
+    return response.data;
   }
 };
 

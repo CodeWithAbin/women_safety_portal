@@ -11,6 +11,8 @@ import {
   IconCheckCircle,
   IconAlertCircle,
   IconAlertTriangle,
+  IconAlertOctagon,
+  IconShieldAlert,
   IconWalker,
   IconInfo,
   IconCheck,
@@ -39,8 +41,11 @@ const ActiveSafeWalkPage = () => {
   const [completeModalOpen, setCompleteModalOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [extendModalOpen, setExtendModalOpen] = useState(false);
+  const [sosModalOpen, setSosModalOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [extendLoading, setExtendLoading] = useState(false);
+  const [sosLoading, setSosLoading] = useState(false);
+  const [sosCooldownSeconds, setSosCooldownSeconds] = useState(0);
   const [completedState, setCompletedState] = useState(false);
   const [cancelledState, setCancelledState] = useState(false);
 
@@ -269,8 +274,50 @@ const ActiveSafeWalkPage = () => {
   }, [lastLocationUpdateTime]);
 
   // =========================================================================
-  // ACTION HANDLERS: Complete, Cancel & Extend
+  // 4. SOS COOLDOWN COUNTDOWN TIMER (60s Anti-Spam Protection)
   // =========================================================================
+  useEffect(() => {
+    if (!walk?.last_sos_sent_at) {
+      setSosCooldownSeconds(0);
+      return;
+    }
+
+    const computeRemaining = () => {
+      const sentTime = new Date(walk.last_sos_sent_at).getTime();
+      const elapsed = Math.floor((Date.now() - sentTime) / 1000);
+      const remaining = Math.max(0, 60 - elapsed);
+      setSosCooldownSeconds(remaining);
+    };
+
+    computeRemaining();
+    const timer = setInterval(computeRemaining, 1000);
+    return () => clearInterval(timer);
+  }, [walk?.last_sos_sent_at]);
+
+  // =========================================================================
+  // ACTION HANDLERS: Complete, Cancel, Extend & SOS
+  // =========================================================================
+  const handleTriggerSos = async () => {
+    if (!walk) return;
+    setSosLoading(true);
+    setError('');
+    setSuccessMsg('');
+    try {
+      const res = await safeWalkService.triggerSos(walk.id);
+      if (res.success && res.data) {
+        setWalk(res.data);
+        setSosModalOpen(false);
+        setSosCooldownSeconds(60);
+        setSuccessMsg('SOS alert sent to your companion.');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Failed to send SOS alert.');
+      setSosModalOpen(false);
+    } finally {
+      setSosLoading(false);
+    }
+  };
+
   const handleCompleteWalk = async () => {
     if (!walk) return;
     setActionLoading(true);
@@ -458,6 +505,66 @@ const ActiveSafeWalkPage = () => {
         </div>
       )}
 
+      {/* SOS Alert Status Banner for Walker */}
+      {isWalker && walk.last_sos_sent_at && (
+        <div style={{
+          backgroundColor: '#fef2f2',
+          border: '1.5px solid #fecaca',
+          borderRadius: 'var(--radius-md)',
+          padding: '1rem 1.25rem',
+          marginBottom: '1.25rem',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '0.75rem',
+          color: '#991b1b'
+        }}>
+          <IconAlertOctagon size={22} color="#dc2626" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <strong style={{ display: 'block', fontSize: '1rem', color: '#7f1d1d', marginBottom: '0.2rem' }}>
+              SOS alert sent to your companion.
+            </strong>
+            <span style={{ fontSize: '0.86rem', color: '#991b1b', display: 'block', marginBottom: '0.25rem' }}>
+              Sent at {new Date(walk.last_sos_sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Your companion has been alerted and can view your latest available location.
+            </span>
+            <span style={{ fontSize: '0.82rem', color: '#b91c1c', fontWeight: 600 }}>
+              {displayLat && displayLon ? `Latest location shared: ${displayLat.toFixed(4)}, ${displayLon.toFixed(4)}` : 'Latest location unavailable'}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* SOS Emergency Alert Card for Companion */}
+      {isCompanion && walk.last_sos_sent_at && (
+        <div style={{
+          backgroundColor: '#fef2f2',
+          border: '2px solid #ef4444',
+          borderRadius: 'var(--radius-md)',
+          padding: '1.25rem 1.5rem',
+          marginBottom: '1.25rem',
+          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.12)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+            <span style={{ backgroundColor: '#dc2626', color: '#ffffff', borderRadius: '9999px', padding: '0.25rem 0.65rem', fontSize: '0.78rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.35rem', letterSpacing: '0.04em' }}>
+              <IconAlertOctagon size={14} /> SOS ALERT
+            </span>
+            <span style={{ fontSize: '0.85rem', color: '#991b1b', fontWeight: 700 }}>
+              Sent {new Date(walk.last_sos_sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </div>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#7f1d1d', margin: '0 0 0.35rem 0' }}>
+            {walk.user_name} sent an SOS Alert
+          </h2>
+          <p style={{ fontSize: '0.92rem', color: '#991b1b', margin: '0 0 0.75rem 0', lineHeight: 1.5 }}>
+            {walk.user_name} triggered an SOS alert during this Safe Walk to <strong>{walk.destination}</strong>. Check their latest location below.
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', fontSize: '0.85rem', color: '#7f1d1d', backgroundColor: '#fee2e2', padding: '0.65rem 0.85rem', borderRadius: 'var(--radius-sm)' }}>
+            <span><strong>Destination:</strong> {walk.destination}</span>
+            <span><strong>Latest Location:</strong> {displayLat && displayLon ? `${displayLat.toFixed(4)}, ${displayLon.toFixed(4)} (${lastLocationUpdateTime ? timeAgoDisplay || 'Just now' : 'recorded'})` : 'Latest location unavailable'}</span>
+            {walk.user_phone && <span><strong>Phone:</strong> {walk.user_phone}</span>}
+          </div>
+        </div>
+      )}
+
       {/* Timing State Banners (Walker & Companion) */}
       {timingStatus === 'GRACE' && isWalker && (
         <div style={{ backgroundColor: '#fffbeb', border: '1.5px solid #fde68a', borderRadius: 'var(--radius-md)', padding: '1rem 1.25rem', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
@@ -610,7 +717,26 @@ const ActiveSafeWalkPage = () => {
           </div>
 
           {isWalker && (
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="btn btn-sm"
+                onClick={() => setSosModalOpen(true)}
+                disabled={sosLoading || sosCooldownSeconds > 0}
+                style={{
+                  backgroundColor: sosCooldownSeconds > 0 ? '#fca5a5' : '#dc2626',
+                  color: '#ffffff',
+                  border: 'none',
+                  fontWeight: 800,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  cursor: sosCooldownSeconds > 0 ? 'not-allowed' : 'pointer'
+                }}
+                aria-label="Send SOS Alert"
+              >
+                <IconAlertOctagon size={15} /> {sosCooldownSeconds > 0 ? `SOS Sent (${sosCooldownSeconds}s)` : 'SOS'}
+              </button>
               <button
                 type="button"
                 className="btn btn-secondary btn-sm"
@@ -725,22 +851,50 @@ const ActiveSafeWalkPage = () => {
         {/* Walker Action Controls */}
         {isWalker && (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-light)' }}>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => setCancelModalOpen(true)}
-              disabled={actionLoading}
-              style={{ color: 'var(--text-muted)' }}
-            >
-              Cancel Safe Walk
-            </button>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setCancelModalOpen(true)}
+                disabled={actionLoading || sosLoading}
+                style={{ color: 'var(--text-muted)' }}
+              >
+                Cancel Safe Walk
+              </button>
+
+              <button
+                type="button"
+                className="btn"
+                onClick={() => setSosModalOpen(true)}
+                disabled={sosLoading || sosCooldownSeconds > 0}
+                style={{
+                  backgroundColor: sosCooldownSeconds > 0 ? '#fca5a5' : '#dc2626',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '0.75rem 1.35rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 800,
+                  borderRadius: 'var(--radius-sm)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  cursor: sosCooldownSeconds > 0 ? 'not-allowed' : 'pointer',
+                  boxShadow: sosCooldownSeconds > 0 ? 'none' : '0 2px 6px rgba(220, 38, 38, 0.35)',
+                  minHeight: '44px'
+                }}
+                aria-label="Send SOS Alert to companion"
+              >
+                <IconAlertOctagon size={18} />
+                {sosCooldownSeconds > 0 ? `SOS Sent (${sosCooldownSeconds}s)` : 'SOS Alert'}
+              </button>
+            </div>
 
             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
               <button
                 type="button"
                 className="btn btn-secondary"
                 onClick={() => setExtendModalOpen(true)}
-                disabled={extendLoading}
+                disabled={extendLoading || sosLoading}
                 style={{ padding: '0.75rem 1.25rem', fontSize: '0.95rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
               >
                 <IconClock size={15} /> Extend
@@ -750,7 +904,7 @@ const ActiveSafeWalkPage = () => {
                 type="button"
                 className="btn btn-success"
                 onClick={() => setCompleteModalOpen(true)}
-                disabled={actionLoading}
+                disabled={actionLoading || sosLoading}
                 style={{ padding: '0.75rem 1.75rem', fontSize: '1rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
               >
                 <IconCheck size={16} /> Complete Journey
@@ -762,7 +916,7 @@ const ActiveSafeWalkPage = () => {
         {/* Companion View Footer Note */}
         {isCompanion && (
           <div style={{ padding: '1rem', backgroundColor: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.88rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-            <IconLock size={14} /> Safe Walk in progress. Only the walker can mark this journey complete, cancelled, or extended.
+            <IconLock size={14} /> Safe Walk in progress. Only the walker can mark this journey complete, cancelled, extended, or trigger SOS.
           </div>
         )}
       </div>
@@ -830,6 +984,19 @@ const ActiveSafeWalkPage = () => {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal for SOS Alert */}
+      <ConfirmModal
+        isOpen={sosModalOpen}
+        title="Send SOS Alert?"
+        message="This will immediately alert your Safe Walk companion and share your latest available journey location."
+        confirmText={sosLoading ? 'Sending SOS...' : 'Send SOS'}
+        cancelText="Cancel"
+        isDestructive={true}
+        loading={sosLoading}
+        onConfirm={handleTriggerSos}
+        onCancel={() => setSosModalOpen(false)}
+      />
 
       {/* Confirmation Modal for Complete */}
       <ConfirmModal

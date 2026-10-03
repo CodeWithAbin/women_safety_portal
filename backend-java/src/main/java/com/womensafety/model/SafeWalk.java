@@ -47,6 +47,15 @@ public class SafeWalk {
     @JsonProperty("overdue_notified_at")
     private String overdueNotifiedAt;
 
+    @JsonProperty("last_sos_sent_at")
+    private String lastSosSentAt;
+
+    @JsonProperty("sos_cooldown_active")
+    private Boolean sosCooldownActive;
+
+    @JsonProperty("sos_cooldown_remaining_seconds")
+    private Long sosCooldownRemainingSeconds;
+
     @JsonProperty("started_at")
     private String startedAt;
 
@@ -127,6 +136,15 @@ public class SafeWalk {
 
     public String getOverdueNotifiedAt() { return overdueNotifiedAt; }
     public void setOverdueNotifiedAt(String overdueNotifiedAt) { this.overdueNotifiedAt = overdueNotifiedAt; }
+
+    public String getLastSosSentAt() { return lastSosSentAt; }
+    public void setLastSosSentAt(String lastSosSentAt) { this.lastSosSentAt = lastSosSentAt; }
+
+    public Boolean getSosCooldownActive() { return sosCooldownActive; }
+    public void setSosCooldownActive(Boolean sosCooldownActive) { this.sosCooldownActive = sosCooldownActive; }
+
+    public Long getSosCooldownRemainingSeconds() { return sosCooldownRemainingSeconds; }
+    public void setSosCooldownRemainingSeconds(Long sosCooldownRemainingSeconds) { this.sosCooldownRemainingSeconds = sosCooldownRemainingSeconds; }
 
     public String getStartedAt() { return startedAt; }
     public void setStartedAt(String startedAt) { this.startedAt = startedAt; }

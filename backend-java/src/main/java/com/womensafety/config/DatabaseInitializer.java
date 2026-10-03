@@ -135,6 +135,7 @@ public class DatabaseInitializer {
                     last_longitude REAL,
                     last_location_updated_at DATETIME,
                     overdue_notified_at DATETIME,
+                    last_sos_sent_at DATETIME,
                     started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     completed_at DATETIME,
                     cancelled_at DATETIME,
@@ -151,6 +152,9 @@ public class DatabaseInitializer {
             } catch (Exception ignored) {}
             try {
                 tursoClient.update("ALTER TABLE safe_walks ADD COLUMN overdue_notified_at DATETIME;");
+            } catch (Exception ignored) {}
+            try {
+                tursoClient.update("ALTER TABLE safe_walks ADD COLUMN last_sos_sent_at DATETIME;");
             } catch (Exception ignored) {}
 
             // 7. Indexes

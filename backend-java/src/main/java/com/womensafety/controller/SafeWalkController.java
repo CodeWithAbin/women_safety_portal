@@ -85,4 +85,13 @@ public class SafeWalkController {
         ApiResponse<SafeWalk> response = safeWalkService.extendSafeWalk(id, request, principal);
         return ResponseEntity.ok(response);
     }
+
+    // 8. Trigger SOS Alert to designated companion (walker only)
+    @PostMapping("/{id}/sos")
+    public ResponseEntity<ApiResponse<SafeWalk>> triggerSos(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        ApiResponse<SafeWalk> response = safeWalkService.triggerSos(id, principal);
+        return ResponseEntity.ok(response);
+    }
 }
