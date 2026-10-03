@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { notificationService } from '../services/api';
+import { IconShieldCheck, IconMenu, IconX } from './Icons';
 
 const Navbar = () => {
   const { user, isAuthenticated, role, logout } = useAuth();
@@ -43,7 +44,9 @@ const Navbar = () => {
           className="brand-logo"
           onClick={closeMenu}
         >
-          <div className="brand-icon-wrap">🛡️</div>
+          <div className="brand-icon-wrap">
+            <IconShieldCheck size={20} color="var(--primary-blue)" />
+          </div>
           <span>Women Safety Portal</span>
           {role === 'admin' && <span className="badge badge-admin">Admin</span>}
         </Link>
@@ -55,7 +58,7 @@ const Navbar = () => {
           aria-label="Toggle navigation menu"
           aria-expanded={mobileMenuOpen}
         >
-          {mobileMenuOpen ? '✕' : '☰'}
+          {mobileMenuOpen ? <IconX size={20} /> : <IconMenu size={20} />}
         </button>
 
         {/* Desktop Navigation */}
@@ -104,7 +107,7 @@ const Navbar = () => {
                   </li>
                   <li>
                     <NavLink to="/safe-walk" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                      🚶‍♀️ Safe Walk
+                      Safe Walk
                     </NavLink>
                   </li>
                   <li>
@@ -183,7 +186,7 @@ const Navbar = () => {
                   Dashboard
                 </NavLink>
                 <NavLink to="/safe-walk" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
-                  🚶‍♀️ Safe Walk
+                  Safe Walk
                 </NavLink>
                 <NavLink to="/places" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
                   Browse Places
@@ -219,4 +222,5 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
 

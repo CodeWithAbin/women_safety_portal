@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { IconNavigation } from './Icons';
 
 // Fix Leaflet default icon paths in bundlers
 import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
@@ -22,8 +23,13 @@ const createWalkerLiveIcon = (isWalker) => {
   const svg = `
     <div style="position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
       <div style="position: absolute; width: 44px; height: 44px; border-radius: 50%; background-color: ${pulseColor}; animation: pulse-radar 2s infinite ease-out;"></div>
-      <div style="position: relative; z-index: 2; width: 32px; height: 32px; border-radius: 50%; background-color: ${color}; border: 3px solid #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 16px;">
-        🚶
+      <div style="position: relative; z-index: 2; width: 32px; height: 32px; border-radius: 50%; background-color: ${color}; border: 3px solid #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: #ffffff;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="5" r="2.5"></circle>
+          <path d="m10 10 2 1 2-1v4"></path>
+          <path d="m9 20 3-5 3 5"></path>
+          <path d="m6 13 4-2 4 2 4-1"></path>
+        </svg>
       </div>
     </div>
   `;
@@ -100,7 +106,7 @@ const SafeWalkMap = ({
     const popupHtml = `
       <div style="font-family: var(--font-family); padding: 4px;">
         <div style="font-weight: 800; color: var(--primary-navy); font-size: 0.95rem; margin-bottom: 3px;">
-          ${isWalker ? '📍 Your Current Location' : `📍 ${walkerName}'s Location`}
+          ${isWalker ? 'Your Current Location' : `${walkerName}'s Location`}
         </div>
         <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 4px;">
           Heading to: <strong style="color: var(--text-main);">${destination || 'Destination'}</strong>
@@ -141,7 +147,9 @@ const SafeWalkMap = ({
           color: 'var(--text-muted)'
         }}
       >
-        <div style={{ fontSize: '2.5rem', marginBottom: '0.65rem' }}>🧭</div>
+        <div style={{ color: 'var(--primary-blue)', marginBottom: '0.65rem' }}>
+          <IconNavigation size={40} />
+        </div>
         <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: 'var(--primary-navy)' }}>
           Waiting for live location...
         </h4>

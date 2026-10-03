@@ -7,6 +7,19 @@ import AlertBanner from '../../components/AlertBanner';
 import EmptyState from '../../components/EmptyState';
 import ConfirmModal from '../../components/ConfirmModal';
 import SafeWalkMap from '../../components/SafeWalkMap';
+import {
+  IconCheckCircle,
+  IconAlertCircle,
+  IconAlertTriangle,
+  IconWalker,
+  IconInfo,
+  IconCheck,
+  IconClock,
+  IconUsers,
+  IconMapPin,
+  IconMap,
+  IconLock
+} from '../../components/Icons';
 
 const ActiveSafeWalkPage = () => {
   const { user } = useAuth();
@@ -335,7 +348,9 @@ const ActiveSafeWalkPage = () => {
     return (
       <div className="safewalk-container" style={{ maxWidth: '680px' }}>
         <div className="safewalk-card" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-          <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🎉</div>
+          <div style={{ color: '#059669', marginBottom: '1rem' }}>
+            <IconCheckCircle size={48} />
+          </div>
           <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '0.5rem' }}>
             Journey Completed!
           </h1>
@@ -344,8 +359,8 @@ const ActiveSafeWalkPage = () => {
           </p>
 
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/safe-walk" className="btn btn-primary" style={{ padding: '0.75rem 1.5rem' }}>
-              🚶‍♀️ Start Another Safe Walk
+            <Link to="/safe-walk" className="btn btn-primary" style={{ padding: '0.75rem 1.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+              <IconWalker size={16} /> Start Another Safe Walk
             </Link>
             <Link to="/dashboard" className="btn btn-secondary" style={{ padding: '0.75rem 1.5rem' }}>
               Return to Dashboard
@@ -363,7 +378,9 @@ const ActiveSafeWalkPage = () => {
     return (
       <div className="safewalk-container" style={{ maxWidth: '680px' }}>
         <div className="safewalk-card" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-          <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🛑</div>
+          <div style={{ color: '#dc2626', marginBottom: '1rem' }}>
+            <IconAlertCircle size={48} />
+          </div>
           <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '0.5rem' }}>
             Safe Walk Cancelled
           </h1>
@@ -391,13 +408,13 @@ const ActiveSafeWalkPage = () => {
     return (
       <div className="safewalk-container" style={{ maxWidth: '680px' }}>
         <EmptyState
-          icon="🚶‍♀️"
+          icon={<IconWalker size={40} color="var(--primary-blue)" />}
           title="No Active Safe Walk Session"
           message="You do not have any active Safe Walk journeys in progress as a walker or companion."
           actionButton={
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '0.75rem' }}>
-              <Link to="/safe-walk" className="btn btn-primary">
-                🚶‍♀️ Start a Safe Walk
+              <Link to="/safe-walk" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                <IconWalker size={16} /> Start a Safe Walk
               </Link>
               <Link to="/dashboard" className="btn btn-secondary">
                 Go to Dashboard
@@ -436,7 +453,7 @@ const ActiveSafeWalkPage = () => {
 
       {locationError && (
         <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', borderRadius: 'var(--radius-sm)', padding: '0.85rem 1.15rem', color: '#92400e', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-          <span>ℹ️</span>
+          <IconInfo size={16} color="#92400e" />
           <span>{locationError}</span>
         </div>
       )}
@@ -445,8 +462,8 @@ const ActiveSafeWalkPage = () => {
       {timingStatus === 'GRACE' && isWalker && (
         <div style={{ backgroundColor: '#fffbeb', border: '1.5px solid #fde68a', borderRadius: 'var(--radius-md)', padding: '1rem 1.25rem', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <strong style={{ display: 'block', fontSize: '1rem', color: '#92400e', marginBottom: '0.2rem' }}>
-              ⚠️ Your expected arrival time has passed
+            <strong style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '1rem', color: '#92400e', marginBottom: '0.2rem' }}>
+              <IconAlertTriangle size={18} color="#b45309" /> Your expected arrival time has passed
             </strong>
             <span style={{ fontSize: '0.88rem', color: '#78350f' }}>
               Your Safe Walk will become overdue in {getRemainingGraceMinutes()} minutes. You can extend your journey or complete it now.
@@ -476,9 +493,9 @@ const ActiveSafeWalkPage = () => {
               className="btn btn-success btn-sm"
               onClick={() => setCompleteModalOpen(true)}
               disabled={actionLoading}
-              style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem' }}
+              style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
             >
-              ✓ Complete
+              <IconCheck size={14} /> Complete
             </button>
           </div>
         </div>
@@ -486,7 +503,7 @@ const ActiveSafeWalkPage = () => {
 
       {timingStatus === 'GRACE' && isCompanion && (
         <div style={{ backgroundColor: '#fffbeb', border: '1.5px solid #fde68a', borderRadius: 'var(--radius-md)', padding: '1rem 1.25rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#92400e' }}>
-          <span style={{ fontSize: '1.5rem' }}>⏱️</span>
+          <IconClock size={24} color="#b45309" />
           <div>
             <strong style={{ display: 'block', fontSize: '0.98rem' }}>Expected arrival time has passed</strong>
             <span style={{ fontSize: '0.86rem', color: '#78350f' }}>
@@ -499,8 +516,8 @@ const ActiveSafeWalkPage = () => {
       {timingStatus === 'OVERDUE' && isWalker && (
         <div style={{ backgroundColor: '#fffbeb', border: '1.5px solid #fde68a', borderRadius: 'var(--radius-md)', padding: '1rem 1.25rem', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <strong style={{ display: 'block', fontSize: '1rem', color: '#92400e', marginBottom: '0.2rem' }}>
-              ⚠️ Your Safe Walk is overdue
+            <strong style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '1rem', color: '#92400e', marginBottom: '0.2rem' }}>
+              <IconAlertTriangle size={18} color="#b45309" /> Your Safe Walk is overdue
             </strong>
             <span style={{ fontSize: '0.88rem', color: '#78350f' }}>
               Your expected arrival time has passed and the journey has not been completed.
@@ -530,9 +547,9 @@ const ActiveSafeWalkPage = () => {
               className="btn btn-success btn-sm"
               onClick={() => setCompleteModalOpen(true)}
               disabled={actionLoading}
-              style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem' }}
+              style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
             >
-              ✓ Complete Journey
+              <IconCheck size={14} /> Complete Journey
             </button>
           </div>
         </div>
@@ -540,7 +557,7 @@ const ActiveSafeWalkPage = () => {
 
       {timingStatus === 'OVERDUE' && isCompanion && (
         <div style={{ backgroundColor: '#fffbeb', border: '1.5px solid #fde68a', borderRadius: 'var(--radius-md)', padding: '1rem 1.25rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#92400e' }}>
-          <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+          <IconAlertTriangle size={24} color="#b45309" />
           <div>
             <strong style={{ display: 'block', fontSize: '0.98rem' }}>Safe Walk overdue</strong>
             <span style={{ fontSize: '0.86rem', color: '#78350f' }}>
@@ -553,7 +570,7 @@ const ActiveSafeWalkPage = () => {
       {/* Companion View Standard Information Banner */}
       {isCompanion && timingStatus === 'ACTIVE' && (
         <div style={{ backgroundColor: '#eff6ff', border: '1.5px solid #bfdbfe', borderRadius: 'var(--radius-md)', padding: '1rem 1.25rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#1e40af' }}>
-          <span style={{ fontSize: '1.5rem' }}>🤝</span>
+          <IconUsers size={24} color="#1d4ed8" />
           <div>
             <strong style={{ display: 'block', fontSize: '0.98rem' }}>You are the Community Companion for this journey</strong>
             <span style={{ fontSize: '0.86rem', color: '#1e3a8a' }}>
@@ -570,17 +587,17 @@ const ActiveSafeWalkPage = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
               {timingStatus === 'ACTIVE' && (
                 <span className="badge-safewalk-active">
-                  <span className="pulse-dot"></span> 🟢 SAFE WALK ACTIVE
+                  <span className="pulse-dot"></span> SAFE WALK ACTIVE
                 </span>
               )}
               {timingStatus === 'GRACE' && (
-                <span style={{ backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', borderRadius: '12px', padding: '0.3rem 0.75rem', fontSize: '0.78rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-                  ⚠️ GRACE PERIOD
+                <span style={{ backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', borderRadius: '12px', padding: '0.3rem 0.75rem', fontSize: '0.78rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <IconAlertTriangle size={13} /> GRACE PERIOD
                 </span>
               )}
               {timingStatus === 'OVERDUE' && (
-                <span style={{ backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', borderRadius: '12px', padding: '0.3rem 0.75rem', fontSize: '0.78rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-                  ⚠️ OVERDUE
+                <span style={{ backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', borderRadius: '12px', padding: '0.3rem 0.75rem', fontSize: '0.78rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <IconAlertTriangle size={13} /> OVERDUE
                 </span>
               )}
               <span style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>
@@ -599,9 +616,9 @@ const ActiveSafeWalkPage = () => {
                 className="btn btn-secondary btn-sm"
                 onClick={() => setExtendModalOpen(true)}
                 disabled={extendLoading}
-                style={{ fontSize: '0.84rem', fontWeight: 600 }}
+                style={{ fontSize: '0.84rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
               >
-                ⏱️ Extend Journey
+                <IconClock size={14} /> Extend Journey
               </button>
             </div>
           )}
@@ -610,8 +627,8 @@ const ActiveSafeWalkPage = () => {
         {/* Journey Details Key Metrics */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '1.75rem' }}>
           <div style={{ padding: '1.15rem', backgroundColor: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
-            <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>
-              📍 Destination
+            <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.25rem' }}>
+              <IconMapPin size={13} color="var(--primary-blue)" /> Destination
             </span>
             <strong style={{ fontSize: '1.05rem', color: 'var(--primary-navy)' }}>
               {walk.destination}
@@ -628,10 +645,12 @@ const ActiveSafeWalkPage = () => {
               fontSize: '0.82rem',
               color: timingStatus === 'OVERDUE' || timingStatus === 'GRACE' ? '#92400e' : '#1e40af',
               fontWeight: 600,
-              display: 'block',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
               marginBottom: '0.25rem'
             }}>
-              🕒 Expected Arrival
+              <IconClock size={13} /> Expected Arrival
             </span>
             <strong style={{
               fontSize: '1.05rem',
@@ -642,8 +661,16 @@ const ActiveSafeWalkPage = () => {
           </div>
 
           <div style={{ padding: '1.15rem', backgroundColor: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
-            <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>
-              {isWalker ? '🤝 Community Companion' : '🚶‍♀️ Walker'}
+            <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.25rem' }}>
+              {isWalker ? (
+                <>
+                  <IconUsers size={13} /> Community Companion
+                </>
+              ) : (
+                <>
+                  <IconWalker size={13} /> Walker
+                </>
+              )}
             </span>
             <strong style={{ fontSize: '1.05rem', color: 'var(--primary-navy)', display: 'block' }}>
               {isWalker ? walk.companion_name : walk.user_name}
@@ -660,7 +687,7 @@ const ActiveSafeWalkPage = () => {
         <section style={{ marginBottom: '1.75rem' }} aria-label="Safe Walk Live Map">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.92rem', fontWeight: 700, color: 'var(--primary-navy)' }}>
-              <span>🗺️</span> {isWalker ? 'Your Live Safe Walk Map' : `${walk.user_name}'s Live Location`}
+              <IconMap size={16} color="var(--primary-blue)" /> {isWalker ? 'Your Live Safe Walk Map' : `${walk.user_name}'s Live Location`}
             </div>
             {lastLocationUpdateTime ? (
               <span style={{ fontSize: '0.8rem', color: '#059669', fontWeight: 600 }}>
@@ -686,10 +713,13 @@ const ActiveSafeWalkPage = () => {
         </section>
 
         {/* Privacy Notice */}
-        <div style={{ padding: '0.85rem 1rem', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 'var(--radius-sm)', marginBottom: '1.5rem', fontSize: '0.84rem', color: '#166534', lineHeight: 1.5 }}>
-          <strong>🔒 Privacy Protection:</strong> {isWalker
-            ? 'Your current location is shared only with your selected community companion while this Safe Walk is active. Location sharing stops when the Safe Walk is completed or cancelled.'
-            : 'You have access to this journey location because you were selected as a community companion. Location sharing stops when the Safe Walk concludes.'}
+        <div style={{ padding: '0.85rem 1rem', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 'var(--radius-sm)', marginBottom: '1.5rem', fontSize: '0.84rem', color: '#166534', lineHeight: 1.5, display: 'flex', alignItems: 'flex-start', gap: '0.45rem' }}>
+          <IconLock size={15} style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+          <div>
+            <strong>Privacy Protection:</strong> {isWalker
+              ? 'Your current location is shared only with your selected community companion while this Safe Walk is active. Location sharing stops when the Safe Walk is completed or cancelled.'
+              : 'You have access to this journey location because you were selected as a community companion. Location sharing stops when the Safe Walk concludes.'}
+          </div>
         </div>
 
         {/* Walker Action Controls */}
@@ -711,9 +741,9 @@ const ActiveSafeWalkPage = () => {
                 className="btn btn-secondary"
                 onClick={() => setExtendModalOpen(true)}
                 disabled={extendLoading}
-                style={{ padding: '0.75rem 1.25rem', fontSize: '0.95rem', fontWeight: 600 }}
+                style={{ padding: '0.75rem 1.25rem', fontSize: '0.95rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
               >
-                ⏱️ Extend
+                <IconClock size={15} /> Extend
               </button>
 
               <button
@@ -721,9 +751,9 @@ const ActiveSafeWalkPage = () => {
                 className="btn btn-success"
                 onClick={() => setCompleteModalOpen(true)}
                 disabled={actionLoading}
-                style={{ padding: '0.75rem 1.75rem', fontSize: '1rem', fontWeight: 700 }}
+                style={{ padding: '0.75rem 1.75rem', fontSize: '1rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
               >
-                ✓ Complete Journey
+                <IconCheck size={16} /> Complete Journey
               </button>
             </div>
           </div>
@@ -731,8 +761,8 @@ const ActiveSafeWalkPage = () => {
 
         {/* Companion View Footer Note */}
         {isCompanion && (
-          <div style={{ padding: '1rem', backgroundColor: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-            🔒 Safe Walk in progress. Only the walker can mark this journey complete, cancelled, or extended.
+          <div style={{ padding: '1rem', backgroundColor: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.88rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+            <IconLock size={14} /> Safe Walk in progress. Only the walker can mark this journey complete, cancelled, or extended.
           </div>
         )}
       </div>
@@ -742,8 +772,8 @@ const ActiveSafeWalkPage = () => {
         <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="extend-modal-title">
           <div className="modal-container" style={{ maxWidth: '460px' }}>
             <div className="modal-header">
-              <h3 id="extend-modal-title" className="modal-title">
-                ⏱️ Extend Journey Duration
+              <h3 id="extend-modal-title" className="modal-title" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                <IconClock size={18} /> Extend Journey Duration
               </h3>
               <button
                 type="button"
@@ -768,7 +798,7 @@ const ActiveSafeWalkPage = () => {
                   disabled={extendLoading}
                   style={{ padding: '1.1rem 0.85rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem', borderColor: 'var(--border-medium)', minHeight: 'auto' }}
                 >
-                  <span style={{ fontSize: '1.5rem' }}>⏱️</span>
+                  <IconClock size={28} color="var(--primary-blue)" />
                   <strong style={{ fontSize: '1rem', color: 'var(--primary-navy)' }}>+15 Minutes</strong>
                   <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Quick extension</span>
                 </button>
@@ -780,7 +810,7 @@ const ActiveSafeWalkPage = () => {
                   disabled={extendLoading}
                   style={{ padding: '1.1rem 0.85rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem', borderColor: 'var(--border-medium)', minHeight: 'auto' }}
                 >
-                  <span style={{ fontSize: '1.5rem' }}>⌛</span>
+                  <IconClock size={28} color="var(--primary-blue)" />
                   <strong style={{ fontSize: '1rem', color: 'var(--primary-navy)' }}>+30 Minutes</strong>
                   <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Longer walk</span>
                 </button>

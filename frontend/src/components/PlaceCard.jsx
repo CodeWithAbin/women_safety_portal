@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getPhotoUrl, placeService } from '../services/api';
+import {
+  IconMapPin,
+  IconNavigation,
+  IconCheck,
+  IconCheckCircle,
+  IconAlertTriangle,
+  IconAlertCircle,
+  IconShieldCheck,
+  IconStar,
+  IconEdit
+} from './Icons';
 
 const PlaceCard = ({ place, onEdit, onDelete, onResolve, isAdmin = false, onRatingSuccess, showViewDetails = true }) => {
   const [communityRating, setCommunityRating] = useState(
@@ -40,10 +51,10 @@ const PlaceCard = ({ place, onEdit, onDelete, onResolve, isAdmin = false, onRati
 
   const getHazardBadge = (score) => {
     if (isNaN(score)) return <span className="badge badge-info">Rating: Unrated</span>;
-    if (score >= 4.5) return <span className="badge badge-hazard-severe">🔥 Severe Concern ({score}/5)</span>;
-    if (score >= 3.5) return <span className="badge badge-hazard-high">⚠️ High Concern ({score}/5)</span>;
-    if (score >= 2.0) return <span className="badge badge-hazard-medium">⚡ Moderate Concern ({score}/5)</span>;
-    return <span className="badge badge-hazard-low">🛡️ Minor Concern ({score}/5)</span>;
+    if (score >= 4.5) return <span className="badge badge-hazard-severe" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><IconAlertTriangle size={12} /> Severe Concern ({score}/5)</span>;
+    if (score >= 3.5) return <span className="badge badge-hazard-high" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><IconAlertTriangle size={12} /> High Concern ({score}/5)</span>;
+    if (score >= 2.0) return <span className="badge badge-hazard-medium" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><IconAlertCircle size={12} /> Moderate Concern ({score}/5)</span>;
+    return <span className="badge badge-hazard-low" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><IconShieldCheck size={12} /> Minor Concern ({score}/5)</span>;
   };
 
   const formattedDate = place.created_at
@@ -100,7 +111,9 @@ const PlaceCard = ({ place, onEdit, onDelete, onResolve, isAdmin = false, onRati
         />
         <div className="place-card-badge-overlay" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.35rem' }}>
           {isResolved && (
-            <span className="badge badge-resolved">🟢 RESOLVED</span>
+            <span className="badge badge-resolved" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+              <IconCheckCircle size={12} /> RESOLVED
+            </span>
           )}
           {getHazardBadge(numRating)}
         </div>
@@ -113,21 +126,22 @@ const PlaceCard = ({ place, onEdit, onDelete, onResolve, isAdmin = false, onRati
 
         {/* 3. Location */}
         <div className="place-card-address">
-          <span style={{ fontSize: '1.05rem', color: 'var(--primary-blue)', flexShrink: 0 }}>📍</span>
+          <IconMapPin size={15} color="var(--primary-blue)" style={{ flexShrink: 0, marginTop: '2px' }} />
           <span>{place.address}, {place.district}, {place.state}</span>
         </div>
 
         {/* Distance Badge (if location search active) */}
         {place.distance_km != null && (
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.25rem 0.6rem', backgroundColor: '#e0f2fe', color: '#0369a1', borderRadius: 'var(--radius-pill)', fontSize: '0.8rem', fontWeight: 700, width: 'fit-content' }}>
-            <span>🧭</span> {place.distance_km} km away
+            <IconNavigation size={12} /> {place.distance_km} km away
           </div>
         )}
 
         {/* Admin Coordinates display */}
         {isAdmin && place.latitude != null && place.longitude != null && (
           <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            <span>🌐 Coordinates:</span>
+            <IconMapPin size={12} />
+            <span>Coordinates:</span>
             <strong>{Number(place.latitude).toFixed(4)}, {Number(place.longitude).toFixed(4)}</strong>
           </div>
         )}
@@ -139,14 +153,14 @@ const PlaceCard = ({ place, onEdit, onDelete, onResolve, isAdmin = false, onRati
         {isResolved && (
           <div className="place-resolved-banner" role="status" aria-label="Resolution Status">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 700, color: '#065f46', fontSize: '0.88rem' }}>
-              <span>🟢</span>
+              <IconCheckCircle size={14} color="#059669" />
               <span>RESOLVED</span>
             </div>
             <div style={{ fontSize: '0.84rem', color: '#047857', marginTop: '0.2rem', lineHeight: 1.4 }}>
               Reported issue resolved{resolvedInfo?.formattedDate ? ` on ${resolvedInfo.formattedDate}` : ''}
               {isAdmin && resolvedInfo && (
                 <div style={{ fontSize: '0.78rem', color: '#065f46', opacity: 0.9, marginTop: '0.2rem' }}>
-                  ⏳ Resolved {resolvedInfo.daysAgo} ({resolvedInfo.daysLeftText})
+                  Resolved {resolvedInfo.daysAgo} ({resolvedInfo.daysLeftText})
                 </div>
               )}
             </div>
@@ -157,8 +171,8 @@ const PlaceCard = ({ place, onEdit, onDelete, onResolve, isAdmin = false, onRati
         <section className="community-rating-card" aria-label="Community Safety Rating Information">
           <div className="community-rating-header">
             <div>
-              <div className="community-rating-score">
-                <span>⭐</span>
+              <div className="community-rating-score" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <IconStar filled size={14} color="#d97706" />
                 <span>Community Safety Rating:</span>
                 <strong>{communityRating} / 5</strong>
               </div>
@@ -174,8 +188,17 @@ const PlaceCard = ({ place, onEdit, onDelete, onResolve, isAdmin = false, onRati
                 onClick={() => setShowRatingSelector((prev) => !prev)}
                 aria-expanded={showRatingSelector}
                 aria-label="Rate this place"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
               >
-                {hasRated ? `⭐ Your Rating: ${userRating}★ (Edit)` : '⭐ Rate This Place'}
+                {hasRated ? (
+                  <>
+                    <IconEdit size={12} /> Your Rating: {userRating}★ (Edit)
+                  </>
+                ) : (
+                  <>
+                    <IconStar filled size={12} /> Rate Place
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -212,8 +235,8 @@ const PlaceCard = ({ place, onEdit, onDelete, onResolve, isAdmin = false, onRati
           )}
 
           {ratingFeedback && (
-            <div style={{ fontSize: '0.8rem', color: '#16a34a', fontWeight: 600, marginTop: '0.2rem' }}>
-              ✓ {ratingFeedback}
+            <div style={{ fontSize: '0.8rem', color: '#16a34a', fontWeight: 600, marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <IconCheck size={12} /> {ratingFeedback}
             </div>
           )}
         </section>
@@ -242,12 +265,13 @@ const PlaceCard = ({ place, onEdit, onDelete, onResolve, isAdmin = false, onRati
                     className="btn btn-success btn-sm"
                     onClick={() => onResolve && onResolve(place)}
                     title="Mark this safety issue as resolved"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
                   >
-                    <span>✓</span> Mark as Resolved
+                    <IconCheck size={13} /> Mark as Resolved
                   </button>
                 ) : (
-                  <span className="badge badge-resolved" style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem' }}>
-                    ✓ Resolved
+                  <span className="badge badge-resolved" style={{ fontSize: '0.78rem', padding: '0.35rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <IconCheck size={12} /> Resolved
                   </span>
                 )}
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => onEdit(place)}>

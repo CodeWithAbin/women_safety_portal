@@ -5,6 +5,19 @@ import { placeService } from '../../services/api';
 import StateDistrictSelector from '../../components/StateDistrictSelector';
 import LocationPickerMap from '../../components/LocationPickerMap';
 import AlertBanner from '../../components/AlertBanner';
+import {
+  IconShieldCheck,
+  IconMapPin,
+  IconMap,
+  IconAlertTriangle,
+  IconAlertCircle,
+  IconCheck,
+  IconFileText,
+  IconCamera,
+  IconStar,
+  IconNavigation,
+  IconLock
+} from '../../components/Icons';
 
 const ReportPlacePage = () => {
   const { user } = useAuth();
@@ -26,6 +39,7 @@ const ReportPlacePage = () => {
   const [loading, setLoading] = useState(false);
   const [locating, setLocating] = useState(false);
   const [locationStatusMsg, setLocationStatusMsg] = useState('');
+  const [locationErrorMsg, setLocationErrorMsg] = useState('');
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [submittedReportName, setSubmittedReportName] = useState('');
@@ -46,6 +60,7 @@ const ReportPlacePage = () => {
     setLocationMethod('current');
     setLocating(true);
     setLocationStatusMsg('');
+    setLocationErrorMsg('');
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setLocating(false);
@@ -57,9 +72,9 @@ const ReportPlacePage = () => {
       (err) => {
         setLocating(false);
         if (err.code === 1) {
-          setLocationStatusMsg('Location access was not granted. You can still choose location manually or submit without coordinates.');
+          setLocationStatusMsg('Location access was not granted. Please choose a location manually on the map.');
         } else {
-          setLocationStatusMsg('Could not detect location. You can choose location manually or submit without coordinates.');
+          setLocationStatusMsg('Could not detect location. Please choose a location manually on the map.');
         }
       },
       { timeout: 10000, enableHighAccuracy: true }
@@ -70,6 +85,7 @@ const ReportPlacePage = () => {
     setLocationMethod('manual');
     setFormData((prev) => ({ ...prev, latitude, longitude }));
     setLocationStatusMsg('Location selected on map.');
+    setLocationErrorMsg('');
   };
 
   const handleSelectMethod = (method) => {
@@ -149,12 +165,19 @@ const ReportPlacePage = () => {
     setPhotoPreview(null);
     setSimilarReport(null);
     setLocationStatusMsg('');
+    setLocationErrorMsg('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
   const publishReportDirectly = async () => {
+    if (formData.latitude == null || formData.longitude == null) {
+      setError('Report location is required. Use your current location or choose a location on the map.');
+      setLocationErrorMsg('Report location is required. Use your current location or choose a location on the map.');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setSuccessMsg('');
@@ -169,10 +192,8 @@ const ReportPlacePage = () => {
       data.append('rating', formData.rating);
       data.append('description', formData.description);
       data.append('photo', photoFile);
-      if (formData.latitude != null && formData.longitude != null) {
-        data.append('latitude', formData.latitude);
-        data.append('longitude', formData.longitude);
-      }
+      data.append('latitude', formData.latitude);
+      data.append('longitude', formData.longitude);
 
       const res = await placeService.reportPlace(data);
       if (res.success) {
@@ -191,6 +212,14 @@ const ReportPlacePage = () => {
     e.preventDefault();
     setError('');
     setSuccessMsg('');
+    setLocationErrorMsg('');
+
+    if (formData.latitude == null || formData.longitude == null) {
+      const msg = 'Report location is required. Use your current location or choose a location on the map.';
+      setError(msg);
+      setLocationErrorMsg(msg);
+      return;
+    }
 
     if (!photoFile) {
       setError('Please attach a clear photo of the reported area or safety concern.');
@@ -253,11 +282,11 @@ const ReportPlacePage = () => {
 
   const getRatingLabel = (score) => {
     switch (score) {
-      case 5: return '🔥 5★ Critical Hazard (Immediate danger / Severe risk)';
-      case 4: return '⚠️ 4★ High Hazard (Poorly lit / High concern)';
-      case 3: return '⚡ 3★ Moderate Hazard (Broken lights / Isolated alley)';
-      case 2: return '🛡️ 2★ Minor Concern (Infrequent issues / Low lighting)';
-      case 1: return '✅ 1★ Very Low Concern (Minimal hazard)';
+      case 5: return '5★ Critical Hazard (Immediate danger / Severe risk)';
+      case 4: return '4★ High Hazard (Poorly lit / High concern)';
+      case 3: return '3★ Moderate Hazard (Broken lights / Isolated alley)';
+      case 2: return '2★ Minor Concern (Infrequent issues / Low lighting)';
+      case 1: return '1★ Very Low Concern (Minimal hazard)';
       default: return `${score}★ Severity`;
     }
   };
@@ -267,8 +296,8 @@ const ReportPlacePage = () => {
       
       {/* Page Header */}
       <div className="page-header" style={{ marginBottom: '1.75rem' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.25rem 0.65rem', backgroundColor: '#fee2e2', color: '#b91c1c', borderRadius: 'var(--radius-pill)', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-          <span>🚨</span> Community Safety Reporting
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', padding: '0.3rem 0.75rem', backgroundColor: '#fee2e2', color: '#b91c1c', borderRadius: 'var(--radius-pill)', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+          <IconShieldCheck size={15} /> Community Safety Reporting
         </div>
         <h1 className="page-title">Report a Safety Concern</h1>
         <p className="page-subtitle">
@@ -281,7 +310,9 @@ const ReportPlacePage = () => {
       {/* Success Confirmation Card */}
       {successMsg && (
         <div className="card" style={{ padding: '2rem', marginBottom: '2rem', backgroundColor: '#f0fdf4', borderColor: '#86efac', textAlign: 'center' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>✅</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+            <IconCheckCircle size={44} color="#16a34a" />
+          </div>
           <h2 style={{ color: '#166534', fontSize: '1.35rem', fontWeight: 800, marginBottom: '0.5rem' }}>
             Report Submitted Successfully
           </h2>
@@ -300,7 +331,7 @@ const ReportPlacePage = () => {
               className="btn btn-secondary"
               onClick={() => { setSuccessMsg(''); setSubmittedReportName(''); }}
             >
-              + Report Another Area
+              Report Another Area
             </button>
           </div>
         </div>
@@ -309,7 +340,7 @@ const ReportPlacePage = () => {
       {/* Safety & Trust Information Guide */}
       <div className="trust-info-card">
         <div className="trust-info-title">
-          <span>🛡️</span> Safety & Moderation Workflow
+          <IconShield size={18} /> Safety & Moderation Workflow
         </div>
         <ul className="trust-info-list">
           <li><strong>Submitted for Review:</strong> Every reported location is verified by moderators before publishing to prevent misinformation.</li>
@@ -329,7 +360,7 @@ const ReportPlacePage = () => {
           boxShadow: 'var(--shadow-sm)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
-            <span style={{ fontSize: '1.5rem' }}>💡</span>
+            <IconAlertCircle size={22} color="var(--primary-blue)" />
             <div>
               <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
                 Existing Report Detected at This Location
@@ -347,14 +378,14 @@ const ReportPlacePage = () => {
             border: '1px solid var(--border-medium)',
             marginBottom: '1.25rem'
           }}>
-            <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--primary-navy)', marginBottom: '0.35rem' }}>
-              🚨 {similarReport.name}
+            <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--primary-navy)', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <IconAlertTriangle size={16} color="#d97706" /> {similarReport.name}
             </div>
-            <div style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-              📍 {similarReport.address}, {similarReport.district}, {similarReport.state}
+            <div style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <IconMapPin size={15} /> {similarReport.address}, {similarReport.district}, {similarReport.state}
             </div>
-            <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--primary-blue)' }}>
-              ⭐ Community Safety Rating: <strong>{existingCommunityRating} / 5</strong> ({similarReport.rating_count || 1} community rating{similarReport.rating_count === 1 ? '' : 's'})
+            <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--primary-blue)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <IconStar size={15} filled /> Community Safety Rating: <strong>{existingCommunityRating} / 5</strong> ({similarReport.rating_count || 1} community rating{similarReport.rating_count === 1 ? '' : 's'})
             </div>
           </div>
 
@@ -368,8 +399,9 @@ const ReportPlacePage = () => {
               className="btn btn-primary"
               onClick={handleRateExisting}
               disabled={ratingExisting}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
             >
-              {ratingExisting ? 'Submitting Rating...' : `⭐ Rate Existing Place (${formData.rating}★)`}
+              <IconStar size={16} filled /> {ratingExisting ? 'Submitting Rating...' : `Rate Existing Place (${formData.rating}★)`}
             </button>
 
             <button
@@ -407,7 +439,9 @@ const ReportPlacePage = () => {
         <section className="report-step-card" aria-label="Step 1 Location">
           <div className="step-header">
             <span className="step-badge">STEP 1</span>
-            <h2 className="step-title">📍 Location Information</h2>
+            <h2 className="step-title" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <IconMapPin size={18} /> Location Information
+            </h2>
           </div>
 
           <StateDistrictSelector
@@ -438,15 +472,21 @@ const ReportPlacePage = () => {
             </div>
           </div>
 
-          {/* Optional Map Coordinates / Geolocation Section */}
-          <div className="form-group" style={{ marginBottom: 0, padding: '1.25rem', backgroundColor: '#f8fafc', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)' }}>
+          {/* Mandatory Map Coordinates / Geolocation Section */}
+          <div className="form-group" style={{
+            marginBottom: 0,
+            padding: '1.25rem',
+            backgroundColor: formData.latitude == null ? '#fffbeb' : '#f8fafc',
+            border: formData.latitude == null ? '1.5px solid #fde68a' : '1px solid var(--border-light)',
+            borderRadius: 'var(--radius-md)'
+          }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.85rem' }}>
               <div>
                 <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--primary-navy)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <span>🗺️</span> Report Location (Optional)
+                  <IconMap size={16} /> Report Location <span className="required" style={{ color: 'var(--color-danger, #e11d48)' }}>*</span>
                 </span>
                 <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
-                  How would you like to add geographic coordinates to this report?
+                  Valid geographic coordinates are required to submit a report. Choose one option below:
                 </p>
               </div>
 
@@ -455,9 +495,9 @@ const ReportPlacePage = () => {
                   type="button"
                   className="btn btn-secondary btn-sm"
                   onClick={handleClearLocation}
-                  style={{ fontSize: '0.8rem', color: '#dc2626', borderColor: '#fca5a5' }}
+                  style={{ fontSize: '0.8rem', color: '#dc2626', borderColor: '#fca5a5', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
                 >
-                  ✕ Clear Location
+                  <IconX size={14} /> Clear Location
                 </button>
               )}
             </div>
@@ -471,7 +511,7 @@ const ReportPlacePage = () => {
                 disabled={locating}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontWeight: 600, padding: '0.45rem 0.9rem' }}
               >
-                <span>📍</span> {locating ? 'Detecting Location...' : 'Use My Current Location'}
+                <IconNavigation size={15} /> {locating ? 'Detecting Location...' : 'Use My Current Location'}
               </button>
 
               <button
@@ -480,16 +520,36 @@ const ReportPlacePage = () => {
                 onClick={() => handleSelectMethod('manual')}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontWeight: 600, padding: '0.45rem 0.9rem' }}
               >
-                <span>🗺️</span> Choose Location Manually
+                <IconMap size={15} /> Choose Location Manually
               </button>
             </div>
+
+            {/* Inline validation error if user tried to submit without location */}
+            {locationErrorMsg && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                padding: '0.5rem 0.75rem',
+                backgroundColor: '#fee2e2',
+                border: '1px solid #fca5a5',
+                borderRadius: 'var(--radius-sm)',
+                color: '#991b1b',
+                fontSize: '0.84rem',
+                fontWeight: 600,
+                marginBottom: '0.85rem'
+              }}>
+                <IconAlertCircle size={16} color="#dc2626" />
+                <span>{locationErrorMsg}</span>
+              </div>
+            )}
 
             {/* Method 1: Current Location Display */}
             {locationMethod === 'current' && (
               <div style={{ fontSize: '0.86rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
                 {formData.latitude != null ? (
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem 0.85rem', backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 'var(--radius-sm)', color: '#065f46', fontWeight: 600 }}>
-                    <span>✓</span> Current Coordinates: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
+                    <IconCheck size={16} /> Current Coordinates: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
                   </div>
                 ) : (
                   <p style={{ margin: 0, fontSize: '0.84rem' }}>
@@ -515,7 +575,7 @@ const ReportPlacePage = () => {
 
                 {formData.latitude != null ? (
                   <div style={{ marginTop: '0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.8rem', backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 'var(--radius-sm)', fontSize: '0.86rem', color: '#065f46', fontWeight: 600 }}>
-                    <span>📍</span> Selected Location: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
+                    <IconCheck size={15} /> Selected Location: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
                   </div>
                 ) : (
                   <div style={{ marginTop: '0.5rem', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
@@ -533,8 +593,8 @@ const ReportPlacePage = () => {
             )}
 
             {/* Privacy Note */}
-            <div style={{ marginTop: '0.75rem', fontSize: '0.78rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-light)', paddingTop: '0.5rem' }}>
-              🔒 Privacy Note: Your current location is accessed only when you explicitly choose "Use My Current Location". Manual map selection never requests device location.
+            <div style={{ marginTop: '0.75rem', fontSize: '0.78rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-light)', paddingTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <IconLock size={13} /> Privacy Note: Your current location is accessed only when you explicitly choose "Use My Current Location". Manual map selection never requests device location.
             </div>
           </div>
         </section>
@@ -545,7 +605,9 @@ const ReportPlacePage = () => {
         <section className="report-step-card" aria-label="Step 2 Safety Concern">
           <div className="step-header">
             <span className="step-badge">STEP 2</span>
-            <h2 className="step-title">🚨 Safety Concern Details</h2>
+            <h2 className="step-title" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <IconAlertTriangle size={18} /> Safety Concern Details
+            </h2>
           </div>
 
           <div className="form-group">
@@ -582,8 +644,8 @@ const ReportPlacePage = () => {
 
           {/* Photo Dropzone / Upload Area */}
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label">
-              <span>📷</span> Attach Photo of the Location <span className="required">*</span>
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <IconCamera size={16} /> Attach Photo of the Location <span className="required">*</span>
             </label>
 
             <input
@@ -607,7 +669,7 @@ const ReportPlacePage = () => {
                 aria-label="Upload photo of the hazard"
               >
                 <div className="photo-dropzone-icon" aria-hidden="true">
-                  📸
+                  <IconCamera size={36} color="var(--primary-blue)" />
                 </div>
                 <div style={{ fontWeight: 700, fontSize: '0.98rem', color: 'var(--primary-navy)' }}>
                   Click to Upload or Drag & Drop Photo
@@ -621,7 +683,7 @@ const ReportPlacePage = () => {
                 <img src={photoPreview} alt="Attached Hazard Preview" className="photo-preview-img" />
                 <div className="photo-preview-overlay">
                   <span style={{ color: '#ffffff', fontSize: '0.85rem', fontWeight: 600 }}>
-                    ✓ Photo Attached ({photoFile?.name})
+                    Photo Attached ({photoFile?.name})
                   </span>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button
@@ -653,7 +715,9 @@ const ReportPlacePage = () => {
         <section className="report-step-card" aria-label="Step 3 Safety Rating">
           <div className="step-header">
             <span className="step-badge">STEP 3</span>
-            <h2 className="step-title">⭐ Initial Hazard Severity Rating</h2>
+            <h2 className="step-title" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <IconStar size={18} /> Initial Hazard Severity Rating
+            </h2>
           </div>
 
           <div className="form-group" style={{ marginBottom: 0 }}>
@@ -670,7 +734,7 @@ const ReportPlacePage = () => {
                   aria-pressed={formData.rating === lvl}
                   style={{ minWidth: '70px', padding: '0.65rem 0.5rem' }}
                 >
-                  {lvl} {lvl === 5 ? '🔥 Critical' : lvl === 4 ? '⚠️ High' : lvl === 3 ? '⚡ Medium' : lvl === 1 ? '🛡️ Minor' : '★'}
+                  {lvl}★ {lvl === 5 ? 'Critical' : lvl === 4 ? 'High' : lvl === 3 ? 'Moderate' : lvl === 2 ? 'Minor' : 'Very Low'}
                 </button>
               ))}
             </div>
@@ -698,7 +762,9 @@ const ReportPlacePage = () => {
         <section className="report-step-card" aria-label="Step 4 Review & Submit">
           <div className="step-header">
             <span className="step-badge">STEP 4</span>
-            <h2 className="step-title">📋 Review & Submit Report</h2>
+            <h2 className="step-title" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <IconFileText size={18} /> Review & Submit Report
+            </h2>
           </div>
 
           <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', margin: '0 0 1rem 0' }}>
@@ -726,26 +792,28 @@ const ReportPlacePage = () => {
               <div className="review-item">
                 <span className="review-label">Initial Rating</span>
                 <span className="review-value" style={{ color: 'var(--primary-blue)' }}>
-                  ⭐ {formData.rating} / 5 ({getRatingLabel(formData.rating).split(' ')[1] || 'Severity'})
+                  {formData.rating}★ / 5 ({getRatingLabel(formData.rating).split(' ')[1] || 'Severity'})
                 </span>
               </div>
 
               <div className="review-item">
                 <span className="review-label">Photo Status</span>
                 <span className="review-value">
-                  {photoFile ? `✓ Attached (${photoFile.name})` : <span style={{ color: '#e11d48' }}>⚠ Photo Required</span>}
+                  {photoFile ? `Photo Attached (${photoFile.name})` : <span style={{ color: '#e11d48' }}>Photo Required</span>}
                 </span>
               </div>
 
               <div className="review-item">
-                <span className="review-label">Map Coordinates</span>
+                <span className="review-label">Report Coordinates</span>
                 <span className="review-value">
                   {formData.latitude != null && formData.longitude != null ? (
                     <span style={{ color: '#059669', fontWeight: 600 }}>
-                      ✓ {locationMethod === 'manual' ? 'Manually Picked' : 'Captured'} ({formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)})
+                      Location selected ✓ ({formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)})
                     </span>
                   ) : (
-                    <span style={{ color: 'var(--text-muted)' }}>Not attached (optional)</span>
+                    <span style={{ color: '#e11d48', fontWeight: 600 }}>
+                      Location required
+                    </span>
                   )}
                 </span>
               </div>
@@ -765,9 +833,9 @@ const ReportPlacePage = () => {
             type="submit"
             className="btn btn-primary btn-block btn-lg"
             disabled={loading || Boolean(similarReport)}
-            style={{ fontSize: '1rem', padding: '0.85rem 1.5rem', fontWeight: 700 }}
+            style={{ fontSize: '1rem', padding: '0.85rem 1.5rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
           >
-            {loading ? 'Submitting Safety Report...' : '🚀 Submit Safety Report for Review'}
+            <IconCheck size={18} /> {loading ? 'Submitting Safety Report...' : 'Submit Safety Report for Review'}
           </button>
         </section>
 
@@ -777,4 +845,5 @@ const ReportPlacePage = () => {
 };
 
 export default ReportPlacePage;
+
 

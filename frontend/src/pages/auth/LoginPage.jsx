@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AlertBanner from '../../components/AlertBanner';
+import { IconShield } from '../../components/Icons';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -43,10 +44,9 @@ const LoginPage = () => {
             borderRadius: 'var(--radius-md)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1.75rem'
+            justifyContent: 'center'
           }}>
-            🛡️
+            <IconShield size={28} color="var(--primary-blue)" />
           </div>
           <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--primary-navy)', letterSpacing: '-0.02em' }}>
             Women Safety Portal

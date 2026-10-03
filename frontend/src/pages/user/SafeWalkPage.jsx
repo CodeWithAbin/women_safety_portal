@@ -4,6 +4,7 @@ import { safeWalkService } from '../../services/api';
 import StartSafeWalkWizard from './StartSafeWalkWizard';
 import CompanionManager from './CompanionManager';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { IconWalker, IconUsers } from '../../components/Icons';
 
 const SafeWalkPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -46,7 +47,7 @@ const SafeWalkPage = () => {
       <section className="safewalk-banner" aria-label="Safe Walk Header">
         <div style={{ position: 'relative', zIndex: 2 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.25rem 0.75rem', backgroundColor: 'rgba(16, 185, 129, 0.2)', border: '1px solid rgba(16, 185, 129, 0.4)', borderRadius: 'var(--radius-pill)', color: '#6ee7b7', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.75rem' }}>
-            <span>🚶‍♀️</span> Community Companion Network
+            <IconWalker size={14} /> Community Companion Network
           </div>
           <h1 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#ffffff', margin: 0, letterSpacing: '-0.02em' }}>
             Safe Walk
@@ -99,15 +100,17 @@ const SafeWalkPage = () => {
           type="button"
           className={`safewalk-tab-btn ${activeTab === 'start' ? 'active' : ''}`}
           onClick={() => handleTabChange('start')}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center' }}
         >
-          <span>🚶‍♀️</span> Start Safe Walk
+          <IconWalker size={16} /> Start Safe Walk
         </button>
         <button
           type="button"
           className={`safewalk-tab-btn ${activeTab === 'companions' ? 'active' : ''}`}
           onClick={() => handleTabChange('companions')}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center' }}
         >
-          <span>👥</span> Community Companions
+          <IconUsers size={16} /> Community Companions
         </button>
       </nav>
 

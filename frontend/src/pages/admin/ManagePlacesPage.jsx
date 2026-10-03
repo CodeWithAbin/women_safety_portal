@@ -6,6 +6,14 @@ import ConfirmModal from '../../components/ConfirmModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import AlertBanner from '../../components/AlertBanner';
+import {
+  IconMapPin,
+  IconPlus,
+  IconSliders,
+  IconRefresh,
+  IconSearch,
+  IconStar
+} from '../../components/Icons';
 
 const ManagePlacesPage = () => {
   const [places, setPlaces] = useState([]);
@@ -273,15 +281,15 @@ const ManagePlacesPage = () => {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.75rem' }}>
         <div>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.25rem 0.65rem', backgroundColor: '#e0f2fe', color: '#0284c7', borderRadius: 'var(--radius-pill)', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-            <span>📍</span> Directory Management
+            <IconMapPin size={14} /> Directory Management
           </div>
           <h1 className="page-title">Manage Reported Places</h1>
           <p className="page-subtitle">
             View, add, modify, and delete published reported places in the portal safety directory.
           </p>
         </div>
-        <button type="button" className="btn btn-primary" onClick={handleOpenAdd}>
-          <span>➕</span> Add New Place
+        <button type="button" className="btn btn-primary" onClick={handleOpenAdd} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+          <IconPlus size={15} /> Add New Place
         </button>
       </div>
 
@@ -291,17 +299,17 @@ const ManagePlacesPage = () => {
       {/* Filter & Search Bar */}
       <div className="filter-card">
         <div className="filter-header-row">
-          <div className="filter-header-title">
-            <span>⚙️</span> Filter & Search Directory
+          <div className="filter-header-title" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <IconSliders size={16} /> Filter & Search Directory
           </div>
           {hasActiveFilters && (
             <button
               type="button"
               className="btn btn-secondary btn-sm"
               onClick={handleClearFilters}
-              style={{ fontSize: '0.82rem', padding: '0.3rem 0.75rem' }}
+              style={{ fontSize: '0.82rem', padding: '0.3rem 0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
             >
-              <span>↺</span> Reset Filters
+              <IconRefresh size={13} /> Reset Filters
             </button>
           )}
         </div>
@@ -314,14 +322,14 @@ const ManagePlacesPage = () => {
           allowAllOption={true}
           allStateText="All States"
           allDistrictText="All Districts"
-          stateLabel="📍 Filter Places by State"
-          districtLabel="📍 Filter Places by District"
+          stateLabel="Filter Places by State"
+          districtLabel="Filter Places by District"
         />
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginTop: '0.5rem' }}>
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label" htmlFor="admin-search-input">
-              <span>🔍</span> Search Keyword
+            <label className="form-label" htmlFor="admin-search-input" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <IconSearch size={14} /> Search Keyword
             </label>
             <input
               id="admin-search-input"
@@ -334,8 +342,8 @@ const ManagePlacesPage = () => {
           </div>
 
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label" htmlFor="admin-min-rating-select">
-              <span>⭐</span> Minimum Safety Rating
+            <label className="form-label" htmlFor="admin-min-rating-select" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <IconStar size={14} /> Minimum Safety Rating
             </label>
             <select
               id="admin-min-rating-select"
@@ -353,8 +361,8 @@ const ManagePlacesPage = () => {
           </div>
 
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label" htmlFor="admin-sort-select">
-              <span>🔃</span> Sort Results
+            <label className="form-label" htmlFor="admin-sort-select" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <IconRefresh size={14} /> Sort Results
             </label>
             <select
               id="admin-sort-select"
@@ -376,31 +384,31 @@ const ManagePlacesPage = () => {
             <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Active Filters:</span>
             {filterState && (
               <span className="filter-chip">
-                <span>📍 State: {filterState}</span>
+                <span>State: {filterState}</span>
                 <button type="button" className="filter-chip-remove" onClick={() => { setFilterState(''); setFilterDistrict(''); }}>×</button>
               </span>
             )}
             {filterDistrict && (
               <span className="filter-chip">
-                <span>📍 District: {filterDistrict}</span>
+                <span>District: {filterDistrict}</span>
                 <button type="button" className="filter-chip-remove" onClick={() => setFilterDistrict('')}>×</button>
               </span>
             )}
             {search.trim() && (
               <span className="filter-chip">
-                <span>🔍 "{search}"</span>
+                <span>"{search}"</span>
                 <button type="button" className="filter-chip-remove" onClick={() => setSearch('')}>×</button>
               </span>
             )}
             {minRating && (
               <span className="filter-chip">
-                <span>⭐ {minRating}+ Stars</span>
+                <span>{minRating}+ Stars</span>
                 <button type="button" className="filter-chip-remove" onClick={() => setMinRating('')}>×</button>
               </span>
             )}
             {sort && (
               <span className="filter-chip">
-                <span>🔃 {sort === 'rating_desc' ? 'Highest Rating' : sort === 'rating_asc' ? 'Lowest Rating' : 'Newest'}</span>
+                <span>{sort === 'rating_desc' ? 'Highest Rating' : sort === 'rating_asc' ? 'Lowest Rating' : 'Newest'}</span>
                 <button type="button" className="filter-chip-remove" onClick={() => setSort('')}>×</button>
               </span>
             )}
@@ -438,7 +446,7 @@ const ManagePlacesPage = () => {
         <LoadingSpinner message="Loading reported places..." />
       ) : places.length === 0 ? (
         <EmptyState
-          icon="📍"
+          icon={<IconMapPin size={40} color="var(--primary-blue)" />}
           title="No Places Found"
           message={
             hasActiveFilters
@@ -447,12 +455,12 @@ const ManagePlacesPage = () => {
           }
           actionButton={
             hasActiveFilters ? (
-              <button type="button" className="btn btn-secondary" onClick={handleClearFilters}>
-                <span>↺</span> Clear Filters
+              <button type="button" className="btn btn-secondary" onClick={handleClearFilters} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                <IconRefresh size={14} /> Clear Filters
               </button>
             ) : (
-              <button className="btn btn-primary btn-sm" onClick={handleOpenAdd}>
-                + Add First Place
+              <button className="btn btn-primary btn-sm" onClick={handleOpenAdd} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                <IconPlus size={14} /> Add First Place
               </button>
             )
           }
@@ -531,7 +539,7 @@ const ManagePlacesPage = () => {
                   >
                     {[1, 2, 3, 4, 5].map((r) => (
                       <option key={r} value={r}>
-                        Level {r} {r >= 5 ? '(🔥 Critical Hazard)' : r >= 4 ? '(⚠️ High Hazard)' : r === 3 ? '(⚡ Moderate)' : '(🛡️ Minor)'}
+                        Level {r} {r >= 5 ? '(Critical Hazard)' : r >= 4 ? '(High Hazard)' : r === 3 ? '(Moderate)' : '(Minor)'}
                       </option>
                     ))}
                   </select>
@@ -676,7 +684,7 @@ const ManagePlacesPage = () => {
                   >
                     {[1, 2, 3, 4, 5].map((r) => (
                       <option key={r} value={r}>
-                        Level {r} {r >= 5 ? '(🔥 Critical Hazard)' : r >= 4 ? '(⚠️ High Hazard)' : r === 3 ? '(⚡ Moderate)' : '(🛡️ Minor)'}
+                        Level {r} {r >= 5 ? '(Critical Hazard)' : r >= 4 ? '(High Hazard)' : r === 3 ? '(Moderate)' : '(Minor)'}
                       </option>
                     ))}
                   </select>

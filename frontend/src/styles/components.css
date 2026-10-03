@@ -220,6 +220,52 @@ textarea.form-control, textarea.form-input {
   line-height: 1.4;
 }
 
+/* Input with Icon Wrapper */
+.input-icon-wrap {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon-wrap .input-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-icon-wrap .form-control,
+.input-icon-wrap .form-input {
+  padding-left: 2.5rem;
+}
+
+.input-icon-wrap .input-clear-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 0.25rem;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+}
+
+.input-icon-wrap .input-clear-btn:hover {
+  color: var(--primary-navy);
+}
+
 /* Rating Selector Pills (1-5 Star Selection) */
 .rating-selector {
   display: flex;

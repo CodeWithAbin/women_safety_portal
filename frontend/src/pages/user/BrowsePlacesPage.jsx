@@ -8,6 +8,21 @@ import SafetyMap from '../../components/SafetyMap';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import AlertBanner from '../../components/AlertBanner';
+import {
+  IconShield,
+  IconShieldCheck,
+  IconMapPin,
+  IconMap,
+  IconSearch,
+  IconNavigation,
+  IconStar,
+  IconRefresh,
+  IconCheck,
+  IconSliders,
+  IconInfo,
+  IconPlus,
+  IconX
+} from '../../components/Icons';
 
 const BrowsePlacesPage = () => {
   const { user } = useAuth();
@@ -155,7 +170,7 @@ const BrowsePlacesPage = () => {
       {/* Page Header */}
       <div className="page-header" style={{ marginBottom: '1.75rem' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.25rem 0.65rem', backgroundColor: '#e0f2fe', color: '#0369a1', borderRadius: 'var(--radius-pill)', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-          <span>🛡️</span> Verified Community Directory
+          <IconShieldCheck size={14} /> Verified Community Directory
         </div>
         <h1 className="page-title">Explore Safety Information</h1>
         <p className="page-subtitle">
@@ -166,17 +181,17 @@ const BrowsePlacesPage = () => {
       {/* Visually Organized Filter & Search Controls */}
       <div className="filter-card">
         <div className="filter-header-row">
-          <div className="filter-header-title">
-            <span>⚙️</span> Filter & Search Safety Reports
+          <div className="filter-header-title" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <IconSliders size={16} /> Filter & Search Safety Reports
           </div>
           {hasActiveFilters && (
             <button
               type="button"
               className="btn btn-secondary btn-sm"
               onClick={handleClearFilters}
-              style={{ fontSize: '0.82rem', padding: '0.3rem 0.75rem' }}
+              style={{ fontSize: '0.82rem', padding: '0.3rem 0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
             >
-              <span>↺</span> Reset Filters
+              <IconRefresh size={13} /> Reset Filters
             </button>
           )}
         </div>
@@ -190,16 +205,16 @@ const BrowsePlacesPage = () => {
           allowAllOption={true}
           allStateText="All States"
           allDistrictText="All Districts"
-          stateLabel="📍 Filter by State"
-          districtLabel="📍 Filter by District"
+          stateLabel="Filter by State"
+          districtLabel="Filter by District"
         />
 
         {/* Keyword Search, Rating Filter, and Sorting */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginTop: '0.5rem' }}>
           {/* Search Keyword */}
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label" htmlFor="search-input">
-              <span>🔍</span> Search by Keyword
+            <label className="form-label" htmlFor="search-input" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <IconSearch size={14} /> Search by Keyword
             </label>
             <input
               id="search-input"
@@ -213,8 +228,8 @@ const BrowsePlacesPage = () => {
 
           {/* Minimum Safety Rating */}
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label" htmlFor="min-rating-select">
-              <span>⭐</span> Minimum Safety Rating
+            <label className="form-label" htmlFor="min-rating-select" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <IconStar size={14} filled color="#d97706" /> Minimum Safety Rating
             </label>
             <select
               id="min-rating-select"
@@ -233,8 +248,8 @@ const BrowsePlacesPage = () => {
 
           {/* Sort Results */}
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label" htmlFor="sort-select">
-              <span>🔃</span> Sort Results
+            <label className="form-label" htmlFor="sort-select" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <IconSliders size={14} /> Sort Results
             </label>
             <select
               id="sort-select"
@@ -255,8 +270,9 @@ const BrowsePlacesPage = () => {
           <div className="filter-chips-bar" aria-label="Active Filters">
             <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Active Filters:</span>
             {userCoords && (
-              <span className="filter-chip" style={{ backgroundColor: '#e0f2fe', color: '#0369a1', borderColor: '#7dd3fc' }}>
-                <span>📍 Nearby ({radiusKm} km radius)</span>
+              <span className="filter-chip" style={{ backgroundColor: '#e0f2fe', color: '#0369a1', borderColor: '#7dd3fc', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                <IconNavigation size={12} />
+                <span>Nearby ({radiusKm} km radius)</span>
                 <button
                   type="button"
                   className="filter-chip-remove"
@@ -264,13 +280,14 @@ const BrowsePlacesPage = () => {
                   title="Remove location filter"
                   aria-label="Remove location filter"
                 >
-                  ×
+                  <IconX size={12} />
                 </button>
               </span>
             )}
             {state && (
-              <span className="filter-chip">
-                <span>📍 State: {state}</span>
+              <span className="filter-chip" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                <IconMapPin size={12} />
+                <span>State: {state}</span>
                 <button
                   type="button"
                   className="filter-chip-remove"
@@ -278,13 +295,14 @@ const BrowsePlacesPage = () => {
                   title="Remove state filter"
                   aria-label="Remove state filter"
                 >
-                  ×
+                  <IconX size={12} />
                 </button>
               </span>
             )}
             {district && (
-              <span className="filter-chip">
-                <span>📍 District: {district}</span>
+              <span className="filter-chip" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                <IconMapPin size={12} />
+                <span>District: {district}</span>
                 <button
                   type="button"
                   className="filter-chip-remove"
@@ -292,13 +310,14 @@ const BrowsePlacesPage = () => {
                   title="Remove district filter"
                   aria-label="Remove district filter"
                 >
-                  ×
+                  <IconX size={12} />
                 </button>
               </span>
             )}
             {search.trim() && (
-              <span className="filter-chip">
-                <span>🔍 "{search}"</span>
+              <span className="filter-chip" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                <IconSearch size={12} />
+                <span>"{search}"</span>
                 <button
                   type="button"
                   className="filter-chip-remove"
@@ -306,13 +325,14 @@ const BrowsePlacesPage = () => {
                   title="Remove search filter"
                   aria-label="Remove search filter"
                 >
-                  ×
+                  <IconX size={12} />
                 </button>
               </span>
             )}
             {minRating && (
-              <span className="filter-chip">
-                <span>⭐ {minRating}+ Stars</span>
+              <span className="filter-chip" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                <IconStar size={12} filled color="#d97706" />
+                <span>{minRating}+ Stars</span>
                 <button
                   type="button"
                   className="filter-chip-remove"
@@ -320,13 +340,14 @@ const BrowsePlacesPage = () => {
                   title="Remove rating filter"
                   aria-label="Remove rating filter"
                 >
-                  ×
+                  <IconX size={12} />
                 </button>
               </span>
             )}
             {sort && (
-              <span className="filter-chip">
-                <span>🔃 {sort === 'rating_desc' ? 'Highest Rating' : sort === 'rating_asc' ? 'Lowest Rating' : 'Newest'}</span>
+              <span className="filter-chip" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                <IconSliders size={12} />
+                <span>{sort === 'rating_desc' ? 'Highest Rating' : sort === 'rating_asc' ? 'Lowest Rating' : 'Newest'}</span>
                 <button
                   type="button"
                   className="filter-chip-remove"
@@ -334,7 +355,7 @@ const BrowsePlacesPage = () => {
                   title="Remove sort"
                   aria-label="Remove sort"
                 >
-                  ×
+                  <IconX size={12} />
                 </button>
               </span>
             )}
@@ -353,12 +374,12 @@ const BrowsePlacesPage = () => {
               disabled={locating}
               style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
             >
-              <span>📍</span> {locating ? 'Detecting Location...' : 'Use My Location'}
+              <IconNavigation size={15} /> {locating ? 'Detecting Location...' : 'Use My Location'}
             </button>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.3rem 0.65rem', backgroundColor: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', borderRadius: 'var(--radius-pill)', fontSize: '0.82rem', fontWeight: 700 }}>
-                <span>✓</span> Location Active
+                <IconCheck size={13} /> Location Active
               </div>
               <button
                 type="button"
@@ -408,7 +429,7 @@ const BrowsePlacesPage = () => {
         <LoadingSpinner message="Searching verified safety reports..." />
       ) : places.length === 0 ? (
         <EmptyState
-          icon={hasActiveFilters ? '🔍' : '🛡️'}
+          icon={<IconSearch size={38} color="var(--text-muted)" />}
           title={hasActiveFilters ? 'No Matching Safety Reports Found' : 'No Reported Places Found'}
           message={
             userCoords
@@ -419,12 +440,12 @@ const BrowsePlacesPage = () => {
           }
           actionButton={
             hasActiveFilters ? (
-              <button type="button" className="btn btn-secondary" onClick={handleClearFilters}>
-                <span>↺</span> Clear All Filters
+              <button type="button" className="btn btn-secondary" onClick={handleClearFilters} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                <IconRefresh size={14} /> Clear All Filters
               </button>
             ) : (
-              <Link to="/report" className="btn btn-primary">
-                <span>➕</span> Report a New Concern
+              <Link to="/report" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                <IconPlus size={15} /> Report a New Concern
               </Link>
             )
           }
@@ -434,8 +455,8 @@ const BrowsePlacesPage = () => {
           {/* Column 1: Map Panel */}
           <div className="map-sticky-panel">
             <div style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--primary-navy)' }}>
-                🗺️ Interactive Safety Map
+              <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--primary-navy)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <IconMap size={16} /> Interactive Safety Map
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                 {placesWithCoords.length} plotted on map
@@ -458,8 +479,8 @@ const BrowsePlacesPage = () => {
 
             {/* Note for places without coordinates */}
             {placesWithoutCoordsCount > 0 && (
-              <div style={{ marginTop: '0.65rem', padding: '0.5rem 0.75rem', backgroundColor: '#f8fafc', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                ℹ️ {placesWithCoords.length} of {places.length} places shown on map. Some reports do not have map coordinates yet.
+              <div style={{ marginTop: '0.65rem', padding: '0.5rem 0.75rem', backgroundColor: '#f8fafc', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)', fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <IconInfo size={14} /> {placesWithCoords.length} of {places.length} places shown on map. Some reports do not have map coordinates yet.
               </div>
             )}
           </div>

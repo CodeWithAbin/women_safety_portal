@@ -142,13 +142,14 @@ public class PlaceService {
 
         Double lat = req.getLatitude();
         Double lon = req.getLongitude();
-        if (lat != null || lon != null) {
-            if (lat != null && (lat < -90.0 || lat > 90.0)) {
-                throw new BadRequestException("Latitude must be between -90 and 90 degrees.");
-            }
-            if (lon != null && (lon < -180.0 || lon > 180.0)) {
-                throw new BadRequestException("Longitude must be between -180 and 180 degrees.");
-            }
+        if (lat == null || lon == null) {
+            throw new BadRequestException("Report location is required. Valid latitude and longitude coordinates must be provided.");
+        }
+        if (lat < -90.0 || lat > 90.0) {
+            throw new BadRequestException("Latitude must be between -90 and 90 degrees.");
+        }
+        if (lon < -180.0 || lon > 180.0) {
+            throw new BadRequestException("Longitude must be between -180 and 180 degrees.");
         }
 
         String photoUrl = fileStorageService.store(photo);

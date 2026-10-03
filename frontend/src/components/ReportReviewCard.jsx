@@ -1,5 +1,16 @@
 import React from 'react';
 import { getPhotoUrl } from '../services/api';
+import {
+  IconAlertTriangle,
+  IconAlertCircle,
+  IconShieldCheck,
+  IconFileText,
+  IconCalendar,
+  IconMapPin,
+  IconPhone,
+  IconX,
+  IconCheck
+} from './Icons';
 
 const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
   const isProcessing = processingId === report.id;
@@ -17,10 +28,10 @@ const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
   const getSeverityBadge = (rating) => {
     const num = Number(rating);
     if (isNaN(num)) return <span className="badge badge-info">Initial Rating: Unrated</span>;
-    if (num >= 4.5) return <span className="badge badge-hazard-severe">🔥 Critical ({rating}/5)</span>;
-    if (num >= 3.5) return <span className="badge badge-hazard-high">⚠️ High ({rating}/5)</span>;
-    if (num >= 2.0) return <span className="badge badge-hazard-medium">⚡ Moderate ({rating}/5)</span>;
-    return <span className="badge badge-hazard-low">🛡️ Low ({rating}/5)</span>;
+    if (num >= 4.5) return <span className="badge badge-hazard-severe" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><IconAlertTriangle size={12} /> Critical ({rating}/5)</span>;
+    if (num >= 3.5) return <span className="badge badge-hazard-high" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><IconAlertTriangle size={12} /> High ({rating}/5)</span>;
+    if (num >= 2.0) return <span className="badge badge-hazard-medium" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><IconAlertCircle size={12} /> Moderate ({rating}/5)</span>;
+    return <span className="badge badge-hazard-low" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><IconShieldCheck size={12} /> Low ({rating}/5)</span>;
   };
 
   return (
@@ -37,8 +48,8 @@ const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
         flexWrap: 'wrap',
         gap: '0.5rem'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem', fontWeight: 700, color: '#92400e' }}>
-          <span>⏳</span> Moderation Item #{report.id}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.88rem', fontWeight: 700, color: '#92400e' }}>
+          <IconFileText size={15} /> Moderation Item #{report.id}
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <span className="badge badge-warning">Pending Review</span>
@@ -84,7 +95,7 @@ const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
           </div>
 
           <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-            <span>📅</span>
+            <IconCalendar size={14} />
             <span><strong>Submitted:</strong> {formattedDate || 'Date unavailable'}</span>
           </div>
         </div>
@@ -96,7 +107,7 @@ const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
               {report.name}
             </h3>
             <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'flex-start', gap: '0.35rem', wordBreak: 'break-word' }}>
-              <span style={{ color: 'var(--primary-blue)', flexShrink: 0 }}>📍</span>
+              <IconMapPin size={15} color="var(--primary-blue)" style={{ flexShrink: 0, marginTop: '2px' }} />
               <span><strong>Location:</strong> {report.address}, {report.district}, {report.state}</span>
             </div>
           </div>
@@ -132,7 +143,11 @@ const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
               Citizen Reporter Information
             </div>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-body)' }}>
-              <strong>{report.reporter_name || 'Anonymous Citizen'}</strong> &bull; {report.reporter_email || 'No email recorded'} {report.reporter_phone ? `&bull; 📞 ${report.reporter_phone}` : ''}
+              <strong>{report.reporter_name || 'Anonymous Citizen'}</strong> &bull; {report.reporter_email || 'No email recorded'} {report.reporter_phone ? (
+                <>
+                  &bull; <IconPhone size={12} style={{ verticalAlign: 'middle', marginRight: '2px' }} /> {report.reporter_phone}
+                </>
+              ) : ''}
             </div>
           </div>
 
@@ -150,9 +165,13 @@ const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
               className="btn btn-danger btn-sm"
               onClick={() => onReject(report.id)}
               disabled={isProcessing}
-              style={{ minWidth: '120px' }}
+              style={{ minWidth: '120px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
             >
-              {isProcessing ? 'Processing...' : '✕ Reject Report'}
+              {isProcessing ? 'Processing...' : (
+                <>
+                  <IconX size={14} /> Reject Report
+                </>
+              )}
             </button>
 
             <button
@@ -160,9 +179,13 @@ const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
               className="btn btn-success btn-sm"
               onClick={() => onAccept(report.id)}
               disabled={isProcessing}
-              style={{ minWidth: '150px' }}
+              style={{ minWidth: '150px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
             >
-              {isProcessing ? 'Processing...' : '✓ Accept & Publish'}
+              {isProcessing ? 'Processing...' : (
+                <>
+                  <IconCheck size={14} /> Accept & Publish
+                </>
+              )}
             </button>
           </div>
         </div>

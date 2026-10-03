@@ -19,7 +19,10 @@ L.Icon.Default.mergeOptions({
 const createCustomPinIcon = (isResolved, rating) => {
   const bgColor = isResolved ? '#10b981' : rating >= 4.0 ? '#ef4444' : rating >= 3.0 ? '#f59e0b' : '#3b82f6';
   const strokeColor = isResolved ? '#047857' : rating >= 4.0 ? '#b91c1c' : rating >= 3.0 ? '#d97706' : '#1d4ed8';
-  const symbol = isResolved ? '✓' : '📍';
+
+  const innerSymbol = isResolved
+    ? `<path d="M12 15l3 3 5-6" fill="none" stroke="${strokeColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`
+    : `<circle cx="16" cy="15" r="4.5" fill="${strokeColor}"/>`;
 
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 42" width="32" height="42">
@@ -31,9 +34,7 @@ const createCustomPinIcon = (isResolved, rating) => {
       <path d="M16 0 C7.16 0 0 7.16 0 16 C0 26 16 42 16 42 C16 42 32 26 32 16 C32 7.16 24.84 0 16 0 Z" 
             fill="${bgColor}" stroke="${strokeColor}" stroke-width="1.5" filter="url(#shadow)"/>
       <circle cx="16" cy="15" r="9" fill="#ffffff" />
-      <text x="16" y="19" font-size="11" font-weight="bold" font-family="sans-serif" text-anchor="middle" fill="${strokeColor}">
-        ${symbol}
-      </text>
+      ${innerSymbol}
     </svg>
   `;
 
@@ -169,24 +170,24 @@ const SafetyMap = ({
             ${place.name}
           </div>
           <div style="color: #64748b; font-size: 0.8rem; margin-bottom: 0.4rem;">
-            📍 ${place.district}, ${place.state}
+            ${place.district}, ${place.state}
           </div>
           <div style="display: flex; align-items: center; gap: 0.35rem; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem;">
-            <span>⭐ Safety Rating:</span>
-            <strong style="color: #0f172a;">${rating.toFixed(1)}/5</strong>
+            <span>Safety Rating:</span>
+            <strong style="color: #0f172a;">${rating.toFixed(1)} / 5 ★</strong>
             <span style="color: #94a3b8; font-size: 0.76rem;">(${place.rating_count || 1})</span>
           </div>
           ${
             isResolved
               ? `<div style="display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.5rem; background-color: #d1fae5; color: #065f46; border-radius: 9999px; font-size: 0.76rem; font-weight: 700; margin-bottom: 0.4rem;">
-                  🟢 RESOLVED ${resolvedDate ? `• ${resolvedDate}` : ''}
+                  RESOLVED ${resolvedDate ? `• ${resolvedDate}` : ''}
                 </div>`
               : ''
           }
           ${
             place.distance_km != null
               ? `<div style="font-size: 0.8rem; font-weight: 700; color: #0284c7; margin-bottom: 0.4rem;">
-                  🧭 ${place.distance_km} km away
+                  ${place.distance_km} km away
                 </div>`
               : ''
           }
@@ -244,7 +245,7 @@ const SafetyMap = ({
         zIndexOffset: 1000
       }).bindPopup(`
         <div style="font-weight: 700; font-size: 0.88rem; color: #0284c7; padding: 2px;">
-          📍 Your Current Location
+          Your Current Location
         </div>
       `);
 

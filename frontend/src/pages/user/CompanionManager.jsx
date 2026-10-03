@@ -4,6 +4,20 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import AlertBanner from '../../components/AlertBanner';
 import ConfirmModal from '../../components/ConfirmModal';
+import {
+  IconSearch,
+  IconUser,
+  IconUsers,
+  IconUserCheck,
+  IconMapPin,
+  IconCheck,
+  IconPlus,
+  IconPhone,
+  IconTrash,
+  IconBell,
+  IconWalker,
+  IconX
+} from '../../components/Icons';
 
 const CompanionManager = ({ onSelectTab }) => {
   // State for My Accepted Companions
@@ -191,7 +205,7 @@ const CompanionManager = ({ onSelectTab }) => {
       <section className="card" style={{ padding: '1.75rem', backgroundColor: '#ffffff' }}>
         <div style={{ marginBottom: '1.25rem' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.6rem', backgroundColor: '#eff6ff', color: 'var(--primary-blue)', borderRadius: 'var(--radius-pill)', fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.35rem' }}>
-            <span>🔍</span> Community Network
+            <IconSearch size={13} /> Community Network
           </div>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
             Find a Community Companion
@@ -201,26 +215,27 @@ const CompanionManager = ({ onSelectTab }) => {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem', maxWidth: '600px', width: '100%', marginBottom: '1.25rem', boxSizing: 'border-box' }}>
-          <div style={{ position: 'relative', flex: 1, width: '100%' }}>
+        <div style={{ maxWidth: '600px', width: '100%', marginBottom: '1.25rem', boxSizing: 'border-box' }}>
+          <div className="input-icon-wrap">
+            <span className="input-icon">
+              <IconSearch size={18} />
+            </span>
             <input
               type="text"
-              className="form-input"
+              className="form-control"
               placeholder="Search by name or email address..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ paddingLeft: '2.5rem', width: '100%', boxSizing: 'border-box' }}
+              aria-label="Search registered users by name or email"
             />
-            <span style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
-              🔍
-            </span>
             {searchQuery && (
               <button
                 type="button"
+                className="input-clear-btn"
                 onClick={() => setSearchQuery('')}
-                style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.9rem' }}
+                aria-label="Clear search"
               >
-                ✕
+                <IconX size={16} />
               </button>
             )}
           </div>
@@ -252,20 +267,20 @@ const CompanionManager = ({ onSelectTab }) => {
                       </div>
                     </div>
                     {usr.district && usr.state && (
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.35rem', wordBreak: 'break-word' }}>
-                        📍 {usr.district}, {usr.state}
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.35rem', wordBreak: 'break-word', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <IconMapPin size={13} /> {usr.district}, {usr.state}
                       </div>
                     )}
                   </div>
 
                   <div style={{ paddingTop: '0.5rem', borderTop: '1px solid var(--border-light)' }}>
                     {isAlreadyCompanion ? (
-                      <span className="badge badge-success" style={{ fontSize: '0.8rem' }}>
-                        ✓ Companion
+                      <span className="badge badge-success" style={{ fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <IconCheck size={13} /> Companion
                       </span>
                     ) : isRequestSent ? (
-                      <button className="btn btn-secondary btn-sm" disabled style={{ width: '100%', fontSize: '0.82rem' }}>
-                        ✓ Request Sent
+                      <button className="btn btn-secondary btn-sm" disabled style={{ width: '100%', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
+                        <IconCheck size={13} /> Request Sent
                       </button>
                     ) : (
                       <button
@@ -273,9 +288,9 @@ const CompanionManager = ({ onSelectTab }) => {
                         className="btn btn-primary btn-sm"
                         onClick={() => handleSendRequest(usr.id, usr.name)}
                         disabled={sendingId === usr.id}
-                        style={{ width: '100%', fontSize: '0.82rem' }}
+                        style={{ width: '100%', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}
                       >
-                        {sendingId === usr.id ? 'Sending...' : '➕ Add Companion'}
+                        <IconPlus size={14} /> {sendingId === usr.id ? 'Sending...' : 'Add Companion'}
                       </button>
                     )}
                   </div>
@@ -298,7 +313,7 @@ const CompanionManager = ({ onSelectTab }) => {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
             <div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.6rem', backgroundColor: '#fef3c7', color: '#b45309', borderRadius: 'var(--radius-pill)', fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.35rem' }}>
-                <span>📬</span> Action Required
+                <IconBell size={13} /> Action Required
               </div>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#92400e', margin: 0 }}>
                 Incoming Companion Requests ({pendingRequests.length})
@@ -324,7 +339,7 @@ const CompanionManager = ({ onSelectTab }) => {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#fef3c7', color: '#b45309', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.1rem' }}>
-                    👥
+                    <IconUser size={20} />
                   </div>
                   <div>
                     <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 700, color: 'var(--primary-navy)' }}>
@@ -340,8 +355,9 @@ const CompanionManager = ({ onSelectTab }) => {
                     className="btn btn-success btn-sm"
                     onClick={() => handleAcceptRequest(req.id, req.requester_name)}
                     disabled={actionLoading}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
                   >
-                    ✓ Accept
+                    <IconCheck size={14} /> Accept
                   </button>
                   <button
                     type="button"
@@ -365,7 +381,7 @@ const CompanionManager = ({ onSelectTab }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.6rem', backgroundColor: '#d1fae5', color: '#065f46', borderRadius: 'var(--radius-pill)', fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.35rem' }}>
-              <span>🤝</span> Verified Trusted Network
+              <IconUserCheck size={13} /> Verified Trusted Network
             </div>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
               My Community Companions ({companions.length})
@@ -380,8 +396,9 @@ const CompanionManager = ({ onSelectTab }) => {
               className="btn btn-primary btn-sm"
               onClick={() => onSelectTab('start')}
               disabled={companions.length === 0}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
             >
-              🚶‍♀️ Start Safe Walk
+              <IconWalker size={16} /> Start Safe Walk
             </button>
           )}
         </div>
@@ -390,7 +407,7 @@ const CompanionManager = ({ onSelectTab }) => {
           <LoadingSpinner message="Loading your community companions..." />
         ) : companions.length === 0 ? (
           <EmptyState
-            icon="🤝"
+            icon={<IconUsers size={40} color="var(--primary-blue)" />}
             title="No Community Companions Yet"
             message="You need at least one accepted community companion before you can start a Safe Walk. Use the search box above to find and invite registered users."
           />
@@ -418,10 +435,18 @@ const CompanionManager = ({ onSelectTab }) => {
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
-                      {companionPhone && <div>📞 {companionPhone}</div>}
-                      {companionLoc && <div>📍 {companionLoc}</div>}
-                      <div style={{ color: '#059669', fontWeight: 600, marginTop: '0.2rem' }}>
-                        ✓ Accepted Companion
+                      {companionPhone && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <IconPhone size={13} /> {companionPhone}
+                        </div>
+                      )}
+                      {companionLoc && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <IconMapPin size={13} /> {companionLoc}
+                        </div>
+                      )}
+                      <div style={{ color: '#059669', fontWeight: 600, marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <IconCheck size={13} /> Accepted Companion
                       </div>
                     </div>
                   </div>
@@ -430,11 +455,11 @@ const CompanionManager = ({ onSelectTab }) => {
                     <button
                       type="button"
                       className="btn btn-secondary btn-sm"
-                      style={{ color: 'var(--hazard-high)', borderColor: '#fecdd3', fontSize: '0.82rem' }}
+                      style={{ color: 'var(--hazard-high)', borderColor: '#fecdd3', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
                       onClick={() => openDeleteModal(comp.id, companionName)}
                       disabled={actionLoading}
                     >
-                      🗑️ Remove
+                      <IconTrash size={14} /> Remove
                     </button>
                   </div>
                 </div>
@@ -461,3 +486,4 @@ const CompanionManager = ({ onSelectTab }) => {
 };
 
 export default CompanionManager;
+

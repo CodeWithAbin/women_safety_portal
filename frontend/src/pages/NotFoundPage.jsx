@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { IconSearch } from '../components/Icons';
 
 const NotFoundPage = () => {
   const { isAuthenticated, role } = useAuth();
@@ -9,7 +10,9 @@ const NotFoundPage = () => {
 
   return (
     <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
-      <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔍</div>
+      <div style={{ color: 'var(--primary-blue)', marginBottom: '1rem' }}>
+        <IconSearch size={54} />
+      </div>
       <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '0.5rem' }}>
         404 — Page Not Found
       </h1>

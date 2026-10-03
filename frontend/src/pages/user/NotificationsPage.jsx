@@ -4,6 +4,14 @@ import { notificationService } from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import AlertBanner from '../../components/AlertBanner';
+import {
+  IconAlertTriangle,
+  IconWalker,
+  IconCheckCircle,
+  IconAlertCircle,
+  IconInfo,
+  IconBell
+} from '../../components/Icons';
 
 const NotificationsPage = () => {
   const [notifications, setNotifications] = useState([]);
@@ -47,19 +55,19 @@ const NotificationsPage = () => {
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'safe_walk_overdue':
-        return '⚠️';
+        return <IconAlertTriangle size={18} color="#b45309" />;
       case 'safe_walk_started':
-        return '🚶‍♀️';
+        return <IconWalker size={18} color="#0284c7" />;
       case 'safe_walk_completed':
-        return '🎉';
+        return <IconCheckCircle size={18} color="#059669" />;
       case 'safe_walk_cancelled':
-        return '🛑';
+        return <IconAlertCircle size={18} color="#dc2626" />;
       case 'report_accepted':
-        return '✅';
+        return <IconCheckCircle size={18} color="#059669" />;
       case 'report_rejected':
-        return '❌';
+        return <IconAlertCircle size={18} color="#dc2626" />;
       default:
-        return 'ℹ️';
+        return <IconInfo size={18} color="#64748b" />;
     }
   };
 
@@ -78,7 +86,7 @@ const NotificationsPage = () => {
         <LoadingSpinner message="Loading your notifications..." />
       ) : notifications.length === 0 ? (
         <EmptyState
-          icon="🔔"
+          icon={<IconBell size={36} color="var(--primary-blue)" />}
           title="No Notifications Yet"
           message="When new safety alerts, Safe Walk updates, or report review decisions occur, they will appear here."
         />
@@ -116,7 +124,7 @@ const NotificationsPage = () => {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                    <span style={{ fontSize: '1.3rem' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center' }}>
                       {getNotificationIcon(notif.type)}
                     </span>
                     <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: isOverdue ? '#92400e' : 'var(--primary-navy)', margin: 0 }}>

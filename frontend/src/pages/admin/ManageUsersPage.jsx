@@ -5,6 +5,13 @@ import ConfirmModal from '../../components/ConfirmModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import AlertBanner from '../../components/AlertBanner';
+import {
+  IconUsers,
+  IconMapPin,
+  IconRefresh,
+  IconShield,
+  IconUser
+} from '../../components/Icons';
 
 const ManageUsersPage = () => {
   const [users, setUsers] = useState([]);
@@ -109,7 +116,7 @@ const ManageUsersPage = () => {
       {/* Page Header */}
       <div className="page-header" style={{ marginBottom: '1.75rem' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.25rem 0.65rem', backgroundColor: '#ede9fe', color: '#6d28d9', borderRadius: 'var(--radius-pill)', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-          <span>👥</span> User Management
+          <IconUsers size={14} /> User Management
         </div>
         <h1 className="page-title">Manage Registered Citizens</h1>
         <p className="page-subtitle">
@@ -123,17 +130,17 @@ const ManageUsersPage = () => {
       {/* Filter Bar */}
       <div className="filter-card">
         <div className="filter-header-row">
-          <div className="filter-header-title">
-            <span>📍</span> Filter Citizens by Location
+          <div className="filter-header-title" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <IconMapPin size={16} /> Filter Citizens by Location
           </div>
           {hasActiveFilters && (
             <button
               type="button"
               className="btn btn-secondary btn-sm"
               onClick={handleClearFilters}
-              style={{ fontSize: '0.82rem', padding: '0.3rem 0.75rem' }}
+              style={{ fontSize: '0.82rem', padding: '0.3rem 0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
             >
-              <span>↺</span> Reset Location Filter
+              <IconRefresh size={13} /> Reset Location Filter
             </button>
           )}
         </div>
@@ -156,13 +163,13 @@ const ManageUsersPage = () => {
             <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>Active Filters:</span>
             {filterState && (
               <span className="filter-chip">
-                <span>📍 State: {filterState}</span>
+                <span>State: {filterState}</span>
                 <button type="button" className="filter-chip-remove" onClick={() => { setFilterState(''); setFilterDistrict(''); }}>×</button>
               </span>
             )}
             {filterDistrict && (
               <span className="filter-chip">
-                <span>📍 District: {filterDistrict}</span>
+                <span>District: {filterDistrict}</span>
                 <button type="button" className="filter-chip-remove" onClick={() => setFilterDistrict('')}>×</button>
               </span>
             )}
@@ -200,7 +207,7 @@ const ManageUsersPage = () => {
         <LoadingSpinner message="Loading registered citizens directory..." />
       ) : users.length === 0 ? (
         <EmptyState
-          icon="👥"
+          icon={<IconUsers size={40} color="var(--primary-blue)" />}
           title="No Citizens Found"
           message={
             hasActiveFilters
@@ -209,8 +216,8 @@ const ManageUsersPage = () => {
           }
           actionButton={
             hasActiveFilters ? (
-              <button type="button" className="btn btn-secondary" onClick={handleClearFilters}>
-                <span>↺</span> Clear Location Filters
+              <button type="button" className="btn btn-secondary" onClick={handleClearFilters} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                <IconRefresh size={14} /> Clear Location Filters
               </button>
             ) : null
           }
@@ -247,8 +254,16 @@ const ManageUsersPage = () => {
                     </td>
                     <td>{u.email}</td>
                     <td>
-                      <span className={`badge ${isAdminAccount ? 'badge-admin' : 'badge-info'}`}>
-                        {isAdminAccount ? '🛡️ Admin' : '👤 Citizen'}
+                      <span className={`badge ${isAdminAccount ? 'badge-admin' : 'badge-info'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                        {isAdminAccount ? (
+                          <>
+                            <IconShield size={12} /> Admin
+                          </>
+                        ) : (
+                          <>
+                            <IconUser size={12} /> Citizen
+                          </>
+                        )}
                       </span>
                     </td>
                     <td>

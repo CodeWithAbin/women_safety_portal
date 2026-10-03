@@ -4,6 +4,7 @@ import ReportReviewCard from '../../components/ReportReviewCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import AlertBanner from '../../components/AlertBanner';
+import { IconClock, IconRefresh, IconCheckCircle } from '../../components/Icons';
 
 const ManageReportsPage = () => {
   const [reports, setReports] = useState([]);
@@ -60,7 +61,7 @@ const ManageReportsPage = () => {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.75rem' }}>
         <div>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.25rem 0.65rem', backgroundColor: '#fef3c7', color: '#92400e', borderRadius: 'var(--radius-pill)', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-            <span>⏳</span> Moderation Queue
+            <IconClock size={14} /> Moderation Queue
           </div>
           <h1 className="page-title">Review Citizen Safety Reports</h1>
           <p className="page-subtitle">
@@ -73,9 +74,9 @@ const ManageReportsPage = () => {
           className="btn btn-secondary btn-sm"
           onClick={fetchReports}
           disabled={loading}
-          style={{ fontSize: '0.85rem' }}
+          style={{ fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
         >
-          <span>↺</span> Refresh Queue
+          <IconRefresh size={14} /> Refresh Queue
         </button>
       </div>
 
@@ -86,7 +87,7 @@ const ManageReportsPage = () => {
         <LoadingSpinner message="Fetching pending reports moderation queue..." />
       ) : reports.length === 0 ? (
         <EmptyState
-          icon="✅"
+          icon={<IconCheckCircle size={40} color="#059669" />}
           title="All Reports Reviewed"
           message="There are currently no pending citizen submissions in the moderation queue."
         />

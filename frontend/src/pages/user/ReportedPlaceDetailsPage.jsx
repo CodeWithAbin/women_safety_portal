@@ -5,6 +5,22 @@ import { placeService, getPhotoUrl } from '../../services/api';
 import SafetyMap from '../../components/SafetyMap';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import AlertBanner from '../../components/AlertBanner';
+import {
+  IconShield,
+  IconShieldCheck,
+  IconMapPin,
+  IconMap,
+  IconSearch,
+  IconNavigation,
+  IconStar,
+  IconCheck,
+  IconCheckCircle,
+  IconAlertTriangle,
+  IconArrowLeft,
+  IconCalendar,
+  IconFileText,
+  IconEdit
+} from '../../components/Icons';
 
 const ReportedPlaceDetailsPage = () => {
   const { id } = useParams();
@@ -166,7 +182,7 @@ const ReportedPlaceDetailsPage = () => {
           onClick={() => navigate('/dashboard')}
           style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
         >
-          <span>&larr;</span> Back to Dashboard
+          <IconArrowLeft size={14} /> Back to Dashboard
         </button>
 
         <Link
@@ -174,7 +190,7 @@ const ReportedPlaceDetailsPage = () => {
           className="btn btn-secondary btn-sm"
           style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
         >
-          <span>🔍</span> Browse Reported Places
+          <IconSearch size={14} /> Browse Reported Places
         </Link>
       </div>
 
@@ -183,17 +199,17 @@ const ReportedPlaceDetailsPage = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
-              <span className="badge badge-info" style={{ fontSize: '0.82rem', padding: '0.3rem 0.65rem' }}>
-                🛡️ Reported Place
+              <span className="badge badge-info" style={{ fontSize: '0.82rem', padding: '0.3rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                <IconShield size={13} /> Reported Place
               </span>
               {isResolved && (
-                <span className="badge badge-resolved" style={{ fontSize: '0.82rem', padding: '0.3rem 0.65rem' }}>
-                  🟢 RESOLVED
+                <span className="badge badge-resolved" style={{ fontSize: '0.82rem', padding: '0.3rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <IconCheckCircle size={13} /> RESOLVED
                 </span>
               )}
               {place.distance_km != null && (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', padding: '0.25rem 0.6rem', backgroundColor: '#e0f2fe', color: '#0369a1', borderRadius: 'var(--radius-pill)', fontSize: '0.82rem', fontWeight: 700 }}>
-                  <span>🧭</span> {place.distance_km} km away
+                  <IconNavigation size={12} /> {place.distance_km} km away
                 </span>
               )}
             </div>
@@ -203,13 +219,13 @@ const ReportedPlaceDetailsPage = () => {
             </h1>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-body)', fontSize: '0.96rem' }}>
-              <span style={{ color: 'var(--primary-blue)', fontSize: '1.1rem' }}>📍</span>
+              <IconMapPin size={16} color="var(--primary-blue)" />
               <strong>{place.address}</strong>, {place.district}, {place.state}
             </div>
           </div>
 
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.75rem', backgroundColor: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', borderRadius: 'var(--radius-pill)', fontSize: '0.85rem', fontWeight: 700 }}>
-            <span>✓</span> Verified by Admin
+            <IconCheck size={14} /> Verified by Admin
           </div>
         </div>
 
@@ -217,7 +233,7 @@ const ReportedPlaceDetailsPage = () => {
         {isResolved && (
           <div className="place-resolved-banner" style={{ marginBottom: '1.25rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, color: '#065f46', fontSize: '0.95rem' }}>
-              <span>🟢</span>
+              <IconCheckCircle size={16} color="#059669" />
               <span>RESOLVED</span>
             </div>
             <div style={{ fontSize: '0.88rem', color: '#047857', marginTop: '0.25rem' }}>
@@ -242,8 +258,8 @@ const ReportedPlaceDetailsPage = () => {
         {/* Description & Report Information Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
           <div>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--primary-navy)', marginBottom: '0.45rem' }}>
-              📝 Safety Concern Description
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--primary-navy)', marginBottom: '0.45rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <IconFileText size={18} /> Safety Concern Description
             </h3>
             <p style={{ color: 'var(--text-body)', lineHeight: 1.6, fontSize: '0.95rem', margin: 0 }}>
               {place.description}
@@ -251,17 +267,19 @@ const ReportedPlaceDetailsPage = () => {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1rem', backgroundColor: '#f8fafc', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
-            <div style={{ fontSize: '0.86rem', color: 'var(--text-muted)' }}>
-              📅 <strong>Reported Date:</strong> {formattedReportDate || 'Recorded in Directory'}
+            <div style={{ fontSize: '0.86rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <IconCalendar size={14} /> <span><strong>Reported Date:</strong> {formattedReportDate || 'Recorded in Directory'}</span>
             </div>
             <div style={{ fontSize: '0.86rem', color: 'var(--text-muted)' }}>
-              ⚠️ <strong>Initial Report Rating:</strong> {place.rating ? `${place.rating} / 5 ★` : '3 / 5 ★'}
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <IconAlertTriangle size={14} /> <strong>Initial Report Rating:</strong> {place.rating ? `${place.rating} / 5 ★` : '3 / 5 ★'}
+              </div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem', paddingLeft: '1.35rem' }}>
                 (Initial assessment submitted at time of report)
               </div>
             </div>
-            <div style={{ fontSize: '0.86rem', color: '#065f46' }}>
-              🛡️ <strong>Administrative Review:</strong> Approved & Published
+            <div style={{ fontSize: '0.86rem', color: '#065f46', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <IconShieldCheck size={14} /> <strong>Administrative Review:</strong> Approved & Published
             </div>
           </div>
         </div>
@@ -271,8 +289,8 @@ const ReportedPlaceDetailsPage = () => {
       <div className="card" style={{ padding: '1.75rem', backgroundColor: '#ffffff' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.25rem', marginBottom: '1rem' }}>
           <div>
-            <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--primary-navy)', margin: '0 0 0.35rem 0', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <span>⭐</span> Community Safety Rating
+            <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--primary-navy)', margin: '0 0 0.35rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <IconStar filled size={20} color="#d97706" /> Community Safety Rating
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
               Calculated dynamically from verified ratings submitted by community members.
@@ -314,8 +332,17 @@ const ReportedPlaceDetailsPage = () => {
               type="button"
               className={`btn ${hasRated ? 'btn-secondary' : 'btn-primary'} btn-sm`}
               onClick={() => setShowRatingSelector((prev) => !prev)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
             >
-              {hasRated ? `⭐ Edit Your Rating (${userRating}★)` : '⭐ Rate This Place'}
+              {hasRated ? (
+                <>
+                  <IconEdit size={14} /> Edit Your Rating ({userRating}★)
+                </>
+              ) : (
+                <>
+                  <IconStar filled size={14} color="#ffffff" /> Rate This Place
+                </>
+              )}
             </button>
           </div>
 
@@ -350,8 +377,8 @@ const ReportedPlaceDetailsPage = () => {
           )}
 
           {ratingFeedback && (
-            <div style={{ marginTop: '0.65rem', fontSize: '0.88rem', color: '#16a34a', fontWeight: 600 }}>
-              ✓ {ratingFeedback}
+            <div style={{ marginTop: '0.65rem', fontSize: '0.88rem', color: '#16a34a', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <IconCheck size={14} /> {ratingFeedback}
             </div>
           )}
         </div>
@@ -361,8 +388,8 @@ const ReportedPlaceDetailsPage = () => {
       <div className="card" style={{ padding: '1.75rem', backgroundColor: '#ffffff' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
           <div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)', margin: '0 0 0.2rem 0', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <span>🗺️</span> Reported Location on Safety Map
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)', margin: '0 0 0.2rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <IconMap size={20} color="var(--primary-blue)" /> Reported Location on Safety Map
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', margin: 0 }}>
               Interactive geographic placement for {place.name}
@@ -370,8 +397,8 @@ const ReportedPlaceDetailsPage = () => {
           </div>
 
           {hasCoords && (
-            <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', backgroundColor: '#f1f5f9', padding: '0.3rem 0.65rem', borderRadius: 'var(--radius-sm)' }}>
-              🌐 <strong>Coordinates:</strong> {Number(place.latitude).toFixed(4)}, {Number(place.longitude).toFixed(4)}
+            <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', backgroundColor: '#f1f5f9', padding: '0.3rem 0.65rem', borderRadius: 'var(--radius-sm)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+              <IconMapPin size={13} /> <strong>Coordinates:</strong> {Number(place.latitude).toFixed(4)}, {Number(place.longitude).toFixed(4)}
             </div>
           )}
         </div>
@@ -386,7 +413,9 @@ const ReportedPlaceDetailsPage = () => {
           />
         ) : (
           <div style={{ padding: '2rem', textAlign: 'center', backgroundColor: '#f8fafc', borderRadius: 'var(--radius-sm)', border: '1px dashed var(--border-medium)', color: 'var(--text-muted)' }}>
-            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📍</div>
+            <div style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+              <IconMapPin size={36} />
+            </div>
             <h4 style={{ color: 'var(--primary-navy)', marginBottom: '0.35rem' }}>Map Coordinates Pending</h4>
             <p style={{ fontSize: '0.88rem', maxWidth: '420px', margin: '0 auto' }}>
               This reported place was submitted without geographic GPS coordinates. Location is verified by address: <strong>{place.address}, {place.district}, {place.state}</strong>.
@@ -401,17 +430,17 @@ const ReportedPlaceDetailsPage = () => {
           type="button"
           className="btn btn-secondary"
           onClick={() => navigate('/dashboard')}
-          style={{ padding: '0.75rem 1.5rem', fontWeight: 600 }}
+          style={{ padding: '0.75rem 1.5rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
         >
-          &larr; Back to Dashboard
+          <IconArrowLeft size={16} /> Back to Dashboard
         </button>
 
         <Link
           to="/places"
           className="btn btn-primary"
-          style={{ padding: '0.75rem 1.5rem', fontWeight: 600 }}
+          style={{ padding: '0.75rem 1.5rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
         >
-          Browse All Reported Places &rarr;
+          Browse All Reported Places <IconSearch size={16} />
         </Link>
       </div>
 

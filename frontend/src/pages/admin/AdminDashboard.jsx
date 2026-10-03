@@ -4,6 +4,15 @@ import { adminService } from '../../services/api';
 import ReportReviewCard from '../../components/ReportReviewCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import AlertBanner from '../../components/AlertBanner';
+import {
+  IconShield,
+  IconClock,
+  IconMapPin,
+  IconUsers,
+  IconFileText,
+  IconCheckCircle,
+  IconSliders
+} from '../../components/Icons';
 
 const AdminDashboard = () => {
   const [metrics, setMetrics] = useState({
@@ -82,7 +91,7 @@ const AdminDashboard = () => {
       {/* Page Header */}
       <div className="page-header" style={{ marginBottom: 0 }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.25rem 0.65rem', backgroundColor: '#ede9fe', color: '#6d28d9', borderRadius: 'var(--radius-pill)', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-          <span>🛡️</span> Moderation & Control Center
+          <IconShield size={14} /> Moderation & Control Center
         </div>
         <h1 className="page-title">Administrator Dashboard</h1>
         <p className="page-subtitle">
@@ -102,7 +111,7 @@ const AdminDashboard = () => {
           {/* Card 1: Pending Reports */}
           <div className="stat-card" style={{ borderLeft: '4px solid var(--hazard-medium)' }}>
             <div className="stat-icon-wrap stat-icon-amber" aria-hidden="true">
-              ⏳
+              <IconClock size={22} color="#d97706" />
             </div>
             <div className="stat-info" style={{ flex: 1 }}>
               <span className="stat-num" style={{ color: '#92400e' }}>{metrics.pendingReports}</span>
@@ -116,7 +125,7 @@ const AdminDashboard = () => {
           {/* Card 2: Accepted Places */}
           <div className="stat-card" style={{ borderLeft: '4px solid var(--primary-blue)' }}>
             <div className="stat-icon-wrap stat-icon-blue" aria-hidden="true">
-              📍
+              <IconMapPin size={22} color="var(--primary-blue)" />
             </div>
             <div className="stat-info" style={{ flex: 1 }}>
               <span className="stat-num" style={{ color: 'var(--primary-navy)' }}>{metrics.acceptedPlaces}</span>
@@ -130,7 +139,7 @@ const AdminDashboard = () => {
           {/* Card 3: Registered Citizens */}
           <div className="stat-card" style={{ borderLeft: '4px solid var(--hazard-low)' }}>
             <div className="stat-icon-wrap stat-icon-emerald" aria-hidden="true">
-              👥
+              <IconUsers size={22} color="#059669" />
             </div>
             <div className="stat-info" style={{ flex: 1 }}>
               <span className="stat-num" style={{ color: '#065f46' }}>{metrics.registeredUsers}</span>
@@ -151,7 +160,7 @@ const AdminDashboard = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <div>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span>📝</span> Reports Awaiting Review
+              <IconFileText size={18} color="var(--primary-blue)" /> Reports Awaiting Review
               {metrics.pendingReports > 0 && (
                 <span className="badge badge-warning" style={{ fontSize: '0.8rem' }}>
                   {metrics.pendingReports} Pending
@@ -172,7 +181,9 @@ const AdminDashboard = () => {
 
         {pendingReportsList.length === 0 ? (
           <div className="card" style={{ padding: '2.5rem', textAlign: 'center', backgroundColor: '#ffffff' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>✅</div>
+            <div style={{ color: '#059669', marginBottom: '0.5rem' }}>
+              <IconCheckCircle size={48} />
+            </div>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '0.35rem' }}>
               Moderation Queue is Clean
             </h3>
@@ -216,8 +227,8 @@ const AdminDashboard = () => {
           ========================================================================= */}
       <section aria-label="Administrative Quick Actions">
         <div style={{ marginBottom: '1rem' }}>
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
-            ⚡ Operational Controls
+          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <IconSliders size={18} /> Operational Controls
           </h2>
           <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)', margin: '0.15rem 0 0 0' }}>
             Quick administrative navigation to directories and management tools
@@ -228,7 +239,7 @@ const AdminDashboard = () => {
           <div className="action-card">
             <div className="action-card-header">
               <div className="action-card-icon" style={{ backgroundColor: '#fef3c7', borderColor: '#fde68a', color: '#d97706' }}>
-                📝
+                <IconFileText size={22} />
               </div>
               <div>
                 <h3 className="action-card-title">Moderation Queue</h3>
@@ -245,7 +256,7 @@ const AdminDashboard = () => {
           <div className="action-card">
             <div className="action-card-header">
               <div className="action-card-icon" style={{ backgroundColor: '#e0f2fe', borderColor: '#bae6fd', color: '#0284c7' }}>
-                📍
+                <IconMapPin size={22} />
               </div>
               <div>
                 <h3 className="action-card-title">Manage Places</h3>
@@ -262,7 +273,7 @@ const AdminDashboard = () => {
           <div className="action-card">
             <div className="action-card-header">
               <div className="action-card-icon" style={{ backgroundColor: '#d1fae5', borderColor: '#a7f3d0', color: '#059669' }}>
-                👥
+                <IconUsers size={22} />
               </div>
               <div>
                 <h3 className="action-card-title">Citizen Directory</h3>

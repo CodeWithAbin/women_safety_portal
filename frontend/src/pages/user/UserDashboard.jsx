@@ -5,6 +5,22 @@ import { placeService, notificationService, safeWalkService } from '../../servic
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PlaceCard from '../../components/PlaceCard';
 import SafetyMap from '../../components/SafetyMap';
+import {
+  IconShield,
+  IconShieldCheck,
+  IconMapPin,
+  IconMap,
+  IconNavigation,
+  IconBell,
+  IconWalker,
+  IconUsers,
+  IconStar,
+  IconPlus,
+  IconCheck,
+  IconAlertTriangle,
+  IconSearch,
+  IconSparkles
+} from '../../components/Icons';
 
 const UserDashboard = () => {
   const { user } = useAuth();
@@ -147,16 +163,16 @@ const UserDashboard = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.25rem' }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.25rem 0.65rem', backgroundColor: '#e0f2fe', color: '#0369a1', borderRadius: 'var(--radius-pill)', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.65rem' }}>
-              <span>🛡️</span> Community Safety Portal
+              <IconShieldCheck size={14} /> Community Safety Portal
             </div>
             <h1 className="page-title" style={{ marginBottom: '0.4rem', fontSize: '1.75rem', fontWeight: 800 }}>
-              Welcome back, {user?.name || 'Citizen'}! 👋
+              Welcome back, {user?.name || 'Citizen'}!
             </h1>
             <p style={{ color: 'var(--text-body)', fontSize: '0.98rem', maxWidth: '640px', lineHeight: 1.5 }}>
               Your central hub for community safety intelligence, verified reports, and active safety updates in your locality.
             </p>
-            <div style={{ marginTop: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
-              <span>📍 Registered Home Area:</span>
+            <div style={{ marginTop: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+              <IconMapPin size={15} /> Registered Home Area:
               <strong style={{ color: 'var(--primary-navy)', fontWeight: 700 }}>
                 {userDistrict}, {userState}
               </strong>
@@ -164,8 +180,8 @@ const UserDashboard = () => {
           </div>
 
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <Link to="/report" className="btn btn-primary" style={{ padding: '0.75rem 1.4rem', fontSize: '0.95rem' }}>
-              <span>➕</span> Report Safety Concern
+            <Link to="/report" className="btn btn-primary" style={{ padding: '0.75rem 1.4rem', fontSize: '0.95rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+              <IconPlus size={16} /> Report Safety Concern
             </Link>
           </div>
         </div>
@@ -184,7 +200,7 @@ const UserDashboard = () => {
             fontSize: '0.9rem',
             fontWeight: 600
           }}>
-            <span>🔔</span> You have <strong>{unreadNotifs} unread notification{unreadNotifs > 1 ? 's' : ''}</strong> on your reported places.{' '}
+            <IconBell size={16} /> You have <strong>{unreadNotifs} unread notification{unreadNotifs > 1 ? 's' : ''}</strong> on your reported places.{' '}
             <Link to="/notifications" style={{ color: '#92400e', textDecoration: 'underline', fontWeight: 700, marginLeft: '0.25rem' }}>
               View Notifications &rarr;
             </Link>
@@ -198,8 +214,8 @@ const UserDashboard = () => {
       <section aria-label="Safety Overview Statistics">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
-              📍 Local Safety Overview
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <IconMapPin size={18} /> Local Safety Overview
             </h2>
             <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
               Real-time community metrics for {userDistrict}, {userState}
@@ -213,8 +229,8 @@ const UserDashboard = () => {
         <div className="stat-grid">
           {/* Card 1: Verified Reported Places */}
           <div className="stat-card">
-            <div className="stat-icon-wrap stat-icon-blue" aria-hidden="true">
-              📍
+            <div className="stat-icon-wrap stat-icon-blue" aria-hidden="true" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <IconMapPin size={20} color="var(--primary-blue)" />
             </div>
             <div className="stat-info">
               <span className="stat-num">{districtCount !== null ? districtCount : 0}</span>
@@ -224,8 +240,8 @@ const UserDashboard = () => {
 
           {/* Card 2: Community-Rated Places */}
           <div className="stat-card">
-            <div className="stat-icon-wrap stat-icon-amber" aria-hidden="true">
-              ⭐
+            <div className="stat-icon-wrap stat-icon-amber" aria-hidden="true" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <IconStar size={20} color="#d97706" filled />
             </div>
             <div className="stat-info">
               <span className="stat-num">{ratedPlacesCount}</span>
@@ -235,8 +251,8 @@ const UserDashboard = () => {
 
           {/* Card 3: Unread Notifications */}
           <div className="stat-card">
-            <div className="stat-icon-wrap stat-icon-emerald" aria-hidden="true">
-              🔔
+            <div className="stat-icon-wrap stat-icon-emerald" aria-hidden="true" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <IconBell size={20} color="#059669" />
             </div>
             <div className="stat-info">
               <span className="stat-num">{unreadNotifs}</span>
@@ -253,10 +269,10 @@ const UserDashboard = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.25rem' }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.6rem', backgroundColor: activeWalk ? '#dcfce7' : '#eff6ff', color: activeWalk ? '#15803d' : 'var(--primary-blue)', borderRadius: 'var(--radius-pill)', fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.4rem' }}>
-              <span>🚶‍♀️</span> {activeWalk ? 'Active Journey in Progress' : 'Personal Journey Protection'}
+              <IconWalker size={14} /> {activeWalk ? 'Active Journey in Progress' : 'Personal Journey Protection'}
             </div>
             <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
-              {activeWalk ? 'Safe Walk Active 🟢' : 'Safe Walk'}
+              {activeWalk ? 'Safe Walk Active' : 'Safe Walk'}
             </h2>
             <p style={{ fontSize: '0.92rem', color: 'var(--text-muted)', margin: '0.35rem 0 0', maxWidth: '620px', lineHeight: 1.5 }}>
               {activeWalk
@@ -267,16 +283,16 @@ const UserDashboard = () => {
 
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             {activeWalk ? (
-              <Link to="/safe-walk/active" className="btn btn-success" style={{ padding: '0.65rem 1.3rem', fontWeight: 700 }}>
-                <span>🛡️</span> View Active Journey &rarr;
+              <Link to="/safe-walk/active" className="btn btn-success" style={{ padding: '0.65rem 1.3rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                <IconShield size={16} /> View Active Journey &rarr;
               </Link>
             ) : (
               <>
-                <Link to="/safe-walk?tab=start" className="btn btn-primary" style={{ padding: '0.65rem 1.25rem' }}>
-                  <span>🚶‍♀️</span> Start Safe Walk
+                <Link to="/safe-walk?tab=start" className="btn btn-primary" style={{ padding: '0.65rem 1.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <IconWalker size={16} /> Start Safe Walk
                 </Link>
-                <Link to="/safe-walk?tab=companions" className="btn btn-secondary" style={{ padding: '0.65rem 1.15rem' }}>
-                  <span>👥</span> Manage Companions
+                <Link to="/safe-walk?tab=companions" className="btn btn-secondary" style={{ padding: '0.65rem 1.15rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <IconUsers size={16} /> Manage Companions
                 </Link>
               </>
             )}
@@ -291,7 +307,7 @@ const UserDashboard = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.55rem', backgroundColor: '#e0f2fe', color: '#0369a1', borderRadius: 'var(--radius-pill)', fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.35rem' }}>
-              <span>🗺️</span> Interactive Safety Discovery
+              <IconMap size={14} /> Interactive Safety Discovery
             </div>
             <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
               Reported Places Near You
@@ -313,12 +329,12 @@ const UserDashboard = () => {
                 disabled={locating}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
               >
-                <span>📍</span> {locating ? 'Detecting Location...' : 'Use My Location'}
+                <IconNavigation size={15} /> {locating ? 'Detecting Location...' : 'Use My Location'}
               </button>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.3rem 0.65rem', backgroundColor: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', borderRadius: 'var(--radius-pill)', fontSize: '0.8rem', fontWeight: 700 }}>
-                  <span>✓</span> Location Active
+                  <IconCheck size={13} /> Location Active
                 </span>
                 <button
                   type="button"
@@ -418,8 +434,8 @@ const UserDashboard = () => {
       <section aria-label="Nearby Reported Places List">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
-              {userCoords ? `🛡️ Reported Places within ${radiusKm} km` : `🛡️ Recent Reported Places in ${userDistrict}`}
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <IconShield size={18} /> {userCoords ? `Reported Places within ${radiusKm} km` : `Recent Reported Places in ${userDistrict}`}
             </h2>
             <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
               {userCoords
@@ -436,7 +452,9 @@ const UserDashboard = () => {
 
         {activePlaces.length === 0 ? (
           <div className="card" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', backgroundColor: '#ffffff' }}>
-            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🛡️</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+              <IconShield size={36} color="var(--text-muted)" />
+            </div>
             <h4 style={{ color: 'var(--primary-navy)', marginBottom: '0.35rem', fontWeight: 700 }}>
               {userCoords ? `No Reported Places within ${radiusKm} km` : `No Active Reports in ${userDistrict}`}
             </h4>
@@ -445,8 +463,8 @@ const UserDashboard = () => {
                 ? `No reported safety concerns were found within ${radiusKm} km of your location. You can expand the radius or report an issue.`
                 : `There are currently no reported places in your district. If you notice a safety concern, you can report it to help others.`}
             </p>
-            <Link to="/report" className="btn btn-primary btn-sm">
-              <span>➕</span> Report a Safety Concern
+            <Link to="/report" className="btn btn-primary btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+              <IconPlus size={15} /> Report a Safety Concern
             </Link>
           </div>
         ) : (
@@ -475,8 +493,8 @@ const UserDashboard = () => {
           ========================================================================= */}
       <section aria-label="Quick Actions">
         <div style={{ marginBottom: '1rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
-            🚀 Essential Safety Actions
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+            <IconSparkles size={18} color="var(--primary-blue)" /> Essential Safety Actions
           </h2>
           <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
             Choose an action to contribute to community safety or check reported locations
@@ -487,8 +505,8 @@ const UserDashboard = () => {
           {/* Action 1: Report Safety Concern */}
           <div className="action-card">
             <div className="action-card-header">
-              <div className="action-card-icon" style={{ backgroundColor: '#fee2e2', borderColor: '#fca5a5', color: '#dc2626' }}>
-                🚨
+              <div className="action-card-icon" style={{ backgroundColor: '#fee2e2', borderColor: '#fca5a5', color: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <IconAlertTriangle size={22} color="#dc2626" />
               </div>
               <div>
                 <h3 className="action-card-title">Report a Safety Concern</h3>
@@ -497,16 +515,16 @@ const UserDashboard = () => {
             <p className="action-card-desc">
               Encountered poorly lit streets, broken infrastructure, or suspicious spots? Submit a report with photos to warn fellow citizens.
             </p>
-            <Link to="/report" className="btn btn-primary" style={{ marginTop: 'auto', width: '100%' }}>
-              <span>➕</span> Report a New Concern
+            <Link to="/report" className="btn btn-primary" style={{ marginTop: 'auto', width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+              <IconPlus size={15} /> Report a New Concern
             </Link>
           </div>
 
           {/* Action 2: Browse Reported Places */}
           <div className="action-card">
             <div className="action-card-header">
-              <div className="action-card-icon" style={{ backgroundColor: '#e0f2fe', borderColor: '#bae6fd', color: '#0284c7' }}>
-                🛡️
+              <div className="action-card-icon" style={{ backgroundColor: '#e0f2fe', borderColor: '#bae6fd', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <IconMapPin size={22} color="#0284c7" />
               </div>
               <div>
                 <h3 className="action-card-title">Browse Reported Places</h3>
@@ -515,16 +533,16 @@ const UserDashboard = () => {
             <p className="action-card-desc">
               Explore verified reported areas across districts, inspect severity levels, filter by keywords, and contribute safety ratings.
             </p>
-            <Link to="/places" className="btn btn-secondary" style={{ marginTop: 'auto', width: '100%', borderColor: 'var(--primary-blue-border)', color: 'var(--primary-blue)' }}>
-              <span>🔍</span> Explore Places Directory
+            <Link to="/places" className="btn btn-secondary" style={{ marginTop: 'auto', width: '100%', borderColor: 'var(--primary-blue-border)', color: 'var(--primary-blue)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+              <IconSearch size={15} /> Explore Places Directory
             </Link>
           </div>
 
           {/* Action 3: View Notifications */}
           <div className="action-card">
             <div className="action-card-header">
-              <div className="action-card-icon" style={{ backgroundColor: '#fef3c7', borderColor: '#fde68a', color: '#d97706' }}>
-                🔔
+              <div className="action-card-icon" style={{ backgroundColor: '#fef3c7', borderColor: '#fde68a', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <IconBell size={22} color="#d97706" />
               </div>
               <div>
                 <h3 className="action-card-title">View Notifications</h3>
@@ -533,8 +551,8 @@ const UserDashboard = () => {
             <p className="action-card-desc">
               Stay up-to-date on review approvals, status updates for your submitted safety reports, and community verification notices.
             </p>
-            <Link to="/notifications" className="btn btn-secondary" style={{ marginTop: 'auto', width: '100%' }}>
-              <span>📬</span> Check Updates ({unreadNotifs})
+            <Link to="/notifications" className="btn btn-secondary" style={{ marginTop: 'auto', width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+              <IconBell size={15} /> Check Updates ({unreadNotifs})
             </Link>
           </div>
         </div>
@@ -546,8 +564,8 @@ const UserDashboard = () => {
       <section className="community-safety-banner" aria-label="About Community Safety Ratings">
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.25rem' }}>
           <div style={{ flex: 1, minWidth: '280px' }}>
-            <h3 style={{ margin: '0 0 0.5rem 0' }}>
-              <span>⭐</span> Understanding Community Safety Ratings
+            <h3 style={{ margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <IconStar size={18} color="#d97706" filled /> Understanding Community Safety Ratings
             </h3>
             <p style={{ margin: 0, color: 'var(--text-body)' }}>
               Safety ratings on our portal are democratically calculated from verified ratings submitted by real community members. Instead of relying on a single assessment, every location's safety score reflects collective feedback on a scale from <strong>1★ (Minor Concern)</strong> to <strong>5★ (Severe Concern)</strong>.
@@ -573,7 +591,7 @@ const UserDashboard = () => {
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
               <span style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--primary-navy)' }}>4.2</span>
               <span style={{ fontSize: '1.1rem', color: 'var(--text-muted)', fontWeight: 600 }}>/ 5</span>
-              <span style={{ fontSize: '1.25rem', marginLeft: '0.15rem' }}>⭐</span>
+              <IconStar size={20} color="#d97706" filled style={{ marginLeft: '0.15rem' }} />
             </div>
             <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 500 }}>
               Based on 18 community ratings
@@ -587,4 +605,5 @@ const UserDashboard = () => {
 };
 
 export default UserDashboard;
+
 
