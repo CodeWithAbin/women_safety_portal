@@ -51,12 +51,12 @@ const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-        gap: '1.5rem',
-        padding: '1.5rem'
+        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+        gap: '1.25rem',
+        padding: 'clamp(1rem, 3vw, 1.5rem)'
       }}>
         {/* Left Section: Evidence Photo & Submission Timestamp */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: 0 }}>
           <div style={{
             position: 'relative',
             width: '100%',
@@ -83,19 +83,19 @@ const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
             />
           </div>
 
-          <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
             <span>📅</span>
             <span><strong>Submitted:</strong> {formattedDate || 'Date unavailable'}</span>
           </div>
         </div>
 
         {/* Right Section: Report Details, Citizen Details & Moderation Action */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', minWidth: 0 }}>
           <div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '0.35rem', lineHeight: 1.3 }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '0.35rem', lineHeight: 1.3, wordBreak: 'break-word' }}>
               {report.name}
             </h3>
-            <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'flex-start', gap: '0.35rem' }}>
+            <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'flex-start', gap: '0.35rem', wordBreak: 'break-word' }}>
               <span style={{ color: 'var(--primary-blue)', flexShrink: 0 }}>📍</span>
               <span><strong>Location:</strong> {report.address}, {report.district}, {report.state}</span>
             </div>
@@ -108,7 +108,9 @@ const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
             backgroundColor: '#f8fafc',
             padding: '0.85rem 1rem',
             borderRadius: 'var(--radius-sm)',
-            border: '1px solid var(--border-light)'
+            border: '1px solid var(--border-light)',
+            wordBreak: 'break-word',
+            overflowWrap: 'anywhere'
           }}>
             <div style={{ fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
               Reported Problem Statement:
@@ -122,7 +124,9 @@ const ReportReviewCard = ({ report, onAccept, onReject, processingId }) => {
             padding: '0.75rem 1rem',
             borderRadius: 'var(--radius-sm)',
             border: '1px solid var(--border-light)',
-            marginTop: 'auto'
+            marginTop: 'auto',
+            wordBreak: 'break-word',
+            overflowWrap: 'anywhere'
           }}>
             <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--primary-navy)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.2rem' }}>
               Citizen Reporter Information

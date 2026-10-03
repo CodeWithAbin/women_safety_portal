@@ -71,6 +71,13 @@ const SafeWalkMap = ({
       }).addTo(map);
 
       mapInstanceRef.current = map;
+
+      const handleResize = () => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      };
+      window.addEventListener('resize', handleResize);
     } else {
       mapInstanceRef.current.setView([latitude, longitude], mapInstanceRef.current.getZoom());
     }
@@ -160,17 +167,19 @@ const SafeWalkMap = ({
           zIndex: 1000,
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(4px)',
-          padding: '0.5rem 0.85rem',
+          padding: '0.45rem 0.75rem',
           borderRadius: 'var(--radius-sm)',
           boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
           fontSize: '0.82rem',
           border: '1px solid var(--border-light)',
           display: 'flex',
           alignItems: 'center',
-          gap: '0.5rem'
+          gap: '0.45rem',
+          maxWidth: 'calc(100% - 24px)',
+          flexWrap: 'wrap'
         }}
       >
-        <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block' }}></span>
+        <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block', flexShrink: 0 }}></span>
         <span style={{ fontWeight: 700, color: 'var(--primary-navy)' }}>
           {isWalker ? 'Your Live Location' : `${walkerName}'s Location`}
         </span>

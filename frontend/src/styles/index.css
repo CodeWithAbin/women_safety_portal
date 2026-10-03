@@ -122,6 +122,8 @@ a:hover {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .main-content {
@@ -129,66 +131,87 @@ a:hover {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 2.25rem 1.5rem;
+  padding: clamp(1.25rem, 3vw, 2.25rem) clamp(0.875rem, 3vw, 1.5rem);
+  box-sizing: border-box;
 }
 
 /* Page Header Structure */
 .page-header {
-  margin-bottom: 2rem;
+  margin-bottom: clamp(1.25rem, 2.5vw, 2rem);
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
 }
 
 .page-title {
-  font-size: 1.85rem;
+  font-size: clamp(1.45rem, 3.5vw, 1.85rem);
   font-weight: 800;
   color: var(--primary-navy);
   letter-spacing: -0.025em;
+  line-height: 1.25;
+  overflow-wrap: break-word;
 }
 
 .page-subtitle {
   color: var(--text-muted);
-  font-size: 0.95rem;
+  font-size: clamp(0.88rem, 2vw, 0.95rem);
   line-height: 1.5;
+  overflow-wrap: break-word;
+}
+
+/* Responsive Images & Media */
+img, svg, video, canvas, audio, iframe, embed, object {
+  max-width: 100%;
+  height: auto;
 }
 
 /* Responsive Grids */
 .grid-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: clamp(1rem, 2vw, 1.75rem);
 }
 
 .grid-2col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.75rem;
+  gap: clamp(1rem, 2vw, 1.75rem);
 }
 
 .grid-3col {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
 }
 
 /* Responsive Breakpoints */
+@media (max-width: 1024px) {
+  .grid-cards {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
+}
+
 @media (max-width: 900px) {
   .grid-2col {
     grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .grid-3col {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
   }
 }
 
 @media (max-width: 640px) {
-  .main-content {
-    padding: 1.5rem 1rem;
-  }
-  .page-title {
-    font-size: 1.5rem;
-  }
   .grid-cards {
     grid-template-columns: 1fr;
-    gap: 1.25rem;
+    gap: 1.15rem;
+  }
+  .grid-3col {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 }
+
 

@@ -201,15 +201,15 @@ const CompanionManager = ({ onSelectTab }) => {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem', maxWidth: '600px', marginBottom: '1.25rem' }}>
-          <div style={{ position: 'relative', flex: 1 }}>
+        <div style={{ display: 'flex', gap: '0.75rem', maxWidth: '600px', width: '100%', marginBottom: '1.25rem', boxSizing: 'border-box' }}>
+          <div style={{ position: 'relative', flex: 1, width: '100%' }}>
             <input
               type="text"
               className="form-input"
               placeholder="Search by name or email address..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ paddingLeft: '2.5rem' }}
+              style={{ paddingLeft: '2.5rem', width: '100%', boxSizing: 'border-box' }}
             />
             <span style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
               🔍
@@ -239,20 +239,20 @@ const CompanionManager = ({ onSelectTab }) => {
 
               return (
                 <div key={usr.id} className="companion-card-item">
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.35rem' }}>
-                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: 'var(--primary-navy)', fontSize: '0.85rem' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.35rem', minWidth: 0 }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: 'var(--primary-navy)', fontSize: '0.85rem', flexShrink: 0 }}>
                         {usr.name ? usr.name.charAt(0).toUpperCase() : 'U'}
                       </div>
-                      <div>
-                        <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--primary-navy)' }}>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--primary-navy)', wordBreak: 'break-word' }}>
                           {usr.name}
                         </h4>
-                        <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{usr.email}</span>
+                        <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{usr.email}</span>
                       </div>
                     </div>
                     {usr.district && usr.state && (
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.35rem', wordBreak: 'break-word' }}>
                         📍 {usr.district}, {usr.state}
                       </div>
                     )}

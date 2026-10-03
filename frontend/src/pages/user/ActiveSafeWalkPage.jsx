@@ -705,7 +705,7 @@ const ActiveSafeWalkPage = () => {
               Cancel Safe Walk
             </button>
 
-            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -739,52 +739,55 @@ const ActiveSafeWalkPage = () => {
 
       {/* Extend Duration Modal */}
       {extendModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-card" style={{ maxWidth: '440px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: 'var(--primary-navy)' }}>
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="extend-modal-title">
+          <div className="modal-container" style={{ maxWidth: '460px' }}>
+            <div className="modal-header">
+              <h3 id="extend-modal-title" className="modal-title">
                 ⏱️ Extend Journey Duration
               </h3>
               <button
                 type="button"
+                className="modal-close"
                 onClick={() => setExtendModalOpen(false)}
-                style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: 'var(--text-muted)' }}
+                aria-label="Close modal"
               >
-                ✕
+                &times;
               </button>
             </div>
 
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: 1.5 }}>
-              Choose how much additional time you need to reach <strong>{walk?.destination}</strong>:
-            </p>
+            <div className="modal-body">
+              <p style={{ fontSize: '0.92rem', color: 'var(--text-muted)', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+                Choose how much additional time you need to reach <strong>{walk?.destination}</strong>:
+              </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => handleExtendWalk(15)}
-                disabled={extendLoading}
-                style={{ padding: '1.15rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem', borderColor: 'var(--border-medium)' }}
-              >
-                <span style={{ fontSize: '1.5rem' }}>⏱️</span>
-                <strong style={{ fontSize: '1.05rem', color: 'var(--primary-navy)' }}>+15 Minutes</strong>
-                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Quick extension</span>
-              </button>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.85rem' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => handleExtendWalk(15)}
+                  disabled={extendLoading}
+                  style={{ padding: '1.1rem 0.85rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem', borderColor: 'var(--border-medium)', minHeight: 'auto' }}
+                >
+                  <span style={{ fontSize: '1.5rem' }}>⏱️</span>
+                  <strong style={{ fontSize: '1rem', color: 'var(--primary-navy)' }}>+15 Minutes</strong>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Quick extension</span>
+                </button>
 
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => handleExtendWalk(30)}
-                disabled={extendLoading}
-                style={{ padding: '1.15rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem', borderColor: 'var(--border-medium)' }}
-              >
-                <span style={{ fontSize: '1.5rem' }}>⌛</span>
-                <strong style={{ fontSize: '1.05rem', color: 'var(--primary-navy)' }}>+30 Minutes</strong>
-                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Longer walk</span>
-              </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => handleExtendWalk(30)}
+                  disabled={extendLoading}
+                  style={{ padding: '1.1rem 0.85rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem', borderColor: 'var(--border-medium)', minHeight: 'auto' }}
+                >
+                  <span style={{ fontSize: '1.5rem' }}>⌛</span>
+                  <strong style={{ fontSize: '1rem', color: 'var(--primary-navy)' }}>+30 Minutes</strong>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Longer walk</span>
+                </button>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <div className="modal-footer">
               <button
                 type="button"
                 className="btn btn-secondary"
