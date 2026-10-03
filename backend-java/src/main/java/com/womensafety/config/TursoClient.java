@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -146,6 +147,33 @@ public class TursoClient {
         return node;
     }
 
+    private HttpResponse<String> sendWithRetry(HttpRequest request) throws IOException, InterruptedException {
+        int maxRetries = 3;
+        long backoffMs = 150;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                int status = response.statusCode();
+                if ((status == 502 || status == 503 || status == 504) && attempt < maxRetries) {
+                    log.warn("Turso HTTP transient status {} on attempt {}/{}, retrying...", status, attempt, maxRetries);
+                    Thread.sleep(backoffMs * attempt);
+                    continue;
+                }
+                return response;
+            } catch (IOException e) {
+                if (attempt < maxRetries) {
+                    log.warn("Turso HTTP I/O error on attempt {}/{} ({}): {}. Retrying...",
+                            attempt, maxRetries, e.getClass().getSimpleName(), e.getMessage());
+                    Thread.sleep(backoffMs * attempt);
+                } else {
+                    throw e;
+                }
+            }
+        }
+        throw new IOException("Turso HTTP request failed after " + maxRetries + " attempts");
+    }
+
     private List<Map<String, Object>> executeRemoteQuery(String sql, List<Object> args) {
         try {
             ObjectNode root = objectMapper.createObjectNode();
@@ -167,7 +195,7 @@ public class TursoClient {
                     .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = sendWithRetry(request);
 
             if (response.statusCode() != 200) {
                 throw new RuntimeException("Turso HTTP request failed with status " + response.statusCode() + ": " + response.body());
@@ -241,7 +269,7 @@ public class TursoClient {
                     .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = sendWithRetry(request);
 
             if (response.statusCode() != 200) {
                 throw new RuntimeException("Turso HTTP update failed with status " + response.statusCode() + ": " + response.body());
@@ -298,7 +326,7 @@ public class TursoClient {
                     .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = sendWithRetry(request);
 
             if (response.statusCode() != 200) {
                 throw new RuntimeException("Turso HTTP batch failed with status " + response.statusCode() + ": " + response.body());
