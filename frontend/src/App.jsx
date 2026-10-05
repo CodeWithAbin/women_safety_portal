@@ -20,10 +20,12 @@ import NotificationsPage from './pages/user/NotificationsPage';
 import SafeWalkPage from './pages/user/SafeWalkPage';
 import ActiveSafeWalkPage from './pages/user/ActiveSafeWalkPage';
 import SafetyInfoPage from './pages/user/SafetyInfoPage';
+import SafePlacesPage from './pages/user/SafePlacesPage';
 import CommunityChatPage from './pages/community/CommunityChatPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageReportsPage from './pages/admin/ManageReportsPage';
 import ManagePlacesPage from './pages/admin/ManagePlacesPage';
+import ManageSafePlacesPage from './pages/admin/ManageSafePlacesPage';
 import ManageUsersPage from './pages/admin/ManageUsersPage';
 import ManageSafetyInfoPage from './pages/admin/ManageSafetyInfoPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -57,6 +59,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={['user', 'admin']}>
                 <CommunityChatPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/safe-places"
+            element={
+              <ProtectedRoute allowedRoles={['user', 'admin']}>
+                <SafePlacesPage />
               </ProtectedRoute>
             }
           />
@@ -157,6 +167,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <ManagePlacesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/safe-places"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <ManageSafePlacesPage />
               </ProtectedRoute>
             }
           />

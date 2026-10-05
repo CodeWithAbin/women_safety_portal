@@ -362,5 +362,55 @@ export const communityService = {
   }
 };
 
+/**
+ * Safe Places Services
+ */
+export const safePlaceService = {
+  getAcceptedSafePlaces: async (params = {}) => {
+    const query = {};
+    if (params.state && params.state.trim()) query.state = params.state.trim();
+    if (params.district && params.district.trim()) query.district = params.district.trim();
+    if (params.search && params.search.trim()) query.search = params.search.trim();
+    if (params.minRating !== undefined && params.minRating !== null && params.minRating !== '') query.minRating = params.minRating;
+    if (params.sort && params.sort.trim()) query.sort = params.sort.trim();
+    const response = await apiClient.get('/api/safe-places', { params: query });
+    return response.data;
+  },
+  getSafePlaceById: async (id) => {
+    const response = await apiClient.get(`/api/safe-places/${id}`);
+    return response.data;
+  },
+  getMySafePlaces: async () => {
+    const response = await apiClient.get('/api/safe-places/my-reports');
+    return response.data;
+  },
+  submitSafePlace: async (data, isFormData = false) => {
+    const config = isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
+    const response = await apiClient.post('/api/safe-places', data, config);
+    return response.data;
+  },
+  getAdminSafePlaces: async (params = {}) => {
+    const query = {};
+    if (params.status && params.status.trim()) query.status = params.status.trim();
+    if (params.state && params.state.trim()) query.state = params.state.trim();
+    if (params.district && params.district.trim()) query.district = params.district.trim();
+    if (params.search && params.search.trim()) query.search = params.search.trim();
+    const response = await apiClient.get('/api/admin/safe-places', { params: query });
+    return response.data;
+  },
+  getAdminSummary: async () => {
+    const response = await apiClient.get('/api/admin/safe-places/summary');
+    return response.data;
+  },
+  updateSafePlaceStatus: async (id, status) => {
+    const response = await apiClient.patch(`/api/admin/safe-places/${id}/status`, { status });
+    return response.data;
+  },
+  deleteSafePlace: async (id) => {
+    const response = await apiClient.delete(`/api/admin/safe-places/${id}`);
+    return response.data;
+  }
+};
+
 export default apiClient;
 

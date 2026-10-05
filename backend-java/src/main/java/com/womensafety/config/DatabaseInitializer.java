@@ -218,7 +218,28 @@ public class DatabaseInitializer {
                 );
             """);
 
-            // 11. Indexes
+            // 11. Safe Places Table
+            tursoClient.update("""
+                CREATE TABLE IF NOT EXISTS safe_places (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    address TEXT NOT NULL,
+                    state TEXT NOT NULL,
+                    district TEXT NOT NULL,
+                    photo TEXT,
+                    rating INTEGER NOT NULL DEFAULT 5,
+                    description TEXT NOT NULL,
+                    status TEXT NOT NULL DEFAULT 'pending',
+                    submitted_by INTEGER,
+                    latitude REAL,
+                    longitude REAL,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (submitted_by) REFERENCES users(id) ON DELETE SET NULL
+                );
+            """);
+
+            // 12. Indexes
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_places_state_district_status ON places (state, district, status);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications (user_id, is_read);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);");
@@ -232,6 +253,9 @@ public class DatabaseInitializer {
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets (email);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_community_messages_created ON community_messages (created_at DESC);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_community_messages_user ON community_messages (user_id);");
+            tursoClient.update("CREATE INDEX IF NOT EXISTS idx_safe_places_state_dist_status ON safe_places (state, district, status);");
+            tursoClient.update("CREATE INDEX IF NOT EXISTS idx_safe_places_status_created ON safe_places (status, created_at DESC);");
+            tursoClient.update("CREATE INDEX IF NOT EXISTS idx_safe_places_submitted_by ON safe_places (submitted_by);");
 
             // Populate initial ratings from existing places if not already seeded
             tursoClient.update("INSERT OR IGNORE INTO place_ratings (place_id, user_id, rating) SELECT id, submitted_by, rating FROM places WHERE submitted_by IS NOT NULL;");

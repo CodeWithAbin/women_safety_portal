@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { adminService } from '../../services/api';
+import { adminService, safePlaceService } from '../../services/api';
 import ReportReviewCard from '../../components/ReportReviewCard';
 import SafetyMap from '../../components/SafetyMap';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import AlertBanner from '../../components/AlertBanner';
 import {
   IconShield,
+  IconShieldCheck,
   IconClock,
   IconMapPin,
   IconMap,
@@ -24,7 +25,9 @@ const AdminDashboard = () => {
   const [metrics, setMetrics] = useState({
     pendingReports: 0,
     acceptedPlaces: 0,
-    registeredUsers: 0
+    registeredUsers: 0,
+    pendingSafePlaces: 0,
+    acceptedSafePlaces: 0
   });
   const [pendingReportsList, setPendingReportsList] = useState([]);
   const [publishedPlacesList, setPublishedPlacesList] = useState([]);
@@ -38,10 +41,11 @@ const AdminDashboard = () => {
 
   const fetchAdminData = async () => {
     try {
-      const [reportsRes, placesRes, usersRes] = await Promise.all([
+      const [reportsRes, placesRes, usersRes, safePlacesSummaryRes] = await Promise.all([
         adminService.getPendingReports('pending'),
         adminService.getPlaces(),
-        adminService.getUsers()
+        adminService.getUsers(),
+        safePlaceService.getAdminSummary().catch(() => ({ success: false, data: {} }))
       ]);
 
       const pendingList = reportsRes.data || [];
@@ -52,7 +56,9 @@ const AdminDashboard = () => {
       setMetrics({
         pendingReports: reportsRes.count !== undefined ? reportsRes.count : pendingList.length,
         acceptedPlaces: placesRes.count !== undefined ? placesRes.count : placesList.length,
-        registeredUsers: usersRes.count !== undefined ? usersRes.count : (usersRes.data ? usersRes.data.length : 0)
+        registeredUsers: usersRes.count !== undefined ? usersRes.count : (usersRes.data ? usersRes.data.length : 0),
+        pendingSafePlaces: safePlacesSummaryRes.data?.pending || 0,
+        acceptedSafePlaces: safePlacesSummaryRes.data?.accepted || 0
       });
     } catch (err) {
       setError('Failed to fetch administrative summary metrics.');
@@ -228,6 +234,22 @@ const AdminDashboard = () => {
             </div>
             <Link to="/admin/users" className="btn btn-secondary btn-sm" style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem' }}>
               Directory &rarr;
+            </Link>
+          </div>
+
+          {/* Card 4: Safe Places */}
+          <div className="stat-card" style={{ borderLeft: '4px solid #059669' }}>
+            <div className="stat-icon-wrap" style={{ backgroundColor: '#ecfdf5', color: '#059669' }} aria-hidden="true">
+              <IconShieldCheck size={22} color="#059669" />
+            </div>
+            <div className="stat-info" style={{ flex: 1 }}>
+              <span className="stat-num" style={{ color: '#065f46' }}>
+                {metrics.pendingSafePlaces > 0 ? `${metrics.pendingSafePlaces} New` : `${metrics.acceptedSafePlaces} Active`}
+              </span>
+              <span className="stat-label">Manage Safe Places</span>
+            </div>
+            <Link to="/admin/safe-places" className="btn btn-secondary btn-sm" style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem' }}>
+              Moderate &rarr;
             </Link>
           </div>
 
