@@ -6,17 +6,20 @@ import StateDistrictSelector from '../../components/StateDistrictSelector';
 import LocationPickerMap from '../../components/LocationPickerMap';
 import AlertBanner from '../../components/AlertBanner';
 import {
+  IconShield,
   IconShieldCheck,
   IconMapPin,
   IconMap,
   IconAlertTriangle,
   IconAlertCircle,
   IconCheck,
+  IconCheckCircle,
   IconFileText,
   IconCamera,
   IconStar,
   IconNavigation,
-  IconLock
+  IconLock,
+  IconX
 } from '../../components/Icons';
 
 const ReportPlacePage = () => {

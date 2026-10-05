@@ -19,7 +19,8 @@ import {
   IconArrowLeft,
   IconCalendar,
   IconFileText,
-  IconEdit
+  IconEdit,
+  IconClock
 } from '../../components/Icons';
 
 const ReportedPlaceDetailsPage = () => {
