@@ -7,10 +7,10 @@ const apiClient = axios.create({
   timeout: 15000
 });
 
-// Request Interceptor: Attach JWT token from localStorage
+// Request Interceptor: Attach JWT token from sessionStorage
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
@@ -24,11 +24,11 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // If token is invalid or expired, clear localStorage and dispatch custom logout event
+      // If token is invalid or expired, clear sessionStorage and dispatch custom logout event
       const currentPath = window.location.pathname;
       if (currentPath !== '/login' && currentPath !== '/register') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
         window.dispatchEvent(new Event('auth:unauthorized'));
       }
     }

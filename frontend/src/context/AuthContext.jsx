@@ -5,13 +5,13 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [token, setToken] = useState(sessionStorage.getItem('token') || null);
   const [loading, setLoading] = useState(true);
 
   // Restore authenticated session on page reload
   useEffect(() => {
     const restoreSession = async () => {
-      const storedToken = localStorage.getItem('token');
+      const storedToken = sessionStorage.getItem('token');
       if (!storedToken) {
         setLoading(false);
         return;
@@ -39,8 +39,8 @@ export const AuthProvider = ({ children }) => {
     const handleUnauthorized = () => {
       setUser(null);
       setToken(null);
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
     };
 
     window.addEventListener('auth:unauthorized', handleUnauthorized);
@@ -50,8 +50,8 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const data = await authService.login({ email, password });
     if (data.success && data.token) {
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      sessionStorage.setItem('token', data.token);
+      sessionStorage.setItem('user', JSON.stringify(data.user));
       setToken(data.token);
       setUser(data.user);
       return data.user;
@@ -65,8 +65,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
     setToken(null);
     setUser(null);
   };
