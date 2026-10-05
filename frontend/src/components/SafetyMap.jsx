@@ -16,13 +16,28 @@ L.Icon.Default.mergeOptions({
 });
 
 // Helper to create custom SVG map pins with color styling
-const createCustomPinIcon = (isResolved, rating) => {
-  const bgColor = isResolved ? '#10b981' : rating >= 4.0 ? '#ef4444' : rating >= 3.0 ? '#f59e0b' : '#3b82f6';
-  const strokeColor = isResolved ? '#047857' : rating >= 4.0 ? '#b91c1c' : rating >= 3.0 ? '#d97706' : '#1d4ed8';
+const createCustomPinIcon = (isResolved, rating, status) => {
+  let bgColor = '#3b82f6';
+  let strokeColor = '#1d4ed8';
+  let innerSymbol = `<circle cx="16" cy="15" r="4.5" fill="${strokeColor}"/>`;
 
-  const innerSymbol = isResolved
-    ? `<path d="M12 15l3 3 5-6" fill="none" stroke="${strokeColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`
-    : `<circle cx="16" cy="15" r="4.5" fill="${strokeColor}"/>`;
+  if (isResolved) {
+    bgColor = '#10b981';
+    strokeColor = '#047857';
+    innerSymbol = `<path d="M12 15l3 3 5-6" fill="none" stroke="${strokeColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+  } else if (status === 'pending') {
+    bgColor = '#f59e0b';
+    strokeColor = '#b45309';
+    innerSymbol = `<circle cx="16" cy="15" r="4.5" fill="${strokeColor}"/>`;
+  } else if (rating >= 4.0) {
+    bgColor = '#ef4444';
+    strokeColor = '#b91c1c';
+    innerSymbol = `<circle cx="16" cy="15" r="4.5" fill="${strokeColor}"/>`;
+  } else if (rating >= 3.0) {
+    bgColor = '#f59e0b';
+    strokeColor = '#d97706';
+    innerSymbol = `<circle cx="16" cy="15" r="4.5" fill="${strokeColor}"/>`;
+  }
 
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 42" width="32" height="42">
@@ -72,7 +87,8 @@ const SafetyMap = ({
   onMarkerClick = () => {},
   radiusKm = null,
   mapHeight = '420px',
-  showDetailsButton = true
+  showDetailsButton = true,
+  isAdmin = false
 }) => {
   const navigate = useNavigate();
   const mapContainerRef = useRef(null);
@@ -150,19 +166,80 @@ const SafetyMap = ({
     markersGroup.clearLayers();
     markerMapRef.current.clear();
 
-    const validPlaces = places.filter((p) => p.latitude != null && p.longitude != null);
+    const validPlaces = places.filter((p) => p.latitude != null && p.longitude != null && !isNaN(Number(p.latitude)) && !isNaN(Number(p.longitude)));
     const bounds = [];
 
     validPlaces.forEach((place) => {
       const isResolved = place.resolved === true || place.resolved === 1 || place.resolved === 'true';
+      const isPending = place.status === 'pending';
       const rating = place.community_rating != null ? Number(place.community_rating) : Number(place.rating || 3);
-      const icon = createCustomPinIcon(isResolved, rating);
+      const icon = createCustomPinIcon(isResolved, rating, place.status);
 
       const marker = L.marker([place.latitude, place.longitude], { icon });
 
       const resolvedDate = place.resolved_at
         ? new Date(place.resolved_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
         : null;
+
+      let statusBadgeHtml = '';
+      if (isAdmin) {
+        if (isPending) {
+          statusBadgeHtml = `
+            <div style="display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.5rem; background-color: #fef3c7; color: #92400e; border-radius: 9999px; font-size: 0.76rem; font-weight: 700; margin-bottom: 0.4rem;">
+              PENDING REVIEW
+            </div>
+          `;
+        } else if (isResolved) {
+          statusBadgeHtml = `
+            <div style="display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.5rem; background-color: #d1fae5; color: #065f46; border-radius: 9999px; font-size: 0.76rem; font-weight: 700; margin-bottom: 0.4rem;">
+              RESOLVED ${resolvedDate ? `• ${resolvedDate}` : ''}
+            </div>
+          `;
+        } else {
+          statusBadgeHtml = `
+            <div style="display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.5rem; background-color: #e0f2fe; color: #0369a1; border-radius: 9999px; font-size: 0.76rem; font-weight: 700; margin-bottom: 0.4rem;">
+              ACCEPTED
+            </div>
+          `;
+        }
+      } else if (isResolved) {
+        statusBadgeHtml = `
+          <div style="display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.5rem; background-color: #d1fae5; color: #065f46; border-radius: 9999px; font-size: 0.76rem; font-weight: 700; margin-bottom: 0.4rem;">
+            RESOLVED ${resolvedDate ? `• ${resolvedDate}` : ''}
+          </div>
+        `;
+      }
+
+      let actionButtonHtml = '';
+      if (showDetailsButton) {
+        if (isAdmin) {
+          if (isPending) {
+            actionButtonHtml = `
+              <div style="margin-top: 0.5rem; padding-top: 0.45rem; border-top: 1px solid #e2e8f0;">
+                <a href="/admin/reports" data-place-link="true" style="display: block; text-align: center; background-color: #d97706; color: #ffffff; padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.82rem; font-weight: 700; text-decoration: none;">
+                  Review Report &rarr;
+                </a>
+              </div>
+            `;
+          } else {
+            actionButtonHtml = `
+              <div style="margin-top: 0.5rem; padding-top: 0.45rem; border-top: 1px solid #e2e8f0;">
+                <a href="/admin/places" data-place-link="true" style="display: block; text-align: center; background-color: #0284c7; color: #ffffff; padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.82rem; font-weight: 700; text-decoration: none;">
+                  Manage Place &rarr;
+                </a>
+              </div>
+            `;
+          }
+        } else {
+          actionButtonHtml = `
+            <div style="margin-top: 0.5rem; padding-top: 0.45rem; border-top: 1px solid #e2e8f0;">
+              <a href="/places/${place.id}" data-place-link="true" style="display: block; text-align: center; background-color: #0284c7; color: #ffffff; padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.82rem; font-weight: 700; text-decoration: none;">
+                View Details &rarr;
+              </a>
+            </div>
+          `;
+        }
+      }
 
       const popupHtml = `
         <div style="font-family: inherit; font-size: 0.88rem; max-width: 240px; padding: 4px;">
@@ -173,17 +250,11 @@ const SafetyMap = ({
             ${place.district}, ${place.state}
           </div>
           <div style="display: flex; align-items: center; gap: 0.35rem; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem;">
-            <span>Safety Rating:</span>
+            <span>${isPending ? 'Initial Rating:' : 'Safety Rating:'}</span>
             <strong style="color: #0f172a;">${rating.toFixed(1)} / 5 ★</strong>
-            <span style="color: #94a3b8; font-size: 0.76rem;">(${place.rating_count || 1})</span>
+            ${!isPending ? `<span style="color: #94a3b8; font-size: 0.76rem;">(${place.rating_count || 1})</span>` : ''}
           </div>
-          ${
-            isResolved
-              ? `<div style="display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.5rem; background-color: #d1fae5; color: #065f46; border-radius: 9999px; font-size: 0.76rem; font-weight: 700; margin-bottom: 0.4rem;">
-                  RESOLVED ${resolvedDate ? `• ${resolvedDate}` : ''}
-                </div>`
-              : ''
-          }
+          ${statusBadgeHtml}
           ${
             place.distance_km != null
               ? `<div style="font-size: 0.8rem; font-weight: 700; color: #0284c7; margin-bottom: 0.4rem;">
@@ -191,15 +262,7 @@ const SafetyMap = ({
                 </div>`
               : ''
           }
-          ${
-            showDetailsButton
-              ? `<div style="margin-top: 0.5rem; padding-top: 0.45rem; border-top: 1px solid #e2e8f0;">
-                  <a href="/places/${place.id}" data-place-link="true" style="display: block; text-align: center; background-color: #0284c7; color: #ffffff; padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.82rem; font-weight: 700; text-decoration: none;">
-                    View Details &rarr;
-                  </a>
-                </div>`
-              : ''
-          }
+          ${actionButtonHtml}
         </div>
       `;
 
@@ -223,7 +286,7 @@ const SafetyMap = ({
     } else if (bounds.length === 1) {
       map.setView(bounds[0], 13);
     }
-  }, [places, userLocation, showDetailsButton]);
+  }, [places, userLocation, showDetailsButton, isAdmin]);
 
   // Update User Location Marker and Radius Circle
   useEffect(() => {
