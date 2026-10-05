@@ -199,6 +199,52 @@ export const adminService = {
   deleteUser: async (id) => {
     const response = await apiClient.delete(`/api/admin/users/${id}`);
     return response.data;
+  },
+  getSafetyTips: async () => {
+    const response = await apiClient.get('/api/admin/safety-info/tips');
+    return response.data;
+  },
+  createSafetyTip: async (data) => {
+    const response = await apiClient.post('/api/admin/safety-info/tips', data);
+    return response.data;
+  },
+  updateSafetyTip: async (id, data) => {
+    const response = await apiClient.put(`/api/admin/safety-info/tips/${id}`, data);
+    return response.data;
+  },
+  deleteSafetyTip: async (id) => {
+    const response = await apiClient.delete(`/api/admin/safety-info/tips/${id}`);
+    return response.data;
+  },
+  getEmergencyContacts: async () => {
+    const response = await apiClient.get('/api/admin/safety-info/emergency-contacts');
+    return response.data;
+  },
+  createEmergencyContact: async (data) => {
+    const response = await apiClient.post('/api/admin/safety-info/emergency-contacts', data);
+    return response.data;
+  },
+  updateEmergencyContact: async (id, data) => {
+    const response = await apiClient.put(`/api/admin/safety-info/emergency-contacts/${id}`, data);
+    return response.data;
+  },
+  deleteEmergencyContact: async (id) => {
+    const response = await apiClient.delete(`/api/admin/safety-info/emergency-contacts/${id}`);
+    return response.data;
+  }
+};
+
+/**
+ * Safety Information & Emergency Contacts Services (User-facing)
+ */
+export const safetyInfoService = {
+  getTips: async () => {
+    const response = await apiClient.get('/api/safety-info/tips');
+    return response.data;
+  },
+  getEmergencyContacts: async () => {
+    const response = await apiClient.get('/api/safety-info/emergency-contacts');
+    return response.data;
   }
 };
 

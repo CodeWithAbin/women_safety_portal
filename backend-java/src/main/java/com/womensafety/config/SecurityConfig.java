@@ -65,6 +65,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/notifications/**").authenticated()
                         .requestMatchers("/api/companions/**").authenticated()
                         .requestMatchers("/api/safe-walks/**").authenticated()
+                        .requestMatchers("/api/safety-info/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

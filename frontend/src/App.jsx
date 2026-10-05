@@ -17,10 +17,12 @@ import MyReportsPage from './pages/user/MyReportsPage';
 import NotificationsPage from './pages/user/NotificationsPage';
 import SafeWalkPage from './pages/user/SafeWalkPage';
 import ActiveSafeWalkPage from './pages/user/ActiveSafeWalkPage';
+import SafetyInfoPage from './pages/user/SafetyInfoPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageReportsPage from './pages/admin/ManageReportsPage';
 import ManagePlacesPage from './pages/admin/ManagePlacesPage';
 import ManageUsersPage from './pages/admin/ManageUsersPage';
+import ManageSafetyInfoPage from './pages/admin/ManageSafetyInfoPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 // Root Index Redirector
@@ -102,6 +104,14 @@ const AppRoutes = () => {
             }
           />
           <Route
+            path="/safety-information"
+            element={
+              <ProtectedRoute allowedRoles={['user', 'admin']}>
+                <SafetyInfoPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/notifications"
             element={
               <ProtectedRoute allowedRoles={['user']}>
@@ -132,6 +142,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <ManagePlacesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/safety-information"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <ManageSafetyInfoPage />
               </ProtectedRoute>
             }
           />

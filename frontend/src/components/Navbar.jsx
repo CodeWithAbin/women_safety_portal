@@ -84,6 +84,11 @@ const Navbar = () => {
                     </NavLink>
                   </li>
                   <li>
+                    <NavLink to="/admin/safety-information" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                      Safety Info
+                    </NavLink>
+                  </li>
+                  <li>
                     <NavLink to="/admin/users" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                       Users
                     </NavLink>
@@ -113,6 +118,11 @@ const Navbar = () => {
                   <li>
                     <NavLink to="/places" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                       Browse Places
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink to="/safety-information" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                      Safety Info
                     </NavLink>
                   </li>
                   <li>
@@ -175,6 +185,9 @@ const Navbar = () => {
                 <NavLink to="/admin/places" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
                   Reported Places
                 </NavLink>
+                <NavLink to="/admin/safety-information" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                  Safety Info
+                </NavLink>
                 <NavLink to="/admin/users" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
                   Users
                 </NavLink>
@@ -195,6 +208,9 @@ const Navbar = () => {
                 </NavLink>
                 <NavLink to="/places" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
                   Browse Places
+                </NavLink>
+                <NavLink to="/safety-information" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                  Safety Info
                 </NavLink>
                 <NavLink to="/my-reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
                   My Reports

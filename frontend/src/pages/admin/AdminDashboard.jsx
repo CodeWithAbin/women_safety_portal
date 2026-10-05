@@ -16,7 +16,8 @@ import {
   IconSliders,
   IconSearch,
   IconX,
-  IconInfo
+  IconInfo,
+  IconPhone
 } from '../../components/Icons';
 
 const AdminDashboard = () => {
@@ -586,6 +587,23 @@ const AdminDashboard = () => {
             </p>
             <Link to="/admin/users" className="btn btn-secondary" style={{ marginTop: 'auto', width: '100%' }}>
               Citizen Directory ({metrics.registeredUsers})
+            </Link>
+          </div>
+
+          <div className="action-card">
+            <div className="action-card-header">
+              <div className="action-card-icon" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe', color: 'var(--primary-blue)' }}>
+                <IconPhone size={22} />
+              </div>
+              <div>
+                <h3 className="action-card-title">Manage Safety Info</h3>
+              </div>
+            </div>
+            <p className="action-card-desc">
+              Publish safety guidance tips and maintain emergency contact helplines for citizens.
+            </p>
+            <Link to="/admin/safety-information" className="btn btn-secondary" style={{ marginTop: 'auto', width: '100%' }}>
+              Manage Safety Info &rarr;
             </Link>
           </div>
         </div>

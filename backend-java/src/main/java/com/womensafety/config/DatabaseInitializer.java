@@ -157,7 +157,37 @@ public class DatabaseInitializer {
                 tursoClient.update("ALTER TABLE safe_walks ADD COLUMN last_sos_sent_at DATETIME;");
             } catch (Exception ignored) {}
 
-            // 7. Indexes
+            // 7. Safety Tips Table
+            tursoClient.update("""
+                CREATE TABLE IF NOT EXISTS safety_tips (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title TEXT NOT NULL,
+                    content TEXT NOT NULL,
+                    category TEXT NOT NULL,
+                    display_order INTEGER NOT NULL DEFAULT 0,
+                    is_active INTEGER NOT NULL DEFAULT 1,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                );
+            """);
+
+            // 8. Emergency Contacts Table
+            tursoClient.update("""
+                CREATE TABLE IF NOT EXISTS emergency_contacts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    description TEXT,
+                    phone TEXT NOT NULL,
+                    category TEXT NOT NULL,
+                    additional_info TEXT,
+                    display_order INTEGER NOT NULL DEFAULT 0,
+                    is_active INTEGER NOT NULL DEFAULT 1,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                );
+            """);
+
+            // 9. Indexes
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_places_state_district_status ON places (state, district, status);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications (user_id, is_read);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);");
@@ -166,6 +196,8 @@ public class DatabaseInitializer {
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_companion_recipient ON companion_relationships (recipient_id, status);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_safewalks_user_status ON safe_walks (user_id, status);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_safewalks_companion_status ON safe_walks (companion_id, status);");
+            tursoClient.update("CREATE INDEX IF NOT EXISTS idx_safety_tips_active_order ON safety_tips (is_active, display_order);");
+            tursoClient.update("CREATE INDEX IF NOT EXISTS idx_emergency_contacts_active_order ON emergency_contacts (is_active, display_order);");
 
             // Populate initial ratings from existing places if not already seeded
             tursoClient.update("INSERT OR IGNORE INTO place_ratings (place_id, user_id, rating) SELECT id, submitted_by, rating FROM places WHERE submitted_by IS NOT NULL;");

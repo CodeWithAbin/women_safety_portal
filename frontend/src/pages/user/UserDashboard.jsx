@@ -20,7 +20,8 @@ import {
   IconAlertTriangle,
   IconSearch,
   IconSparkles,
-  IconFileText
+  IconFileText,
+  IconPhone
 } from '../../components/Icons';
 
 const UserDashboard = () => {
@@ -627,6 +628,24 @@ const UserDashboard = () => {
             </p>
             <Link to="/notifications" className="btn btn-secondary" style={{ marginTop: 'auto', width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
               <IconBell size={15} /> Check Updates ({unreadNotifs})
+            </Link>
+          </div>
+
+          {/* Action 5: Safety Tips & Emergency Info */}
+          <div className="action-card">
+            <div className="action-card-header">
+              <div className="action-card-icon" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe', color: 'var(--primary-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <IconPhone size={22} color="var(--primary-blue)" />
+              </div>
+              <div>
+                <h3 className="action-card-title">Safety Tips & Emergency Info</h3>
+              </div>
+            </div>
+            <p className="action-card-desc">
+              Get useful safety guidance and emergency contact details.
+            </p>
+            <Link to="/safety-information" className="btn btn-secondary" style={{ marginTop: 'auto', width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+              <IconPhone size={15} /> View Safety Info &rarr;
             </Link>
           </div>
         </div>
