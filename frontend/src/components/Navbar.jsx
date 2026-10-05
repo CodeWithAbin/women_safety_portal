@@ -116,6 +116,11 @@ const Navbar = () => {
                     </NavLink>
                   </li>
                   <li>
+                    <NavLink to="/my-reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                      My Reports
+                    </NavLink>
+                  </li>
+                  <li>
                     <NavLink to="/report" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                       Report Place
                     </NavLink>
@@ -190,6 +195,9 @@ const Navbar = () => {
                 </NavLink>
                 <NavLink to="/places" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
                   Browse Places
+                </NavLink>
+                <NavLink to="/my-reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                  My Reports
                 </NavLink>
                 <NavLink to="/report" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
                   Report Place

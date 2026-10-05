@@ -109,6 +109,14 @@ export const placeService = {
     const params = { state, district, address, name };
     const response = await apiClient.get('/api/places/check-similar', { params });
     return response.data;
+  },
+  getMyReports: async () => {
+    const response = await apiClient.get('/api/places/my-reports');
+    return response.data;
+  },
+  getPlaceById: async (id) => {
+    const response = await apiClient.get(`/api/places/${id}`);
+    return response.data;
   }
 };
 

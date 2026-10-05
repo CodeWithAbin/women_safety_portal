@@ -19,7 +19,8 @@ import {
   IconCheck,
   IconAlertTriangle,
   IconSearch,
-  IconSparkles
+  IconSparkles,
+  IconFileText
 } from '../../components/Icons';
 
 const UserDashboard = () => {
@@ -30,6 +31,7 @@ const UserDashboard = () => {
   const [ratedPlacesCount, setRatedPlacesCount] = useState(0);
   const [unreadNotifs, setUnreadNotifs] = useState(0);
   const [activeWalk, setActiveWalk] = useState(null);
+  const [myReportsStats, setMyReportsStats] = useState({ total: 0, underReview: 0, accepted: 0, resolved: 0 });
   const [loading, setLoading] = useState(true);
 
   // Map & Location State
@@ -43,7 +45,7 @@ const UserDashboard = () => {
   const userDistrict = user?.district || 'Ernakulam';
   const userState = user?.state || 'Kerala';
 
-  // Initial Fetch for User District & Notifications & Active Safe Walk
+  // Initial Fetch for User District & Notifications & Active Safe Walk & My Reports
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!user) return;
@@ -71,6 +73,21 @@ const UserDashboard = () => {
         const walkRes = await safeWalkService.getActiveSafeWalk();
         if (walkRes.success && walkRes.data) {
           setActiveWalk(walkRes.data);
+        }
+
+        // Fetch user's own submitted reports summary
+        const myReportsRes = await placeService.getMyReports();
+        if (myReportsRes.success && Array.isArray(myReportsRes.data)) {
+          const list = myReportsRes.data;
+          const total = list.length;
+          const underReview = list.filter((r) => r.status === 'pending').length;
+          const accepted = list.filter(
+            (r) => r.status === 'accepted' && !(r.resolved === true || r.resolved === 1 || r.resolved === 'true')
+          ).length;
+          const resolved = list.filter(
+            (r) => r.status === 'accepted' && (r.resolved === true || r.resolved === 1 || r.resolved === 'true')
+          ).length;
+          setMyReportsStats({ total, underReview, accepted, resolved });
         }
       } catch (err) {
         console.warn('Dashboard data fetch error:', err);
@@ -301,6 +318,45 @@ const UserDashboard = () => {
       </section>
 
       {/* =========================================================================
+          SECTION B.3: My Reports Status Tracking Summary Card
+          ========================================================================= */}
+      <section aria-label="My Submitted Reports" className="card" style={{ padding: '1.5rem', backgroundColor: '#ffffff', border: '1px solid var(--border-light)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.25rem' }}>
+          <div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.6rem', backgroundColor: '#e0f2fe', color: '#0369a1', borderRadius: 'var(--radius-pill)', fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.4rem' }}>
+              <IconFileText size={14} /> Moderation Lifecycle
+            </div>
+            <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
+              My Reports
+            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap', marginTop: '0.45rem', fontSize: '0.9rem' }}>
+              <span style={{ fontWeight: 700, color: 'var(--primary-navy)' }}>
+                {myReportsStats.total} report{myReportsStats.total === 1 ? '' : 's'}
+              </span>
+              <span style={{ color: 'var(--text-muted)' }}>•</span>
+              <span style={{ color: '#d97706', fontWeight: 600 }}>
+                {myReportsStats.underReview} under review
+              </span>
+              <span style={{ color: 'var(--text-muted)' }}>•</span>
+              <span style={{ color: '#059669', fontWeight: 600 }}>
+                {myReportsStats.accepted} accepted
+              </span>
+              <span style={{ color: 'var(--text-muted)' }}>•</span>
+              <span style={{ color: '#0284c7', fontWeight: 600 }}>
+                {myReportsStats.resolved} resolved
+              </span>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <Link to="/my-reports" className="btn btn-secondary" style={{ padding: '0.65rem 1.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}>
+              <IconFileText size={16} /> View My Reports &rarr;
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
           SECTION C: Prominent Safety Map — "Reported Places Near You"
           ========================================================================= */}
       <section aria-label="Reported Places Near You Map" className="card" style={{ padding: '1.5rem', backgroundColor: '#ffffff' }}>
@@ -520,7 +576,25 @@ const UserDashboard = () => {
             </Link>
           </div>
 
-          {/* Action 2: Browse Reported Places */}
+          {/* Action 2: Track My Reports */}
+          <div className="action-card">
+            <div className="action-card-header">
+              <div className="action-card-icon" style={{ backgroundColor: '#f0fdf4', borderColor: '#bbf7d0', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <IconFileText size={22} color="#16a34a" />
+              </div>
+              <div>
+                <h3 className="action-card-title">My Submitted Reports</h3>
+              </div>
+            </div>
+            <p className="action-card-desc">
+              Follow moderation reviews, community publication, and resolution progress for all safety concerns you submitted.
+            </p>
+            <Link to="/my-reports" className="btn btn-secondary" style={{ marginTop: 'auto', width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+              <IconFileText size={15} /> Track Reports ({myReportsStats.total})
+            </Link>
+          </div>
+
+          {/* Action 3: Browse Reported Places */}
           <div className="action-card">
             <div className="action-card-header">
               <div className="action-card-icon" style={{ backgroundColor: '#e0f2fe', borderColor: '#bae6fd', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -538,7 +612,7 @@ const UserDashboard = () => {
             </Link>
           </div>
 
-          {/* Action 3: View Notifications */}
+          {/* Action 4: View Notifications */}
           <div className="action-card">
             <div className="action-card-header">
               <div className="action-card-icon" style={{ backgroundColor: '#fef3c7', borderColor: '#fde68a', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

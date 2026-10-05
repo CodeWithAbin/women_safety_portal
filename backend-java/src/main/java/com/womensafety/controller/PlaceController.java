@@ -77,4 +77,21 @@ public class PlaceController {
         ApiResponse<Map<String, Object>> response = placeService.reportPlace(req, photo, principal);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    // View personal submitted reports for authenticated user
+    @GetMapping("/my-reports")
+    public ResponseEntity<ApiResponse<List<Place>>> getMyReports(
+            @AuthenticationPrincipal UserPrincipal principal) {
+        ApiResponse<List<Place>> response = placeService.getMyReports(principal);
+        return ResponseEntity.ok(response);
+    }
+
+    // Get place details by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<Place>> getPlaceById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        ApiResponse<Place> response = placeService.getPlaceById(id, principal);
+        return ResponseEntity.ok(response);
+    }
 }

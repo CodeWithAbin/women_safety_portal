@@ -173,4 +173,40 @@ public class PlaceService {
 
         return ApiResponse.success("Your report has been submitted and is waiting for admin review.", data);
     }
+
+    public ApiResponse<List<Place>> getMyReports(UserPrincipal principal) {
+        if (principal == null) {
+            throw new BadRequestException("Authentication is required to view your reports.");
+        }
+        List<Place> reports = placeRepository.findReportsBySubmittedBy(principal.getId());
+        ApiResponse<List<Place>> response = ApiResponse.success("Your submitted reports retrieved successfully", reports);
+        response.setCount(reports.size());
+        return response;
+    }
+
+    public ApiResponse<Place> getPlaceById(Long id, UserPrincipal principal) {
+        if (id == null) {
+            throw new BadRequestException("Place ID is required.");
+        }
+        Long userId = principal != null ? principal.getId() : null;
+        Place place = placeRepository.findById(id, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reported place not found with id " + id));
+
+        // If not accepted, only the submitter or admin can view it
+        if (!"accepted".equalsIgnoreCase(place.getStatus())) {
+            boolean isSubmitter = userId != null && userId.equals(place.getSubmittedBy());
+            boolean isAdmin = principal != null && "ROLE_ADMIN".equals(principal.getRole());
+            if (!isSubmitter && !isAdmin) {
+                throw new ResourceNotFoundException("Reported place not found with id " + id);
+            }
+        }
+
+        // Ensure private reporter information is not exposed to non-admins
+        if (principal == null || !"ROLE_ADMIN".equals(principal.getRole())) {
+            place.setReporterEmail(null);
+            place.setReporterPhone(null);
+        }
+
+        return ApiResponse.success("Place details retrieved successfully", place);
+    }
 }

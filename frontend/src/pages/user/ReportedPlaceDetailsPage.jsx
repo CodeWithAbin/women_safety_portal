@@ -73,28 +73,49 @@ const ReportedPlaceDetailsPage = () => {
       setLoading(true);
       setError('');
       try {
-        const res = await placeService.getAcceptedPlaces();
-        if (res.success && Array.isArray(res.data)) {
-          const found = res.data.find((p) => String(p.id) === String(id));
-          if (found) {
-            setPlace(found);
-            setCommunityRating(
-              found.community_rating != null
-                ? Number(found.community_rating).toFixed(1)
-                : found.rating != null
-                ? Number(found.rating).toFixed(1)
-                : 'N/A'
-            );
-            setRatingCount(found.rating_count != null ? found.rating_count : 1);
-            setUserRating(found.user_rating != null ? found.user_rating : null);
-            setHasRated(found.has_rated === true || found.user_rating != null);
-            if (found.user_rating) setSelectedRating(found.user_rating);
-          } else {
-            setError('Reported place not found or may have expired from active listings.');
-          }
+        const res = await placeService.getPlaceById(id);
+        if (res.success && res.data) {
+          const found = res.data;
+          setPlace(found);
+          setCommunityRating(
+            found.community_rating != null
+              ? Number(found.community_rating).toFixed(1)
+              : found.rating != null
+              ? Number(found.rating).toFixed(1)
+              : 'N/A'
+          );
+          setRatingCount(found.rating_count != null ? found.rating_count : 1);
+          setUserRating(found.user_rating != null ? found.user_rating : null);
+          setHasRated(found.has_rated === true || found.user_rating != null);
+          if (found.user_rating) setSelectedRating(found.user_rating);
+          return;
         }
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load reported place details.');
+      } catch {
+        // Fallback to accepted places search
+        try {
+          const res = await placeService.getAcceptedPlaces();
+          if (res.success && Array.isArray(res.data)) {
+            const found = res.data.find((p) => String(p.id) === String(id));
+            if (found) {
+              setPlace(found);
+              setCommunityRating(
+                found.community_rating != null
+                  ? Number(found.community_rating).toFixed(1)
+                  : found.rating != null
+                  ? Number(found.rating).toFixed(1)
+                  : 'N/A'
+              );
+              setRatingCount(found.rating_count != null ? found.rating_count : 1);
+              setUserRating(found.user_rating != null ? found.user_rating : null);
+              setHasRated(found.has_rated === true || found.user_rating != null);
+              if (found.user_rating) setSelectedRating(found.user_rating);
+              return;
+            }
+          }
+        } catch {
+          // ignore fallback error
+        }
+        setError('Reported place not found or may have expired from active listings.');
       } finally {
         setLoading(false);
       }
@@ -176,14 +197,23 @@ const ReportedPlaceDetailsPage = () => {
       
       {/* 1. Navigation Breadcrumb Bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <button
-          type="button"
-          className="btn btn-secondary btn-sm"
-          onClick={() => navigate('/dashboard')}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
-        >
-          <IconArrowLeft size={14} /> Back to Dashboard
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => navigate('/dashboard')}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+          >
+            <IconArrowLeft size={14} /> Dashboard
+          </button>
+          <Link
+            to="/my-reports"
+            className="btn btn-secondary btn-sm"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+          >
+            <IconFileText size={14} /> My Reports
+          </Link>
+        </div>
 
         <Link
           to="/places"
@@ -224,9 +254,19 @@ const ReportedPlaceDetailsPage = () => {
             </div>
           </div>
 
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.75rem', backgroundColor: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', borderRadius: 'var(--radius-pill)', fontSize: '0.85rem', fontWeight: 700 }}>
-            <IconCheck size={14} /> Verified by Admin
-          </div>
+          {place.status === 'pending' ? (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.75rem', backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', borderRadius: 'var(--radius-pill)', fontSize: '0.85rem', fontWeight: 700 }}>
+              <IconClock size={14} /> Under Review
+            </div>
+          ) : place.status === 'rejected' ? (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.75rem', backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', borderRadius: 'var(--radius-pill)', fontSize: '0.85rem', fontWeight: 700 }}>
+              <IconAlertTriangle size={14} /> Moderation Rejected
+            </div>
+          ) : (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.75rem', backgroundColor: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', borderRadius: 'var(--radius-pill)', fontSize: '0.85rem', fontWeight: 700 }}>
+              <IconCheck size={14} /> Verified by Admin
+            </div>
+          )}
         </div>
 
         {/* Resolved Banner */}

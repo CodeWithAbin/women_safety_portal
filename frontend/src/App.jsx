@@ -13,6 +13,7 @@ import UserDashboard from './pages/user/UserDashboard';
 import BrowsePlacesPage from './pages/user/BrowsePlacesPage';
 import ReportedPlaceDetailsPage from './pages/user/ReportedPlaceDetailsPage';
 import ReportPlacePage from './pages/user/ReportPlacePage';
+import MyReportsPage from './pages/user/MyReportsPage';
 import NotificationsPage from './pages/user/NotificationsPage';
 import SafeWalkPage from './pages/user/SafeWalkPage';
 import ActiveSafeWalkPage from './pages/user/ActiveSafeWalkPage';
@@ -81,6 +82,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={['user', 'admin']}>
                 <ReportedPlaceDetailsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-reports"
+            element={
+              <ProtectedRoute allowedRoles={['user']}>
+                <MyReportsPage />
               </ProtectedRoute>
             }
           />

@@ -8,8 +8,11 @@ import com.womensafety.model.User;
 import com.womensafety.model.dto.ApiResponse;
 import com.womensafety.model.dto.PlaceAdminRequest;
 import com.womensafety.model.dto.UserUpdateRequest;
+import com.womensafety.repository.NotificationRepository;
 import com.womensafety.repository.PlaceRepository;
 import com.womensafety.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,18 +23,21 @@ import java.util.regex.Pattern;
 @Service
 public class AdminService {
 
+    private static final Logger log = LoggerFactory.getLogger(AdminService.class);
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^\s@]+@[^\s@]+\\.[^\s@]+$");
 
     private final PlaceRepository placeRepository;
     private final UserRepository userRepository;
+    private final NotificationRepository notificationRepository;
     private final FileStorageService fileStorageService;
 
     @Value("${app.admin.email:admin@gmail.com}")
     private String adminEmail;
 
-    public AdminService(PlaceRepository placeRepository, UserRepository userRepository, FileStorageService fileStorageService) {
+    public AdminService(PlaceRepository placeRepository, UserRepository userRepository, NotificationRepository notificationRepository, FileStorageService fileStorageService) {
         this.placeRepository = placeRepository;
         this.userRepository = userRepository;
+        this.notificationRepository = notificationRepository;
         this.fileStorageService = fileStorageService;
     }
 
@@ -70,6 +76,21 @@ public class AdminService {
         }
 
         placeRepository.markAsResolved(placeId);
+
+        // Notify original reporter on resolution transition
+        if (place.getSubmittedBy() != null) {
+            try {
+                notificationRepository.insert(
+                        place.getSubmittedBy(),
+                        placeId,
+                        "Report resolved",
+                        "Your reported place has been marked resolved.",
+                        "report_resolved"
+                );
+            } catch (Exception e) {
+                log.warn("Failed to notify user of resolved report: {}", e.getMessage());
+            }
+        }
 
         Place updatedPlace = placeRepository.findById(placeId)
                 .orElseThrow(() -> new RuntimeException("Failed to retrieve resolved place."));

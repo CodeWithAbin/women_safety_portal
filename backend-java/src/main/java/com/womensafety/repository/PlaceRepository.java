@@ -49,6 +49,24 @@ public class PlaceRepository {
         return tursoClient.queryOne(sql, List.of(currentUserId != null ? currentUserId : -1L, id)).map(this::mapRowToPlace);
     }
 
+    public List<Place> findReportsBySubmittedBy(Long userId) {
+        String sql = """
+            SELECT 
+                p.id, p.name, p.address, p.state, p.district, p.latitude, p.longitude, p.photo, p.rating,
+                COALESCE((SELECT ROUND(AVG(pr.rating), 1) FROM place_ratings pr WHERE pr.place_id = p.id), p.rating) AS community_rating,
+                COALESCE((SELECT COUNT(*) FROM place_ratings pr WHERE pr.place_id = p.id), 1) AS rating_count,
+                p.description, 
+                p.status, p.resolved, p.resolved_at, p.submitted_by, p.created_at, p.updated_at,
+                (SELECT pr.rating FROM place_ratings pr WHERE pr.place_id = p.id AND pr.user_id = ?) AS user_rating
+            FROM places p
+            WHERE p.submitted_by = ?
+            ORDER BY p.created_at DESC, p.id DESC
+        """;
+        return tursoClient.query(sql, List.of(userId != null ? userId : -1L, userId != null ? userId : -1L)).stream()
+                .map(this::mapRowToPlace)
+                .toList();
+    }
+
     public List<Place> findAllAccepted(String state, String district, String search, Integer minRating, String sort, Long currentUserId) {
         return findAllAccepted(state, district, search, minRating, sort, currentUserId, null, null, null);
     }
