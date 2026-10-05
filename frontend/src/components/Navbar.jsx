@@ -13,7 +13,7 @@ const Navbar = () => {
 
   // Fetch unread notifications count for logged in users
   useEffect(() => {
-    if (isAuthenticated && role === 'user') {
+    if (isAuthenticated) {
       const fetchUnread = async () => {
         try {
           const res = await notificationService.getNotifications();
@@ -27,7 +27,7 @@ const Navbar = () => {
 
       fetchUnread();
     }
-  }, [isAuthenticated, role, location.pathname]);
+  }, [isAuthenticated, location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -74,6 +74,11 @@ const Navbar = () => {
                     </NavLink>
                   </li>
                   <li>
+                    <NavLink to="/community" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                      Community
+                    </NavLink>
+                  </li>
+                  <li>
                     <NavLink to="/admin/reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                       Review Reports
                     </NavLink>
@@ -93,6 +98,12 @@ const Navbar = () => {
                       Users
                     </NavLink>
                   </li>
+                  <li>
+                    <NavLink to="/notifications" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                      Notifications
+                      {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
+                    </NavLink>
+                  </li>
                   <li style={{ marginLeft: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                       {user?.email}
@@ -108,6 +119,11 @@ const Navbar = () => {
                   <li>
                     <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                       Dashboard
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink to="/community" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                      Community
                     </NavLink>
                   </li>
                   <li>
@@ -179,6 +195,9 @@ const Navbar = () => {
                 <NavLink to="/admin/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
                   Overview
                 </NavLink>
+                <NavLink to="/community" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                  Community
+                </NavLink>
                 <NavLink to="/admin/reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
                   Review Reports
                 </NavLink>
@@ -191,6 +210,9 @@ const Navbar = () => {
                 <NavLink to="/admin/users" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
                   Users
                 </NavLink>
+                <NavLink to="/notifications" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                  Notifications {unreadCount > 0 && `(${unreadCount})`}
+                </NavLink>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.75rem', borderTop: '1px solid var(--border-light)' }}>
                   <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{user?.email}</span>
                   <button onClick={handleLogout} className="btn btn-secondary btn-sm">
@@ -202,6 +224,9 @@ const Navbar = () => {
               <>
                 <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
                   Dashboard
+                </NavLink>
+                <NavLink to="/community" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
+                  Community
                 </NavLink>
                 <NavLink to="/safe-walk" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>
                   Safe Walk

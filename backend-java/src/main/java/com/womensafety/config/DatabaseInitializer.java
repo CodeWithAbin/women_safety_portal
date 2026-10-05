@@ -203,7 +203,22 @@ public class DatabaseInitializer {
                 );
             """);
 
-            // 10. Indexes
+            // 10. Community Messages Table
+            tursoClient.update("""
+                CREATE TABLE IF NOT EXISTS community_messages (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    message TEXT NOT NULL,
+                    reply_to_message_id INTEGER,
+                    is_deleted INTEGER NOT NULL DEFAULT 0,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                    FOREIGN KEY (reply_to_message_id) REFERENCES community_messages(id) ON DELETE SET NULL
+                );
+            """);
+
+            // 11. Indexes
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_places_state_district_status ON places (state, district, status);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications (user_id, is_read);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);");
@@ -215,6 +230,8 @@ public class DatabaseInitializer {
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_safety_tips_active_order ON safety_tips (is_active, display_order);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_emergency_contacts_active_order ON emergency_contacts (is_active, display_order);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets (email);");
+            tursoClient.update("CREATE INDEX IF NOT EXISTS idx_community_messages_created ON community_messages (created_at DESC);");
+            tursoClient.update("CREATE INDEX IF NOT EXISTS idx_community_messages_user ON community_messages (user_id);");
 
             // Populate initial ratings from existing places if not already seeded
             tursoClient.update("INSERT OR IGNORE INTO place_ratings (place_id, user_id, rating) SELECT id, submitted_by, rating FROM places WHERE submitted_by IS NOT NULL;");

@@ -20,6 +20,7 @@ import NotificationsPage from './pages/user/NotificationsPage';
 import SafeWalkPage from './pages/user/SafeWalkPage';
 import ActiveSafeWalkPage from './pages/user/ActiveSafeWalkPage';
 import SafetyInfoPage from './pages/user/SafetyInfoPage';
+import CommunityChatPage from './pages/community/CommunityChatPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageReportsPage from './pages/admin/ManageReportsPage';
 import ManagePlacesPage from './pages/admin/ManagePlacesPage';
@@ -49,6 +50,16 @@ const AppRoutes = () => {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+          {/* Shared Authenticated Routes */}
+          <Route
+            path="/community"
+            element={
+              <ProtectedRoute allowedRoles={['user', 'admin']}>
+                <CommunityChatPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* User Protected Routes */}
           <Route
@@ -118,7 +129,7 @@ const AppRoutes = () => {
           <Route
             path="/notifications"
             element={
-              <ProtectedRoute allowedRoles={['user']}>
+              <ProtectedRoute allowedRoles={['user', 'admin']}>
                 <NotificationsPage />
               </ProtectedRoute>
             }

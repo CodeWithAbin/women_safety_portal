@@ -340,5 +340,27 @@ export const safeWalkService = {
   }
 };
 
+/**
+ * Community Chat Services
+ */
+export const communityService = {
+  getMessages: async () => {
+    const response = await apiClient.get('/api/community/messages');
+    return response.data;
+  },
+  sendMessage: async ({ message, reply_to_message_id }) => {
+    const payload = { message };
+    if (reply_to_message_id) {
+      payload.reply_to_message_id = reply_to_message_id;
+    }
+    const response = await apiClient.post('/api/community/messages', payload);
+    return response.data;
+  },
+  deleteMessage: async (id) => {
+    const response = await apiClient.delete(`/api/community/messages/${id}`);
+    return response.data;
+  }
+};
+
 export default apiClient;
 

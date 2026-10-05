@@ -337,5 +337,32 @@ export const IconTag = (props) => (
   </BaseIcon>
 );
 
+export const IconMessageSquare = (props) => (
+  <BaseIcon {...props}>
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </BaseIcon>
+);
+
+export const IconMessageCircle = (props) => (
+  <BaseIcon {...props}>
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+  </BaseIcon>
+);
+
+export const IconSend = (props) => (
+  <BaseIcon {...props}>
+    <line x1="22" y1="2" x2="11" y2="13" />
+    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+  </BaseIcon>
+);
+
+export const IconCornerDownRight = (props) => (
+  <BaseIcon {...props}>
+    <polyline points="15 10 20 15 15 20" />
+    <path d="M4 4v7a4 4 0 0 0 4 4h12" />
+  </BaseIcon>
+);
+
+
 
 

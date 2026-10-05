@@ -11,7 +11,8 @@ import {
   IconCheckCircle,
   IconAlertCircle,
   IconInfo,
-  IconBell
+  IconBell,
+  IconMessageSquare
 } from '../../components/Icons';
 
 const NotificationsPage = () => {
@@ -55,6 +56,8 @@ const NotificationsPage = () => {
 
   const getNotificationIcon = (type) => {
     switch (type) {
+      case 'community_reply':
+        return <IconMessageSquare size={18} color="#2563eb" />;
       case 'safe_walk_sos':
         return <IconAlertOctagon size={18} color="#dc2626" />;
       case 'safe_walk_overdue':
@@ -79,7 +82,7 @@ const NotificationsPage = () => {
       <div className="page-header">
         <h1 className="page-title">My Notifications</h1>
         <p className="page-subtitle">
-          Real-time safety alerts, Safe Walk updates, and review decisions on your submitted reported places.
+          Real-time safety alerts, Safe Walk updates, community replies, and review decisions on your submitted reported places.
         </p>
       </div>
 
@@ -91,7 +94,7 @@ const NotificationsPage = () => {
         <EmptyState
           icon={<IconBell size={36} color="var(--primary-blue)" />}
           title="No Notifications Yet"
-          message="When new safety alerts, Safe Walk updates, or report review decisions occur, they will appear here."
+          message="When new safety alerts, Safe Walk updates, community replies, or report review decisions occur, they will appear here."
         />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -101,6 +104,7 @@ const NotificationsPage = () => {
             const isOverdue = notif.type === 'safe_walk_overdue';
             const isAccepted = notif.type === 'report_accepted';
             const isSafeWalk = notif.type && notif.type.startsWith('safe_walk');
+            const isCommunityReply = notif.type === 'community_reply' || (notif.type && notif.type.startsWith('community'));
 
             const formattedDate = new Date(notif.created_at).toLocaleDateString(undefined, {
               year: 'numeric',
@@ -153,6 +157,16 @@ const NotificationsPage = () => {
                 </p>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem' }}>
+                  {isCommunityReply && (
+                    <Link
+                      to="/community"
+                      className="btn btn-primary btn-sm"
+                      style={{ fontSize: '0.82rem', padding: '0.35rem 0.85rem' }}
+                    >
+                      Open Community Chat
+                    </Link>
+                  )}
+
                   {isSafeWalk && (
                     <Link
                       to="/active-safe-walk"
