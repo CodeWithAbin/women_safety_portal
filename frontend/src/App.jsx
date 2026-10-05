@@ -9,6 +9,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Pages
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import UserDashboard from './pages/user/UserDashboard';
 import BrowsePlacesPage from './pages/user/BrowsePlacesPage';
 import ReportedPlaceDetailsPage from './pages/user/ReportedPlaceDetailsPage';
@@ -45,6 +47,8 @@ const AppRoutes = () => {
           {/* Public Authentication Routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           {/* User Protected Routes */}
           <Route

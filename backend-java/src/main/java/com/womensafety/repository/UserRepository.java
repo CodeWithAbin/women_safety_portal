@@ -84,6 +84,16 @@ public class UserRepository {
         ));
     }
 
+    public void updatePassword(Long id, String passwordHash) {
+        String sql = "UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+        tursoClient.update(sql, List.of(passwordHash, id));
+    }
+
+    public void updatePasswordByEmail(String email, String passwordHash) {
+        String sql = "UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE LOWER(email) = LOWER(?)";
+        tursoClient.update(sql, List.of(passwordHash, email.trim()));
+    }
+
     public void deleteCascade(Long userId) {
         List<TursoClient.Statement> batch = List.of(
                 new TursoClient.Statement("UPDATE places SET submitted_by = NULL WHERE submitted_by = ?", List.of(userId)),

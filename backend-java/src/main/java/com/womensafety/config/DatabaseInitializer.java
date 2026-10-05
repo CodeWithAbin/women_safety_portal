@@ -187,7 +187,23 @@ public class DatabaseInitializer {
                 );
             """);
 
-            // 9. Indexes
+            // 9. Password Resets Table
+            tursoClient.update("""
+                CREATE TABLE IF NOT EXISTS password_resets (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    email TEXT NOT NULL,
+                    token_hash TEXT NOT NULL,
+                    reset_token_hash TEXT,
+                    verified INTEGER NOT NULL DEFAULT 0,
+                    attempts INTEGER NOT NULL DEFAULT 0,
+                    used INTEGER NOT NULL DEFAULT 0,
+                    expires_at DATETIME NOT NULL,
+                    verified_at DATETIME,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                );
+            """);
+
+            // 10. Indexes
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_places_state_district_status ON places (state, district, status);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications (user_id, is_read);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);");
@@ -198,6 +214,7 @@ public class DatabaseInitializer {
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_safewalks_companion_status ON safe_walks (companion_id, status);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_safety_tips_active_order ON safety_tips (is_active, display_order);");
             tursoClient.update("CREATE INDEX IF NOT EXISTS idx_emergency_contacts_active_order ON emergency_contacts (is_active, display_order);");
+            tursoClient.update("CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets (email);");
 
             // Populate initial ratings from existing places if not already seeded
             tursoClient.update("INSERT OR IGNORE INTO place_ratings (place_id, user_id, rating) SELECT id, submitted_by, rating FROM places WHERE submitted_by IS NOT NULL;");

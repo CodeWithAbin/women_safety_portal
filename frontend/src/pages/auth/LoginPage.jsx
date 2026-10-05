@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AlertBanner from '../../components/AlertBanner';
 import { IconShield } from '../../components/Icons';
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
+  const location = useLocation();
+  const [email, setEmail] = useState(location.state?.email || '');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState(location.state?.successMessage || '');
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -16,6 +18,7 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
     setLoading(true);
 
     try {
@@ -56,7 +59,21 @@ const LoginPage = () => {
           </p>
         </div>
 
-        {error && <AlertBanner type="error" message={error} onDismiss={() => setError('')} />}
+        {successMessage && (
+          <AlertBanner
+            type="success"
+            message={successMessage}
+            onDismiss={() => setSuccessMessage('')}
+          />
+        )}
+
+        {error && (
+          <AlertBanner
+            type="error"
+            message={error}
+            onDismiss={() => setError('')}
+          />
+        )}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -76,9 +93,17 @@ const LoginPage = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="password">
-              Password <span className="required">*</span>
-            </label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+              <label className="form-label" htmlFor="password" style={{ marginBottom: 0 }}>
+                Password <span className="required">*</span>
+              </label>
+              <Link
+                to="/forgot-password"
+                style={{ fontSize: '0.84rem', color: 'var(--primary-blue)', fontWeight: 600, textDecoration: 'none' }}
+              >
+                Forgot Password?
+              </Link>
+            </div>
             <input
               id="password"
               type="password"
@@ -112,4 +137,3 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
-
