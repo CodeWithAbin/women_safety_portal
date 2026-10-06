@@ -82,6 +82,14 @@ const SafePlacesPage = () => {
   });
   const [submitting, setSubmitting] = useState(false);
 
+  const handleFieldChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleStateChange = (st) => {
+    setFormData((prev) => ({ ...prev, state: st, district: '' }));
+  };
+
   // Map reference
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -472,7 +480,7 @@ const SafePlacesPage = () => {
                 className="form-control"
                 placeholder="e.g. 24/7 Women Help Desk - Railway Station"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => handleFieldChange('name', e.target.value)}
                 required
                 maxLength={150}
               />
@@ -487,7 +495,7 @@ const SafePlacesPage = () => {
                 className="form-control"
                 placeholder="e.g. Platform 1 Entrance, Central Station Road"
                 value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                onChange={(e) => handleFieldChange('address', e.target.value)}
                 required
                 maxLength={300}
               />
@@ -496,8 +504,8 @@ const SafePlacesPage = () => {
             <StateDistrictSelector
               selectedState={formData.state}
               selectedDistrict={formData.district}
-              onStateChange={(st) => setFormData({ ...formData, state: st, district: '' })}
-              onDistrictChange={(dt) => setFormData({ ...formData, district: dt })}
+              onStateChange={handleStateChange}
+              onDistrictChange={(dt) => handleFieldChange('district', dt)}
               required={true}
             />
 
@@ -510,7 +518,7 @@ const SafePlacesPage = () => {
                   <button
                     key={star}
                     type="button"
-                    onClick={() => setFormData({ ...formData, rating: star })}
+                    onClick={() => handleFieldChange('rating', star)}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
                   >
                     <IconStar
@@ -535,7 +543,7 @@ const SafePlacesPage = () => {
                 rows="4"
                 placeholder="Describe why this place is safe (e.g., active CCTV surveillance, 24/7 security personnel, bright street lighting, emergency telephone)..."
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) => handleFieldChange('description', e.target.value)}
                 required
                 maxLength={1500}
               />
